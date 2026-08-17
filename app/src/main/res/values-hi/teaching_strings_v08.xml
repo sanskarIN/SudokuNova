@@ -6,6 +6,7 @@
     <string name="v08_technique_naked_single">नेकेड सिंगल</string>
     <string name="v08_technique_hidden_single">हिडन सिंगल</string>
     <string name="v08_technique_naked_pair">नेकेड पेयर</string>
+    <string name="v08_technique_naked_triple">नेकेड ट्रिपल</string>
     <string name="v08_technique_pointing_pair_triple">पॉइंटिंग पेयर / ट्रिपल</string>
     <string name="v08_technique_box_line_reduction">बॉक्स-लाइन रिडक्शन</string>
     <string name="v08_technique_reveal">खाना दिखाएँ</string>
@@ -18,6 +19,7 @@
     <string name="v08_explain_naked_single">%1$s में केवल एक संभावित अंक है: %2$d।</string>
     <string name="v08_explain_hidden_single">%1$d, %2$s में केवल एक स्थान पर आ सकता है: %3$s।</string>
     <string name="v08_explain_naked_pair">%1$s में %2$s के संभावित अंक केवल %3$s हैं। %4$s से %3$s हटाएँ।</string>
+    <string name="v08_explain_naked_triple">%1$s में %2$s के संभावित अंक मिलकर केवल %3$s हैं। %4$s से %3$s हटाएँ।</string>
     <string name="v08_explain_pointing">%1$s में संभावित अंक %2$d केवल %3$s तक सीमित है। %4$s से %2$d हटाएँ।</string>
     <string name="v08_explain_box_line">%1$s में संभावित अंक %2$d केवल %3$s तक सीमित है। %4$s से %2$d हटाएँ।</string>
     <string name="v08_explain_reveal">कोई समर्थित तार्किक प्लेसमेंट नहीं मिला। अधिक मजबूत संकेत चाहिए तो पंक्ति %1$d, स्तंभ %2$d में %3$d दिखाएँ।</string>
