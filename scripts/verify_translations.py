@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 VALUES = ROOT / "app" / "src" / "main" / "res" / "values"
 VALUES_HI = ROOT / "app" / "src" / "main" / "res" / "values-hi"
-PREFIXES = ("v04_", "v05_", "v06_", "difficulty_", "theme_")
+PREFIXES = ("v04_", "v05_", "v06_", "v07_", "difficulty_", "theme_")
 
 
 def collect(directory: Path) -> dict[str, Path]:
