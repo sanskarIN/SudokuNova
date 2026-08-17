@@ -22,6 +22,11 @@ class HintEngine(
         return teachingEngine.nextStep(board)
     }
 
+    fun nextTeachingHint(board: SudokuBoard): TeachingHintSequence? {
+        if (!board.isValid() || board.isComplete) return null
+        return teachingEngine.nextPlacementSequence(board)
+    }
+
     fun nextHint(board: SudokuBoard): SudokuHint? {
         if (!board.isValid() || board.isComplete) return null
 
