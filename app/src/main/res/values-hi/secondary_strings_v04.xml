@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v04_made_by">Made by the Sanskar</string>
+    <string name="v04_version_format">वर्ज़न %1$s</string>
+    <string name="v04_open_source_desc">SudokuNova MIT लाइसेंस के अंतर्गत जारी किया गया है। मुख्य गेमप्ले ऑफलाइन-फर्स्ट है, किसी खाते की आवश्यकता नहीं है और डिफ़ॉल्ट रूप से एनालिटिक्स शामिल नहीं हैं।</string>
+    <string name="v04_support_desc">यदि SudokuNova आपके लिए उपयोगी है, तो आप Buy Me a Coffee के माध्यम से ओपन-सोर्स विकास में सहयोग कर सकते हैं।</string>
+    <string name="v04_business_email_one">व्यवसाय: sanskarin@outlook.in</string>
+    <string name="v04_business_email_two">व्यवसाय: sanskarin.business@gmail.com</string>
+    <string name="v04_support_email">सपोर्ट: supportramsandesh@gmail.com</string>
+    <string name="v04_privacy_summary">गोपनीयता: SudokuNova सेटिंग्स, सक्रिय खेल स्थिति और गेमप्ले आँकड़े Android DataStore का उपयोग करके स्थानीय रूप से संग्रहीत करता है। आप सेटिंग्स से आँकड़े रीसेट कर सकते हैं। बेस ऐप कोई गेमप्ले डेटा प्रसारित नहीं करता।</string>
+
+    <string name="v04_first_puzzle">पहली पहेली</string>
+    <string name="v04_first_puzzle_desc">अपनी पहली पहेली पूरी करें।</string>
+    <string name="v04_ten_wins">10 जीत</string>
+    <string name="v04_ten_wins_desc">10 पहेलियाँ पूरी करें।</string>
+    <string name="v04_hundred_wins">100 जीत</string>
+    <string name="v04_hundred_wins_desc">100 पहेलियाँ पूरी करें।</string>
+    <string name="v04_perfect_game">परफेक्ट गेम</string>
+    <string name="v04_perfect_game_desc">बिना गलती और बिना संकेत के पूरा करें।</string>
+    <string name="v04_seven_day_streak">सात-दिन की स्ट्रीक</string>
+    <string name="v04_seven_day_streak_desc">लगातार सात दिनों तक पहेलियाँ पूरी करें।</string>
+    <string name="v04_thirty_day_streak">तीस-दिन की स्ट्रीक</string>
+    <string name="v04_thirty_day_streak_desc">लगातार तीस दिनों तक पहेलियाँ पूरी करें।</string>
+    <string name="v04_unlocked_format">✓ %1$s</string>
+    <string name="v04_locked_format">○ %1$s</string>
+</resources>
