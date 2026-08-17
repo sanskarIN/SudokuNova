@@ -36,4 +36,15 @@
     <string name="v08_reset_learning_progress_question">Reset learning progress?</string>
     <string name="v08_reset_learning_progress_body">This clears local hint and practice progress for every logical technique. Your game history and puzzles are not changed.</string>
     <string name="v08_open_learning_progress">Open learning progress</string>
+
+    <string name="v08_guided_practice">Guided Practice</string>
+    <string name="v08_guided_practice_desc">Use the logical reasoning, select the target cell, then choose the value that completes the teaching step.</string>
+    <string name="v08_open_guided_practice">Start guided practice</string>
+    <string name="v08_practice_loading">Preparing a deterministic practice puzzle…</string>
+    <string name="v08_practice_reasoning">Study the reasoning</string>
+    <string name="v08_practice_choose_value">Select a cell, then choose a value.</string>
+    <string name="v08_practice_correct">Correct. You completed this teaching step.</string>
+    <string name="v08_practice_incorrect">That does not complete this teaching step. Review the reasoning and try again.</string>
+    <string name="v08_next_practice">Next practice</string>
+    <string name="v08_practice_generation_failed">A suitable practice puzzle could not be prepared.</string>
 </resources>
