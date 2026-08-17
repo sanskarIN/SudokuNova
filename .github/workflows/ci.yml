@@ -2,9 +2,6 @@ name: Android CI
 
 on:
   push:
-    branches:
-      - main
-      - feature/bootstrap-v0.1
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
