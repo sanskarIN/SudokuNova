@@ -6,6 +6,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.sanskar.sudokunova.data.AppPreferencesRepository
 import com.sanskar.sudokunova.data.UserSettings
+import com.sanskar.sudokunova.data.challenge.ChallengeDescriptor
+import com.sanskar.sudokunova.data.challenge.ChallengeKeys
+import com.sanskar.sudokunova.data.challenge.ChallengeRepository
+import com.sanskar.sudokunova.data.challenge.ChallengeType
+import com.sanskar.sudokunova.data.history.HistoryRepository
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.HintEngine
 import com.sanskar.sudokunova.engine.SudokuBoard
@@ -41,6 +46,8 @@ class GameViewModel(
     savedStateHandle: SavedStateHandle,
 ) : AndroidViewModel(application) {
     private val repository = AppPreferencesRepository(application.applicationContext)
+    private val historyRepository = HistoryRepository(application.applicationContext)
+    private val challengeRepository = ChallengeRepository(application.applicationContext)
     private val solver = SudokuSolver()
     private val generator = SudokuGenerator(solver)
     private val hintEngine = HintEngine(solver)
@@ -48,7 +55,15 @@ class GameViewModel(
     private val requestedDifficulty = runCatching {
         Difficulty.valueOf(savedStateHandle.get<String>("difficulty") ?: Difficulty.EASY.name)
     }.getOrDefault(Difficulty.EASY)
-    private val dailyChallenge = savedStateHandle.get<Boolean>("daily") ?: false
+    private val legacyDailyChallenge = savedStateHandle.get<Boolean>("daily") ?: false
+    private val requestedChallengeType = savedStateHandle.get<String>("challengeType")
+        ?.takeIf(String::isNotBlank)
+        ?.let { runCatching { ChallengeType.valueOf(it) }.getOrNull() }
+        ?: if (legacyDailyChallenge) ChallengeType.DAILY else null
+    private val requestedChallengeKey = savedStateHandle.get<Long>("challengeKey")
+        ?.takeIf { it != Long.MIN_VALUE }
+    private val replayOfHistoryId = savedStateHandle.get<Long>("replayOf")
+        ?.takeIf { it > 0L }
     private val resumeRequested = savedStateHandle.get<Boolean>("resume") ?: false
     private val customPuzzle = savedStateHandle.get<String>("custom")
         ?.takeIf { it.length == SudokuBoard.CELL_COUNT }
@@ -76,7 +91,13 @@ class GameViewModel(
     }
 
     fun selectCell(index: Int) {
-        mutateGame(save = false) { state -> state.copy(selectedIndex = index.coerceIn(0, 80)) }
+        if (index !in 0 until SudokuBoard.CELL_COUNT) return
+        mutateGame(save = false) { state -> state.copy(selectedIndex = index) }
+    }
+
+    fun selectNumber(value: Int?) {
+        if (value != null && value !in 1..9) return
+        mutateGame(save = false) { state -> state.copy(selectedNumber = value) }
     }
 
     fun toggleNotesMode() {
@@ -96,11 +117,11 @@ class GameViewModel(
                 if (!add(value)) remove(value)
             }
             notes[index] = updated
-            setGame(state.copy(notes = notes))
+            setGame(state.copy(notes = notes, selectedNumber = value))
             return
         }
 
-        placeValue(state, index, value, countMistake = true)
+        placeValue(state.copy(selectedNumber = value), index, value, countMistake = true)
     }
 
     fun erase() {
@@ -177,6 +198,7 @@ class GameViewModel(
                 board = state.puzzle,
                 notes = List(SudokuBoard.CELL_COUNT) { emptySet() },
                 selectedIndex = 0,
+                selectedNumber = null,
                 elapsedSeconds = 0,
                 mistakes = 0,
                 hintsUsed = 0,
@@ -189,7 +211,7 @@ class GameViewModel(
     fun abandon() {
         val state = currentGame() ?: return
         viewModelScope.launch {
-            repository.recordGameAbandoned()
+            if (state.replayOfHistoryId == null) repository.recordGameAbandoned()
             repository.clearActiveGame()
         }
         _uiState.value = GameScreenState.Error("Game ended. Start a new puzzle from Home.")
@@ -216,27 +238,46 @@ class GameViewModel(
             }
 
             runCatching {
-                if (customPuzzle != null) {
-                    createCustomGame(customPuzzle)
-                } else {
-                    val seed = if (dailyChallenge) {
-                        LocalDate.now().toEpochDay() * 1_000L + requestedDifficulty.ordinal
-                    } else {
-                        Random.nextLong()
+                when {
+                    customPuzzle != null -> createCustomGame(customPuzzle)
+                    requestedChallengeType != null -> createChallengeGame(requestedChallengeType)
+                    else -> {
+                        val seed = Random.nextLong()
+                        val generated = withContext(Dispatchers.Default) {
+                            generator.generate(requestedDifficulty, seed)
+                        }
+                        GameState.fromGenerated(generated)
                     }
-                    val generated = withContext(Dispatchers.Default) {
-                        generator.generate(requestedDifficulty, seed)
-                    }
-                    GameState.fromGenerated(generated, dailyChallenge)
                 }
             }.onSuccess { game ->
-                repository.recordGameStarted()
+                if (game.replayOfHistoryId == null) repository.recordGameStarted()
                 _uiState.value = GameScreenState.Ready(game)
                 persist(game)
             }.onFailure { error ->
                 _uiState.value = GameScreenState.Error(error.message ?: "Puzzle generation failed.")
             }
         }
+    }
+
+    private suspend fun createChallengeGame(type: ChallengeType): GameState {
+        val key = requestedChallengeKey ?: when (type) {
+            ChallengeType.DAILY -> ChallengeKeys.daily(LocalDate.now())
+            ChallengeType.WEEKLY -> ChallengeKeys.weekly(LocalDate.now())
+        }
+        val descriptor = ChallengeDescriptor(
+            type = type,
+            key = key,
+            difficulty = ChallengeRepository.difficultyFor(type),
+        )
+        val generated = withContext(Dispatchers.Default) {
+            generator.generate(descriptor.difficulty, ChallengeKeys.seed(descriptor))
+        }
+        return GameState.fromGenerated(
+            generated = generated,
+            dailyChallenge = type == ChallengeType.DAILY,
+            challengeType = type.name,
+            challengeKey = key,
+        )
     }
 
     private suspend fun createCustomGame(encodedPuzzle: String): GameState = withContext(Dispatchers.Default) {
@@ -252,6 +293,7 @@ class GameViewModel(
             board = puzzle,
             difficulty = requestedDifficulty,
             seed = 0L,
+            replayOfHistoryId = replayOfHistoryId,
         )
     }
 
@@ -324,7 +366,7 @@ class GameViewModel(
         val boxRow = (row / 3) * 3
         val boxColumn = (column / 3) * 3
 
-        for (candidateIndex in 0 until 81) {
+        for (candidateIndex in 0 until SudokuBoard.CELL_COUNT) {
             val candidateRow = candidateIndex / 9
             val candidateColumn = candidateIndex % 9
             val sameRow = candidateRow == row
@@ -342,12 +384,18 @@ class GameViewModel(
         if (completionRecorded) return
         completionRecorded = true
         viewModelScope.launch {
-            repository.recordGameCompleted(
-                elapsedSeconds = state.elapsedSeconds,
-                mistakes = state.mistakes,
-                hintsUsed = state.hintsUsed,
-                completedEpochDay = LocalDate.now().toEpochDay(),
-            )
+            historyRepository.recordCompletedGame(state)
+            if (state.challengeType != null && state.challengeKey != null) {
+                challengeRepository.recordCompletion(state)
+            }
+            if (state.replayOfHistoryId == null) {
+                repository.recordGameCompleted(
+                    elapsedSeconds = state.elapsedSeconds,
+                    mistakes = state.mistakes,
+                    hintsUsed = state.hintsUsed,
+                    completedEpochDay = LocalDate.now().toEpochDay(),
+                )
+            }
             repository.clearActiveGame()
         }
     }
