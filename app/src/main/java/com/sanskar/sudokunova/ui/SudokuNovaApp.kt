@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.ui.about.AboutScreen
+import com.sanskar.sudokunova.ui.challenges.ChallengesRoute
 import com.sanskar.sudokunova.ui.custom.CustomPuzzleRoute
 import com.sanskar.sudokunova.ui.game.GameRoute
 import com.sanskar.sudokunova.ui.home.HomeRoute
@@ -22,8 +23,10 @@ import com.sanskar.sudokunova.ui.theme.SudokuNovaTheme
 
 private object Routes {
     const val HOME = "home"
-    const val GAME = "game/{difficulty}?daily={daily}&resume={resume}&custom={custom}"
+    const val GAME =
+        "game/{difficulty}?daily={daily}&resume={resume}&custom={custom}&challengeType={challengeType}&challengeKey={challengeKey}"
     const val CUSTOM = "custom"
+    const val CHALLENGES = "challenges"
     const val LEARN = "learn"
     const val STATISTICS = "statistics"
     const val SETTINGS = "settings"
@@ -55,7 +58,7 @@ fun SudokuNovaApp(
                         navController.navigate("game/${Difficulty.EASY.name}?daily=false&resume=true")
                     },
                     onDailyChallenge = {
-                        navController.navigate("game/${Difficulty.MEDIUM.name}?daily=true&resume=false")
+                        navController.navigate(Routes.CHALLENGES)
                     },
                     onCustomPuzzle = { navController.navigate(Routes.CUSTOM) },
                     onLearn = { navController.navigate(Routes.LEARN) },
@@ -82,6 +85,14 @@ fun SudokuNovaApp(
                         type = NavType.StringType
                         defaultValue = ""
                     },
+                    navArgument("challengeType") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                    navArgument("challengeKey") {
+                        type = NavType.LongType
+                        defaultValue = Long.MIN_VALUE
+                    },
                 ),
             ) {
                 GameRoute(
@@ -92,11 +103,25 @@ fun SudokuNovaApp(
                 )
             }
 
+            composable(Routes.CHALLENGES) {
+                ChallengesRoute(
+                    onBack = { navController.popBackStack() },
+                    onPlay = { descriptor ->
+                        navController.navigate(
+                            "game/${descriptor.difficulty.name}?daily=false&resume=false" +
+                                "&challengeType=${descriptor.type.name}&challengeKey=${descriptor.key}",
+                        )
+                    },
+                )
+            }
+
             composable(Routes.CUSTOM) {
                 CustomPuzzleRoute(
                     onBack = { navController.popBackStack() },
                     onPlay = { puzzle ->
-                        navController.navigate("game/${Difficulty.MEDIUM.name}?daily=false&resume=false&custom=$puzzle")
+                        navController.navigate(
+                            "game/${Difficulty.MEDIUM.name}?daily=false&resume=false&custom=$puzzle",
+                        )
                     },
                 )
             }
