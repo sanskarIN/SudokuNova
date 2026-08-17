@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v05_history">इतिहास</string>
+    <string name="v05_all">सभी</string>
+    <string name="v05_favorites">पसंदीदा</string>
+    <string name="v05_all_difficulties">सभी कठिनाइयाँ</string>
+    <string name="v05_no_history">अभी तक कोई पूरा खेल नहीं है।</string>
+    <string name="v05_no_favorites">अभी तक कोई पसंदीदा खेल नहीं है।</string>
+    <string name="v05_history_hint">पूरे किए गए खेल इसी डिवाइस पर स्थानीय रूप से सहेजे जाते हैं।</string>
+    <string name="v05_daily_badge">दैनिक</string>
+    <string name="v05_perfect_badge">परफेक्ट</string>
+    <string name="v05_favorite">पसंदीदा बनाएँ</string>
+    <string name="v05_unfavorite">पसंदीदा से हटाएँ</string>
+    <string name="v05_delete_history">इतिहास आइटम हटाएँ</string>
+    <string name="v05_time_value">समय: %1$s</string>
+    <string name="v05_mistakes_value">गलतियाँ: %1$d</string>
+    <string name="v05_hints_value">संकेत: %1$d</string>
+    <string name="v05_played_on">खेला गया: %1$s</string>
+    <string name="v05_difficulty_summary">कठिनाई सारांश</string>
+    <string name="v05_games_count">%1$d खेल</string>
+    <string name="v05_average_time">औसत %1$s</string>
+    <string name="v05_best_time_value">सर्वश्रेष्ठ %1$s</string>
+    <string name="v05_perfect_count">परफेक्ट %1$d</string>
+    <string name="v05_delete_question">यह इतिहास आइटम हटाएँ?</string>
+    <string name="v05_delete_body">यह केवल इस स्थानीय इतिहास रिकॉर्ड को हटाता है। कुल आँकड़े दोबारा नहीं गिने जाते।</string>
+    <string name="v05_delete">हटाएँ</string>
+</resources>
