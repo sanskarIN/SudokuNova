@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.sanskar.sudokunova.data.AppPreferencesRepository
 import com.sanskar.sudokunova.data.InputMode
 import com.sanskar.sudokunova.data.UserSettings
+import com.sanskar.sudokunova.data.restoreSettings
 import com.sanskar.sudokunova.data.challenge.ChallengeType
 import com.sanskar.sudokunova.data.history.SudokuNovaDatabase
 import com.sanskar.sudokunova.ui.theme.AppTheme
@@ -36,6 +37,7 @@ class BackupRepositoryTest {
         database.gameHistoryDao().deleteAll()
         database.savedPuzzleDao().deleteAll()
         database.challengeResultDao().deleteAll()
+        AppPreferencesRepository(context).restoreSettings(UserSettings())
     }
 
     @Test
