@@ -42,6 +42,7 @@ class LogicalTeachingEngine {
             findNakedSingle()
                 ?: findHiddenSingle()
                 ?: findNakedPair()
+                ?: findNakedTriple()
                 ?: findPointingPairOrTriple()
                 ?: findBoxLineReduction()
 
@@ -103,34 +104,32 @@ class LogicalTeachingEngine {
             return null
         }
 
-        private fun findNakedPair(): TeachingStep? {
-            for (descriptor in allUnitDescriptors()) {
-                val groupedPairs = descriptor.indices
-                    .filter { board.valueAt(it) == SudokuBoard.EMPTY && candidates[it].size == 2 }
-                    .groupBy { candidates[it].toSet() }
+        private fun findNakedPair(): TeachingStep? =
+            findNakedSubsetStep(subsetSize = 2, technique = LogicalTechnique.NAKED_PAIR)
 
-                for ((pair, pairCells) in groupedPairs) {
-                    if (pairCells.size != 2) continue
-                    val pairCellSet = pairCells.toSet()
-                    val eliminations = buildList {
-                        for (index in descriptor.indices) {
-                            if (index in pairCellSet || board.valueAt(index) != SudokuBoard.EMPTY) continue
-                            for (value in pair.sorted()) {
-                                if (value in candidates[index]) add(CandidateElimination(index, value))
-                            }
-                        }
-                    }
-                    if (eliminations.isNotEmpty()) {
-                        return TeachingStep(
-                            technique = LogicalTechnique.NAKED_PAIR,
-                            sourceCells = pairCellSet,
-                            sourceUnit = descriptor.unit,
-                            affectedUnit = descriptor.unit,
-                            candidateValues = pair,
-                            eliminations = eliminations,
-                        )
-                    }
-                }
+        private fun findNakedTriple(): TeachingStep? =
+            findNakedSubsetStep(subsetSize = 3, technique = LogicalTechnique.NAKED_TRIPLE)
+
+        private fun findNakedSubsetStep(
+            subsetSize: Int,
+            technique: LogicalTechnique,
+        ): TeachingStep? {
+            for (descriptor in allUnitDescriptors()) {
+                val snapshot = descriptor.indices.associateWith { candidates[it].toSet() }
+                val match = findNakedSubset(
+                    unitIndices = descriptor.indices,
+                    candidates = snapshot,
+                    subsetSize = subsetSize,
+                ) ?: continue
+
+                return TeachingStep(
+                    technique = technique,
+                    sourceCells = match.sourceCells.toSet(),
+                    sourceUnit = descriptor.unit,
+                    affectedUnit = descriptor.unit,
+                    candidateValues = match.values,
+                    eliminations = match.eliminations,
+                )
             }
             return null
         }
