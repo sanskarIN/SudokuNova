@@ -1,0 +1,32 @@
+name: Apply v0.8 Hint Progress Wiring Once
+
+on:
+  push:
+    branches:
+      - feature/v0.8-learning-hints
+    paths:
+      - '.github/workflows/v08-record-hint-progress-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v6
+        with:
+          ref: feature/v0.8-learning-hints
+          fetch-depth: 0
+
+      - name: Apply hint progress integration
+        run: python3 scripts/v08_record_hint_progress.py
+
+      - name: Commit hint progress integration
+        run: |
+          git config user.name "Sanskar"
+          git config user.email "sanskarin@outlook.in"
+          git add app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt
+          git commit -m "feat: record logical hint views in learning progress"
+          git push origin HEAD:feature/v0.8-learning-hints
