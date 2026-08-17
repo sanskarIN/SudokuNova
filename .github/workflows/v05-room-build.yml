@@ -1,0 +1,82 @@
+name: Apply v0.5 Room Persistence Setup
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-room-build.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Configure Room and Kotlin kapt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          catalog = Path('gradle/libs.versions.toml')
+          text = catalog.read_text()
+          if 'room = "2.8.3"' not in text:
+              text = text.replace('[versions]\n', '[versions]\nroom = "2.8.3"\n', 1)
+          if 'androidx-room-runtime' not in text:
+              text = text.replace(
+                  '[libraries]\n',
+                  '[libraries]\nandroidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }\nandroidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }\nandroidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }\nandroidx-room-testing = { module = "androidx.room:room-testing", version.ref = "room" }\n',
+                  1,
+              )
+          if 'kotlin-kapt' not in text:
+              text = text.replace(
+                  '[plugins]\n',
+                  '[plugins]\nkotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }\n',
+                  1,
+              )
+          catalog.write_text(text)
+
+          build = Path('app/build.gradle.kts')
+          text = build.read_text()
+          if 'alias(libs.plugins.kotlin.kapt)' not in text:
+              text = text.replace(
+                  'alias(libs.plugins.compose.compiler)\n',
+                  'alias(libs.plugins.compose.compiler)\n    alias(libs.plugins.kotlin.kapt)\n',
+                  1,
+              )
+          marker = '    implementation(libs.androidx.datastore.preferences)\n'
+          if 'implementation(libs.androidx.room.runtime)' not in text:
+              text = text.replace(
+                  marker,
+                  marker + '    implementation(libs.androidx.room.runtime)\n    implementation(libs.androidx.room.ktx)\n    kapt(libs.androidx.room.compiler)\n',
+                  1,
+              )
+          marker = '    androidTestImplementation(libs.androidx.test.espresso.core)\n'
+          if 'androidTestImplementation(libs.androidx.room.testing)' not in text:
+              text = text.replace(marker, marker + '    androidTestImplementation(libs.androidx.room.testing)\n', 1)
+          if 'room.schemaLocation' not in text:
+              text += '''\n\nkapt {\n    arguments {\n        arg("room.schemaLocation", "$projectDir/schemas")\n    }\n}\n'''
+          build.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-room-build.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add gradle/libs.versions.toml app/build.gradle.kts
+          git commit -m 'build: configure Room persistence with schema export'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
