@@ -67,7 +67,7 @@ private fun ChallengesScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.v04_back),
+                            contentDescription = stringResource(R.string.v06_back),
                         )
                     }
                 },
