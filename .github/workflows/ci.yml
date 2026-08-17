@@ -34,11 +34,17 @@ jobs:
       - name: Set up Gradle cache and validate wrapper
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Verify English/Hindi translation parity
+        run: python scripts/verify_translations.py
+
       - name: Verify engine tests
         run: ./gradlew :sudoku-engine:test --stacktrace
 
       - name: Verify Android unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Compile Android instrumentation tests
+        run: ./gradlew :app:assembleDebugAndroidTest --stacktrace
 
       - name: Run Android lint
         run: ./gradlew :app:lintDebug --stacktrace
