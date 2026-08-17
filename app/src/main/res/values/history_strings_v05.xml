@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v05_history">History</string>
+    <string name="v05_all">All</string>
+    <string name="v05_favorites">Favorites</string>
+    <string name="v05_all_difficulties">All difficulties</string>
+    <string name="v05_no_history">No completed games yet.</string>
+    <string name="v05_no_favorites">No favorite games yet.</string>
+    <string name="v05_history_hint">Completed games are saved locally on this device.</string>
+    <string name="v05_daily_badge">Daily</string>
+    <string name="v05_perfect_badge">Perfect</string>
+    <string name="v05_favorite">Favorite</string>
+    <string name="v05_unfavorite">Remove favorite</string>
+    <string name="v05_delete_history">Delete history item</string>
+    <string name="v05_time_value">Time: %1$s</string>
+    <string name="v05_mistakes_value">Mistakes: %1$d</string>
+    <string name="v05_hints_value">Hints: %1$d</string>
+    <string name="v05_played_on">Played %1$s</string>
+    <string name="v05_difficulty_summary">Difficulty summary</string>
+    <string name="v05_games_count">%1$d games</string>
+    <string name="v05_average_time">Average %1$s</string>
+    <string name="v05_best_time_value">Best %1$s</string>
+    <string name="v05_perfect_count">Perfect %1$d</string>
+    <string name="v05_delete_question">Delete this history item?</string>
+    <string name="v05_delete_body">This removes only this local history record. Aggregate statistics are not recalculated.</string>
+    <string name="v05_delete">Delete</string>
+</resources>
