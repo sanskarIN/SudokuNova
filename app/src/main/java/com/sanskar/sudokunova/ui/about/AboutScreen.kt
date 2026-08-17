@@ -19,9 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import com.sanskar.sudokunova.BuildConfig
+import com.sanskar.sudokunova.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,10 +33,10 @@ fun AboutScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About SudokuNova") },
+                title = { Text(stringResource(R.string.v04_about_sudokunova)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.v04_back))
                     }
                 },
             )
@@ -44,24 +46,24 @@ fun AboutScreen(onBack: () -> Unit) {
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
         ) {
             item {
-                Text("SudokuNova", style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 16.dp))
-                Text("Think. Solve. Master the Grid.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("Version ${BuildConfig.VERSION_NAME}", modifier = Modifier.padding(top = 8.dp))
-                Text("Made by the Sanskar", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 12.dp))
+                Text(stringResource(R.string.v04_app_name), style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 16.dp))
+                Text(stringResource(R.string.v04_tagline), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.v04_version_format, BuildConfig.VERSION_NAME), modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.v04_made_by), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 12.dp))
             }
 
             item {
                 Card(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("Open source", style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(R.string.v04_open_source), style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "SudokuNova is released under the MIT License. Core gameplay is offline-first, requires no account, and includes no analytics by default.",
+                            stringResource(R.string.v04_open_source_desc),
                             modifier = Modifier.padding(top = 6.dp),
                         )
                         OutlinedButton(
                             onClick = { uriHandler.openUri("https://github.com/sanskarIN/SudokuNova") },
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                        ) { Text("Open GitHub repository") }
+                        ) { Text(stringResource(R.string.v04_open_github)) }
                     }
                 }
             }
@@ -69,12 +71,12 @@ fun AboutScreen(onBack: () -> Unit) {
             item {
                 Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("Support SudokuNova", style = MaterialTheme.typography.titleLarge)
-                        Text("If SudokuNova helps you, you can support continued open-source development through Buy Me a Coffee.")
+                        Text(stringResource(R.string.v04_support_sudokunova), style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(R.string.v04_support_desc))
                         Button(
                             onClick = { uriHandler.openUri("https://buymeacoffee.com/sanskarIN") },
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                        ) { Text("☕ Buy Me a Coffee") }
+                        ) { Text("☕ ${stringResource(R.string.v04_buy_me_a_coffee)}") }
                     }
                 }
             }
@@ -82,21 +84,21 @@ fun AboutScreen(onBack: () -> Unit) {
             item {
                 Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("Contact", style = MaterialTheme.typography.titleLarge)
-                        Text("Business: sanskarin@outlook.in")
-                        Text("Business: sanskarin.business@gmail.com")
-                        Text("Support: supportramsandesh@gmail.com")
+                        Text(stringResource(R.string.v04_contact), style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(R.string.v04_business_email_one))
+                        Text(stringResource(R.string.v04_business_email_two))
+                        Text(stringResource(R.string.v04_support_email))
                         OutlinedButton(
                             onClick = { uriHandler.openUri("mailto:supportramsandesh@gmail.com?subject=SudokuNova%20Support") },
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                        ) { Text("Email support") }
+                        ) { Text(stringResource(R.string.v04_email_support)) }
                     }
                 }
             }
 
             item {
                 Text(
-                    "Privacy: SudokuNova stores settings, active game state, and gameplay statistics locally using Android DataStore. You can reset statistics from Settings. No gameplay data is transmitted by the base application.",
+                    stringResource(R.string.v04_privacy_summary),
                     modifier = Modifier.padding(bottom = 24.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

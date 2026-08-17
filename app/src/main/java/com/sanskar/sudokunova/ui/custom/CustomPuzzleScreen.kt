@@ -29,10 +29,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sanskar.sudokunova.engine.SudokuBoard
+import com.sanskar.sudokunova.R
 
 @Composable
 fun CustomPuzzleRoute(
@@ -70,10 +72,10 @@ private fun CustomPuzzleScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Custom Puzzle") },
+                title = { Text(stringResource(R.string.v04_custom_puzzle)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.v04_back))
                     }
                 },
             )
@@ -119,21 +121,21 @@ private fun CustomPuzzleScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text("Erase") }
-                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text("Clear") }
-                Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text("Validate") }
+                OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_erase)) }
+                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_clear)) }
+                Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_validate)) }
             }
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text("Solve") }
+                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }
                 Button(
                     onClick = onPlay,
                     enabled = state.isUnique,
                     modifier = Modifier.weight(1f),
-                ) { Text("Play puzzle") }
+                ) { Text(stringResource(R.string.v04_play_puzzle)) }
             }
             Spacer(Modifier.height(24.dp))
         }
