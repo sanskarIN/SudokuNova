@@ -12,6 +12,7 @@ data class GameState(
     val board: SudokuBoard,
     val notes: List<Set<Int>> = List(SudokuBoard.CELL_COUNT) { emptySet() },
     val selectedIndex: Int = 0,
+    val selectedNumber: Int? = null,
     val notesMode: Boolean = false,
     val elapsedSeconds: Long = 0,
     val mistakes: Int = 0,
@@ -22,6 +23,12 @@ data class GameState(
     val status: GameStatus = GameStatus.PLAYING,
     val isDailyChallenge: Boolean = false,
 ) {
+    init {
+        require(selectedNumber == null || selectedNumber in 1..9) {
+            "Selected number must be null or in the range 1..9."
+        }
+    }
+
     val progressPercent: Int
         get() {
             val original = puzzle.clueCount
