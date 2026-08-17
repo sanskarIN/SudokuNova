@@ -172,6 +172,7 @@ fun SudokuNovaApp(
                     onBack = { navController.popBackStack() },
                     onTheme = appViewModel::setTheme,
                     onDynamicColor = appViewModel::setDynamicColor,
+                    onInputMode = appViewModel::setInputMode,
                     onHighlightPeers = appViewModel::setHighlightPeers,
                     onHighlightSame = appViewModel::setHighlightSameNumbers,
                     onAutoCheck = appViewModel::setAutoCheck,
