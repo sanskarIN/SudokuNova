@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v06_input_mode">Input mode</string>
+    <string name="v06_input_mode_desc">Choose whether you select a cell first or select a number first.</string>
+    <string name="v06_cell_first">Cell first</string>
+    <string name="v06_number_first">Number first</string>
+    <string name="v06_keyboard_hint">Keyboard: arrows move, 1–9 enter, N toggles notes, Backspace erases, H opens a hint.</string>
+</resources>
