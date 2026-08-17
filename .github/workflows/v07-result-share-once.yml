@@ -1,0 +1,44 @@
+name: Wire v0.7 Result Share Once
+
+on:
+  push:
+    branches:
+      - feature/v0.7-safe-sharing
+    paths:
+      - '.github/workflows/v07-result-share-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.7-safe-sharing
+          fetch-depth: 0
+      - name: Add result sharing to History
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/history/HistoryScreen.kt')
+          text = path.read_text()
+          if 'ui.transfer.GameResultShareAction' not in text:
+              text = text.replace(
+                  'import com.sanskar.sudokunova.ui.transfer.PuzzleShareActions\n',
+                  'import com.sanskar.sudokunova.ui.transfer.GameResultShareAction\nimport com.sanskar.sudokunova.ui.transfer.PuzzleShareActions\n',
+              )
+          marker = '''            if (difficulty != null) {\n                PuzzleShareActions(\n                    puzzle = item.puzzle,\n                    difficulty = difficulty,\n                    modifier = Modifier.padding(top = 8.dp),\n                )\n            }\n'''
+          if 'GameResultShareAction(' not in text:
+              addition = marker + '''            if (difficulty != null) {\n                GameResultShareAction(\n                    difficultyLabel = localizedDifficultyLabel(difficulty),\n                    timeLabel = formatTime(item.elapsedSeconds),\n                    mistakes = item.mistakes,\n                    hints = item.hintsUsed,\n                    modifier = Modifier.padding(top = 8.dp),\n                )\n            }\n'''
+              text = text.replace(marker, addition)
+          path.write_text(text)
+          PY
+          git config user.name "Sanskar"
+          git config user.email "sanskarin@outlook.in"
+          git add app/src/main/java/com/sanskar/sudokunova/ui/history/HistoryScreen.kt
+          git commit -m "feat: expose account-free result sharing from History" || true
+          git push origin HEAD:feature/v0.7-safe-sharing
