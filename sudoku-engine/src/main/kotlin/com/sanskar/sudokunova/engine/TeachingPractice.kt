@@ -38,6 +38,7 @@ data class TeachingPracticeSubmission(
     val state: TeachingPracticeState,
 )
 
+@ConsistentCopyVisibility
 data class TeachingPracticeState private constructor(
     val steps: List<TeachingStep>,
     val stepIndex: Int,
