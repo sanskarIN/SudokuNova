@@ -1,13 +1,11 @@
 package in.sanskar.sudokunova.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -66,9 +64,7 @@ fun SettingsScreen(
             )
         },
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
             item { SectionTitle("Appearance") }
             item {
                 ListItem(
@@ -79,7 +75,9 @@ fun SettingsScreen(
                                 FilterChip(
                                     selected = settings.theme == theme,
                                     onClick = { onTheme(theme) },
-                                    label = { Text(theme.name.lowercase().replaceFirstChar(Char::uppercase)) },
+                                    label = {
+                                        Text(theme.name.lowercase().replaceFirstChar { it.uppercase() })
+                                    },
                                 )
                             }
                         }
@@ -163,9 +161,7 @@ private fun ToggleSetting(
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = { Text(description) },
-        trailingContent = {
-            Switch(checked = checked, onCheckedChange = onCheckedChange)
-        },
+        trailingContent = { Switch(checked = checked, onCheckedChange = onCheckedChange) },
     )
 }
 
