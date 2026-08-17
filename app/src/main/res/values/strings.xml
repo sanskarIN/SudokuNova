@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SudokuNova</string>
+    <string name="tagline">Think. Solve. Master the Grid.</string>
+    <string name="made_by">Made by the Sanskar</string>
+    <string name="support_development">Support open-source development</string>
+    <string name="github_repository">GitHub repository</string>
+    <string name="buy_me_a_coffee">Buy Me a Coffee</string>
+    <string name="business_email_primary">sanskarin@outlook.in</string>
+    <string name="business_email_secondary">sanskarin.business@gmail.com</string>
+    <string name="support_email">supportramsandesh@gmail.com</string>
+</resources>
