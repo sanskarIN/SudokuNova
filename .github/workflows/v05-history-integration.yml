@@ -1,0 +1,84 @@
+name: Apply v0.5 History Integration
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-history-integration.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Record completed games in Room history
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt')
+          text = path.read_text()
+
+          import_line = 'import com.sanskar.sudokunova.data.history.HistoryRepository\n'
+          if import_line not in text:
+              anchor = 'import com.sanskar.sudokunova.data.UserSettings\n'
+              if anchor not in text:
+                  raise SystemExit('UserSettings import anchor not found')
+              text = text.replace(anchor, anchor + import_line, 1)
+
+          field = '    private val historyRepository = HistoryRepository(application.applicationContext)\n'
+          if field not in text:
+              anchor = '    private val repository = AppPreferencesRepository(application.applicationContext)\n'
+              if anchor not in text:
+                  raise SystemExit('preferences repository field not found')
+              text = text.replace(anchor, anchor + field, 1)
+
+          old = '''        viewModelScope.launch {
+              repository.recordGameCompleted(
+                  elapsedSeconds = state.elapsedSeconds,
+                  mistakes = state.mistakes,
+                  hintsUsed = state.hintsUsed,
+                  completedEpochDay = LocalDate.now().toEpochDay(),
+              )
+              repository.clearActiveGame()
+          }
+          '''
+          new = '''        viewModelScope.launch {
+              historyRepository.recordCompletedGame(state)
+              repository.recordGameCompleted(
+                  elapsedSeconds = state.elapsedSeconds,
+                  mistakes = state.mistakes,
+                  hintsUsed = state.hintsUsed,
+                  completedEpochDay = LocalDate.now().toEpochDay(),
+              )
+              repository.clearActiveGame()
+          }
+          '''
+          if old not in text:
+              raise SystemExit('completion recording block not found')
+          text = text.replace(old, new, 1)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-history-integration.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt
+          git commit -m 'feat: persist completed games to Room history'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
