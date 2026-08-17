@@ -1,0 +1,53 @@
+name: Wire v0.7 File Transfer Once
+
+on:
+  push:
+    branches:
+      - feature/v0.7-safe-sharing
+    paths:
+      - '.github/workflows/v07-file-transfer-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.7-safe-sharing
+          fetch-depth: 0
+      - name: Add Storage Access Framework transfer actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/transfer/TransferScreen.kt')
+          text = path.read_text()
+          if 'rememberLauncherForActivityResult' not in text:
+              text = text.replace(
+                  'import android.content.Intent\n',
+                  'import android.content.Intent\nimport androidx.activity.compose.rememberLauncherForActivityResult\nimport androidx.activity.result.contract.ActivityResultContracts\n',
+              )
+          if 'BackupFileIo' not in text:
+              text = text.replace(
+                  'import com.sanskar.sudokunova.R\n',
+                  'import com.sanskar.sudokunova.R\nimport com.sanskar.sudokunova.data.transfer.BackupFileIo\n',
+              )
+          marker = '''    val copiedMessage = stringResource(R.string.v07_backup_copied)\n    val shareTitle = stringResource(R.string.v07_share_title)\n    val emptyClipboardMessage = stringResource(R.string.v07_clipboard_empty)\n'''
+          if 'val exportLauncher = rememberLauncherForActivityResult' not in text:
+              replacement = marker + '''    val exportSuccess = stringResource(R.string.v07_export_file_success)\n    val exportFailed = stringResource(R.string.v07_export_file_failed)\n    val importFailed = stringResource(R.string.v07_import_file_failed)\n    var pendingExportText by remember { mutableStateOf<String?>(null) }\n    val exportLauncher = rememberLauncherForActivityResult(\n        ActivityResultContracts.CreateDocument(BackupFileIo.MIME_TYPE),\n    ) { uri ->\n        val textToWrite = pendingExportText\n        pendingExportText = null\n        if (uri != null && textToWrite != null) {\n            transientMessage = if (BackupFileIo.write(context, uri, textToWrite)) exportSuccess else exportFailed\n        }\n    }\n    val importLauncher = rememberLauncherForActivityResult(\n        ActivityResultContracts.OpenDocument(),\n    ) { uri ->\n        if (uri != null) {\n            val imported = BackupFileIo.read(context, uri)\n            if (imported == null) transientMessage = importFailed else pendingRestore = imported\n        }\n    }\n'''
+              text = text.replace(marker, replacement)
+          marker = '''                    Button(\n                        onClick = {\n                            val text = clipboard.primaryClip\n                                ?.takeIf { it.itemCount > 0 }\n                                ?.getItemAt(0)\n                                ?.coerceToText(context)\n                                ?.toString()\n                                ?.takeIf(String::isNotBlank)\n                            if (text == null) transientMessage = emptyClipboardMessage\n                            else pendingRestore = text\n                        },\n                        enabled = !state.busy,\n                        modifier = Modifier.fillMaxWidth(),\n                    ) {\n                        Text(stringResource(R.string.v07_restore_clipboard))\n                    }\n'''
+          if 'R.string.v07_export_backup_file' not in text:
+              replacement = marker + '''                    Row(\n                        modifier = Modifier.fillMaxWidth(),\n                        horizontalArrangement = Arrangement.spacedBy(8.dp),\n                    ) {\n                        OutlinedButton(\n                            onClick = {\n                                onCreateBackup { text ->\n                                    pendingExportText = text\n                                    exportLauncher.launch(BackupFileIo.DEFAULT_FILE_NAME)\n                                }\n                            },\n                            enabled = !state.busy,\n                            modifier = Modifier.weight(1f),\n                        ) { Text(stringResource(R.string.v07_export_backup_file)) }\n                        OutlinedButton(\n                            onClick = { importLauncher.launch(arrayOf(BackupFileIo.MIME_TYPE, "application/octet-stream")) },\n                            enabled = !state.busy,\n                            modifier = Modifier.weight(1f),\n                        ) { Text(stringResource(R.string.v07_import_backup_file)) }\n                    }\n                    Text(\n                        stringResource(R.string.v07_file_backup_info),\n                        style = MaterialTheme.typography.bodySmall,\n                        color = MaterialTheme.colorScheme.onSurfaceVariant,\n                    )\n'''
+              text = text.replace(marker, replacement)
+          path.write_text(text)
+          PY
+          git config user.name "Sanskar"
+          git config user.email "sanskarin@outlook.in"
+          git add app/src/main/java/com/sanskar/sudokunova/ui/transfer/TransferScreen.kt
+          git commit -m "feat: add document-picker backup import and export" || true
+          git push origin HEAD:feature/v0.7-safe-sharing
