@@ -12,18 +12,26 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.ui.about.AboutScreen
+import com.sanskar.sudokunova.ui.challenges.ChallengesRoute
 import com.sanskar.sudokunova.ui.custom.CustomPuzzleRoute
 import com.sanskar.sudokunova.ui.game.GameRoute
+import com.sanskar.sudokunova.ui.history.HistoryRoute
 import com.sanskar.sudokunova.ui.home.HomeRoute
 import com.sanskar.sudokunova.ui.learn.LearnScreen
+import com.sanskar.sudokunova.ui.saved.SavedPuzzlesRoute
 import com.sanskar.sudokunova.ui.settings.SettingsScreen
 import com.sanskar.sudokunova.ui.statistics.StatisticsRoute
 import com.sanskar.sudokunova.ui.theme.SudokuNovaTheme
 
 private object Routes {
     const val HOME = "home"
-    const val GAME = "game/{difficulty}?daily={daily}&resume={resume}&custom={custom}"
+    const val GAME =
+        "game/{difficulty}?daily={daily}&resume={resume}&custom={custom}&replayOf={replayOf}" +
+            "&challengeType={challengeType}&challengeKey={challengeKey}"
     const val CUSTOM = "custom"
+    const val CHALLENGES = "challenges"
+    const val HISTORY = "history"
+    const val SAVED = "saved"
     const val LEARN = "learn"
     const val STATISTICS = "statistics"
     const val SETTINGS = "settings"
@@ -54,12 +62,12 @@ fun SudokuNovaApp(
                     onContinue = {
                         navController.navigate("game/${Difficulty.EASY.name}?daily=false&resume=true")
                     },
-                    onDailyChallenge = {
-                        navController.navigate("game/${Difficulty.MEDIUM.name}?daily=true&resume=false")
-                    },
+                    onDailyChallenge = { navController.navigate(Routes.CHALLENGES) },
                     onCustomPuzzle = { navController.navigate(Routes.CUSTOM) },
                     onLearn = { navController.navigate(Routes.LEARN) },
                     onStatistics = { navController.navigate(Routes.STATISTICS) },
+                    onHistory = { navController.navigate(Routes.HISTORY) },
+                    onSavedPuzzles = { navController.navigate(Routes.SAVED) },
                     onSettings = { navController.navigate(Routes.SETTINGS) },
                     onAbout = { navController.navigate(Routes.ABOUT) },
                     onSupport = { uriHandler.openUri("https://buymeacoffee.com/sanskarIN") },
@@ -82,6 +90,18 @@ fun SudokuNovaApp(
                         type = NavType.StringType
                         defaultValue = ""
                     },
+                    navArgument("replayOf") {
+                        type = NavType.LongType
+                        defaultValue = -1L
+                    },
+                    navArgument("challengeType") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                    navArgument("challengeKey") {
+                        type = NavType.LongType
+                        defaultValue = Long.MIN_VALUE
+                    },
                 ),
             ) {
                 GameRoute(
@@ -92,11 +112,48 @@ fun SudokuNovaApp(
                 )
             }
 
+            composable(Routes.CHALLENGES) {
+                ChallengesRoute(
+                    onBack = { navController.popBackStack() },
+                    onPlay = { descriptor ->
+                        navController.navigate(
+                            "game/${descriptor.difficulty.name}?daily=false&resume=false" +
+                                "&challengeType=${descriptor.type.name}&challengeKey=${descriptor.key}",
+                        )
+                    },
+                )
+            }
+
             composable(Routes.CUSTOM) {
                 CustomPuzzleRoute(
                     onBack = { navController.popBackStack() },
                     onPlay = { puzzle ->
-                        navController.navigate("game/${Difficulty.MEDIUM.name}?daily=false&resume=false&custom=$puzzle")
+                        navController.navigate(
+                            "game/${Difficulty.MEDIUM.name}?daily=false&resume=false&custom=$puzzle",
+                        )
+                    },
+                )
+            }
+
+            composable(Routes.HISTORY) {
+                HistoryRoute(
+                    onBack = { navController.popBackStack() },
+                    onReplay = { item ->
+                        navController.navigate(
+                            "game/${item.difficulty}?daily=false&resume=false" +
+                                "&custom=${item.puzzle}&replayOf=${item.id}",
+                        )
+                    },
+                )
+            }
+
+            composable(Routes.SAVED) {
+                SavedPuzzlesRoute(
+                    onBack = { navController.popBackStack() },
+                    onPlay = { puzzle, difficulty ->
+                        navController.navigate(
+                            "game/${difficulty.name}?daily=false&resume=false&custom=$puzzle",
+                        )
                     },
                 )
             }

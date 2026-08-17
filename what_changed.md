@@ -1,350 +1,438 @@
 # What Changed
 
-## Current Version
+## Current Development Line
 
-**v0.1.0-development**
+**Current app version:** `0.6.0-development`  
+**Current cumulative branch:** `feature/v0.6-consolidated`  
+**Android application ID:** `in.sanskar.sudokunova`  
+**Kotlin source namespace:** `com.sanskar.sudokunova`  
+**Project license:** MIT  
+**Requested project commit email:** `sanskarin@outlook.in`
 
-Current working branch: `feature/bootstrap-v0.1`
+> `feature/v0.6-consolidated` is the authoritative development line for continued work. Older phase branches diverged from one another and must not be merged directly because doing so could drop previously implemented functionality.
 
-Android application ID: `in.sanskar.sudokunova`  
-Kotlin source namespace: `com.sanskar.sudokunova`
+## Repository Consolidation
 
-The Kotlin namespace intentionally differs from the Android application ID because `in` is a Kotlin language keyword and cannot be used as a normal first package segment without escaping.
+A repository-history audit found that earlier v0.2, v0.3, v0.4, v0.5, and v0.6 work had been developed on divergent branches instead of one strictly cumulative line. Continuing to merge those branches directly would have caused feature loss.
 
-## Current Phase
+The project was therefore rebuilt onto a cumulative branch starting from the stable v0.4 accessibility/localization line and then restoring v0.5 player-data features and integrating v0.6 challenge/archive features on top of the same codebase.
 
-SudokuNova has progressed from an empty repository containing only `LICENSE` into a playable Android project with a platform-independent Sudoku engine, Compose UI, persistence, tests, CI, repository policies, and full v0.1 documentation foundation.
+Obsolete/divergent development branches are being treated as reference sources only. Their useful code is copied/adapted into the consolidated branch with new focused commits and verified again.
 
-The current milestone is **not being called the final v1.0 release**. Advanced variants, full history storage, archive challenges, richer hint techniques, import/export, and full release/device QA remain later milestones so the project does not trade correctness for feature count.
+## Build / Toolchain
 
-## Completed
+Current consolidated build configuration includes:
 
-### Project / Build Foundation
+- Android Gradle Plugin `9.3.1`
+- Kotlin `2.4.10`
+- KSP `2.3.10`
+- Room `2.8.3`
+- compile SDK `37`
+- target SDK `37`
+- min SDK `26`
+- Java/JVM target `17`
+- Android versionCode `600`
+- Android versionName `0.6.0`
+- Compose BOM `2026.08.00`
+- Gradle wrapper currently `9.5`
 
-- Added Gradle Kotlin DSL project configuration.
-- Added `app` and `sudoku-engine` modules.
-- Added centralized version catalog.
-- Configured JDK 17.
-- Configured Android compile/target SDK 37 and min SDK 26.
-- Configured Kotlin 2.4.10, AGP 9.3.0, and Gradle 9.5.0.
-- Added debug/release build types.
-- Enabled release minification/resource shrinking.
-- Added ProGuard foundation.
-- Added `.editorconfig`.
-- Added Android/secrets-aware `.gitignore`.
-- Added official Gradle 9.5 wrapper JAR generated in GitHub Actions.
-- Verified wrapper JAR SHA-256 in automation before committing it.
+Room annotation processing was moved from kapt to **KSP2** because the divergent kapt-based v0.6 line exposed a build-plugin classpath conflict. The KSP-based consolidated build now compiles Room sources successfully through Android unit-test and instrumentation-test compilation stages.
 
-### Sudoku Engine
+## v0.4 Accessibility / Localization Foundation Preserved
 
-- Added immutable Classic 9×9 `SudokuBoard`.
-- Added parse/serialize support.
-- Added row/column/box validation.
-- Added per-cell conflict detection.
-- Added candidate calculation.
-- Added MRV backtracking solver.
-- Added invalid/no-solution handling.
-- Added multi-solution counting for uniqueness checks.
-- Added solve metrics.
-- Added seeded deterministic solved-grid generation.
-- Added clue carving with uniqueness re-check after every accepted removal.
-- Added seven difficulties: Beginner, Easy, Medium, Hard, Expert, Master, Extreme.
-- Added development-stage difficulty scoring from clue pressure and solver metrics.
-- Added Naked Single hint detection.
-- Added Hidden Single hint detection for rows, columns, and boxes.
-- Added optional stronger reveal fallback.
+The cumulative line retains the v0.4 work, including:
 
-### Android Application
+- English/Hindi resource-backed user-facing UI.
+- Translation parity verification script.
+- Localized difficulty labels.
+- Localized theme labels.
+- Resource-backed Sudoku accessibility semantics.
+- High-contrast board behavior.
+- Material 3 UI foundation.
+- Learn center localization.
+- Localized Home, Game, Settings, Statistics, About, and Custom Puzzle surfaces.
+- Accessibility-oriented layout and semantic foundations.
 
-- Added Android SplashScreen integration.
-- Added edge-to-edge Compose application entry point.
-- Added Material 3 app shell.
-- Added light/dark/system theme modes.
-- Added Material You dynamic color.
-- Added typography foundation.
-- Added original SudokuNova vector logo.
-- Added adaptive launcher icon.
-- Added monochrome themed icon.
-- Added dark-compatible splash resources.
-- Added minimal Android manifest with no unnecessary sensitive permissions.
+The translation verifier now checks v0.4, v0.5, v0.6, difficulty, and theme resource families together.
 
-### Home / Navigation
+Current parity gate checks **209 localized string keys** across English and Hindi resources.
 
-- Added Home destination.
-- Added Continue Game when a valid active game exists.
-- Added difficulty-based Quick Play.
-- Added deterministic offline Daily Challenge entry point.
-- Added Custom Puzzle entry point.
-- Added Learn, Statistics, Settings, About, and Support entry points.
-- Added navigation for all implemented destinations.
+## v0.5 Player Data Restored on the Consolidated Line
 
-### Game Screen
+### Room Player Database
 
-- Added responsive 9×9 Sudoku board.
-- Added phone and wider/tablet layout behavior.
-- Added active-cell highlight.
-- Added peer row/column/box highlight.
-- Added same-number highlight.
-- Added conflict/mistake state.
-- Added original clue vs. player number distinction.
-- Added candidate-note rendering.
-- Added number pad.
-- Added Notes mode.
-- Added Eraser.
-- Added Undo.
-- Added Redo.
-- Added Hint flow.
-- Added Pause/Resume.
-- Added timer.
-- Added mistake counter/limit.
-- Added completion percentage.
-- Added restart.
-- Added completion dialog.
-- Added failed-game dialog when configured mistake limit is reached.
-- Added automatic peer-note cleanup after correct placements when enabled.
+Restored/added:
 
-### Persistence / State Recovery
+- `GameHistoryEntity`
+- `GameHistoryDao`
+- `SavedPuzzleEntity`
+- `SavedPuzzleDao`
+- `HistoryRepository`
+- versioned `SudokuNovaDatabase`
+- exported Room schema configuration through KSP
 
-- Added Preferences DataStore repository.
-- Added versioned active-game codec.
-- Persisted puzzle, solution, current board, notes, selected cell, elapsed time, mistakes, hints, difficulty, seed, pause/status metadata, and Daily Challenge marker.
-- Added automatic active-game saving.
-- Added Continue/Resume flow.
-- Added malformed saved-state rejection instead of trusting corrupted text.
-- Added local user settings persistence.
+### Completed Game History
 
-### Settings
+Implemented locally on-device:
 
-- Theme selection.
-- Dynamic color toggle.
-- Peer highlighting toggle.
-- Same-number highlighting toggle.
-- Auto-check toggle.
-- Auto-remove-notes toggle.
-- Timer visibility toggle.
-- Haptics preference foundation.
-- Sounds preference foundation.
-- Reduced-motion preference foundation.
-- High-contrast preference foundation.
-- Unlimited/3/5 mistake-limit selection.
-- Statistics reset with confirmation.
-
-### Statistics / Achievements
-
-- Games started.
-- Games completed.
-- Games abandoned data model support.
-- Completion rate.
-- Best time.
-- Total play time.
+- Completed-game records.
+- Puzzle and solution storage for replay.
+- Difficulty.
+- Elapsed time.
 - Mistakes.
 - Hints used.
-- Perfect games.
-- No-hint games.
-- Current streak.
-- Longest streak.
-- Basic achievements including first puzzle, 10 wins, 100 wins, perfect game, 7-day streak, and 30-day streak.
+- Started/completed timestamps.
+- Daily Challenge marker.
+- Perfect-game marker.
+- Favorite marker.
+- Replay provenance.
 
-### Daily Challenge
+### History UI
 
-- Added offline deterministic seed based on local epoch day.
-- Added challenge game marker in saved state.
-- Current implementation does not require a server or account.
+Implemented:
 
-### Custom Sudoku
+- History destination.
+- All/Favorites filters.
+- Difficulty filters.
+- Per-difficulty summaries.
+- Game count.
+- Average time.
+- Best time.
+- Perfect-game count.
+- Favorite/unfavorite.
+- Delete local history item.
+- Replay completed puzzle.
+- Replay badge.
 
-- Added editable custom board.
-- Added clear/erase/input controls.
-- Added row/column/box contradiction detection.
-- Added minimum-clue uniqueness pre-check guidance.
-- Added no-solution detection.
-- Added multiple-solution detection.
-- Added exactly-one-solution validation.
-- Added solution preview.
-- Added validated custom-puzzle Play flow.
+Replay attempts are deliberately excluded from normal aggregate difficulty-summary calculations so repeatedly replaying the same puzzle does not inflate normal progress statistics.
 
-### Learning
+### Saved Puzzles
 
-- Added original educational in-app lessons covering:
-  - Sudoku rules
-  - candidates/pencil marks
-  - Naked Single
-  - Hidden Single
-  - Naked Pair
-  - Pointing Pair/Triple
-  - Box-Line Reduction
-  - X-Wing
-  - solving habits
+Implemented:
 
-### Accessibility Foundation
+- Saved Puzzles destination.
+- Local Room persistence.
+- Unique-puzzle constraint.
+- All/Favorites filters.
+- Favorite/unfavorite.
+- Delete.
+- Play saved puzzle.
+- Difficulty/source metadata.
 
-- Added semantic descriptions to Sudoku cells with row, column, value, original-clue, and conflict information.
-- Added adaptive layouts.
-- Added theme/contrast foundation.
-- Added reduced-motion and high-contrast preference foundations.
-- Added accessibility issue template and release QA requirements.
+### Custom Puzzle Save Flow
 
-### Privacy / Security
+Validated custom puzzles can now be saved locally after uniqueness validation.
 
-- No account required.
-- No analytics SDK in base app.
-- No ads in base app.
-- No location/contacts/microphone/camera/SMS/call-log permissions.
-- Added Android backup/data extraction rules.
-- Added privacy policy matching current implementation.
-- Added security engineering documentation.
-- Added private vulnerability reporting guidance.
-- Added secret/signing exclusions.
-- Added Dependabot configuration.
+The save flow includes:
 
-### Repository / Community
+- duplicate detection,
+- optional solved-board storage,
+- local persistence only,
+- English/Hindi save/duplicate feedback.
 
-- Added professional README.
-- Added MIT licensing references.
-- Added contribution guide.
-- Added Code of Conduct.
-- Added Security policy.
-- Added Support guide.
-- Added AUTHORS.
-- Added third-party notices.
-- Added changelog.
-- Added roadmap.
-- Added pull request template.
-- Added issue templates for bugs, features, docs, accessibility, and performance.
-- Added security/support contact links.
-- Added weekly Gradle/GitHub Actions Dependabot updates.
-- Added BMC and developer attribution in appropriate documentation/UI.
+## Consolidated Saved-Game State
 
-## Testing Added
+The active-game state now carries all cumulative metadata required by current features:
 
-### Sudoku Engine
+- puzzle,
+- solution,
+- current board,
+- notes,
+- selected cell,
+- selected number,
+- Notes mode,
+- elapsed time,
+- mistakes,
+- hints,
+- difficulty,
+- seed,
+- pause/status metadata,
+- Daily Challenge marker,
+- history replay source ID,
+- challenge type,
+- challenge key.
 
-- Board parse/serialize round trip.
-- Conflict validation.
-- Candidate calculation.
-- Known-puzzle solving.
-- Invalid puzzle rejection.
-- Unique solution confirmation.
-- Seeded deterministic puzzle generation.
-- Generated puzzle validity.
-- Generated puzzle uniqueness.
+### Saved-Game Codec
 
-### Android JVM Tests
+The active-game codec is now **version 4**.
 
-- Active game codec round trip.
-- Malformed active save rejection.
-- Statistics completion-rate calculations.
+Backward decoding remains supported for:
 
-### CI Quality Gate
+- v1 legacy saves,
+- v2 selected-number saves,
+- v3 replay-provenance saves,
+- v4 replay + challenge provenance.
 
-Android CI is configured to run:
+Strict validation rejects malformed selected indices, selected numbers, counters, replay IDs, candidate-note values, or partially present challenge metadata.
 
-1. `:sudoku-engine:test`
-2. `:app:testDebugUnitTest`
-3. `:app:lintDebug`
-4. `:app:assembleDebug`
-5. report upload
+## v0.6 Daily / Weekly Challenges
 
-The branch has been iteratively fixed based on real CI failures instead of only assuming compilation success.
+### Deterministic Challenge Keys
 
-## Bugs / Build Problems Fixed
+Implemented:
 
-### Kotlin package keyword failure
+- Daily keys derived from local epoch day.
+- Weekly keys derived from ISO week-based year/week.
+- Type-separated deterministic seeds.
+- Daily and Weekly challenge namespaces can safely use identical numeric keys without collision.
 
-**Problem:** Suggested package `in.sanskar.sudokunova` begins with Kotlin keyword `in`, causing Kotlin parser/compiler errors.
+### Challenge Difficulty
 
-**Fix:** Migrated source namespace to `com.sanskar.sudokunova` while preserving Android application ID `in.sanskar.sudokunova`.
+Current development defaults:
 
-### Statistics reset type issue
+- Daily Challenge: `MEDIUM`
+- Weekly Challenge: `HARD`
 
-**Problem:** A heterogeneous list of DataStore preference keys could not be removed generically in a type-safe way.
+These can be recalibrated later after the v0.3 logical-difficulty system is fully restored onto the cumulative line.
 
-**Fix:** Reset now explicitly removes each typed statistics key.
+### Challenge Result Persistence
 
-### Custom puzzle solution preview data-loss bug
+Added Room `ChallengeResultEntity` and `ChallengeResultDao` storing:
 
-**Problem:** Showing the solution replaced the editable puzzle board and would have lost the original clue puzzle for Play.
+- challenge type,
+- challenge key,
+- difficulty,
+- puzzle,
+- elapsed time,
+- mistakes,
+- hints,
+- completion timestamp,
+- perfect completion status.
 
-**Fix:** Added a separate solution-preview state so original clues remain intact.
+A unique `(challengeType, challengeKey)` index preserves one first-completion record per challenge.
 
-### Theme label transform compilation issue
+### Room Migration
 
-**Problem:** Invalid `replaceFirstChar` function reference form.
+Database v2 adds the challenge-results table through an explicit `MIGRATION_1_2` instead of destructive migration.
 
-**Fix:** Replaced it with a valid transform lambda.
+### Challenge Archive UI
 
-### Incorrect solver regression assertion
+Implemented:
 
-**Problem:** Test expected cell index 2 to solve to `1`, while the known correct solution is `4`.
+- Challenges destination.
+- Daily/Weekly selector.
+- 31-day Daily archive window.
+- 13-week Weekly archive window.
+- Current challenge markers.
+- Completed/not-completed status.
+- Saved completion performance.
+- Play challenge.
+- Replay challenge.
+- English/Hindi challenge resources.
+- Offline/account-free explanation.
 
-**Fix:** Corrected the test expectation after verifying the solved board.
+### Challenge Gameplay Integration
 
-### Compose `weight` compiler issue
+Game navigation carries deterministic challenge type/key metadata into `GameViewModel`.
 
-**Problem:** Explicit imports of `androidx.compose.foundation.layout.weight` resolved to an internal parent-data property in the current Compose API.
+When a challenge is completed:
 
-**Fix:** Removed invalid explicit imports; `Modifier.weight(...)` remains correctly resolved inside Row/Column scopes.
+- normal game history is recorded,
+- challenge result is recorded,
+- active-game persistence is cleared,
+- replay-safe statistics rules remain applied.
 
-### Generator compiler warning
+## Current Home / Navigation Destinations
 
-**Problem:** Unnecessary non-null assertion on current best generated puzzle.
+The consolidated navigation graph now includes:
 
-**Fix:** Replaced with safe local nullable handling.
+- Home
+- Game
+- Challenges
+- Custom Puzzle
+- History
+- Saved Puzzles
+- Learn
+- Statistics
+- Settings
+- About
 
-### Gradle wrapper automation push race
+Home exposes History and Saved Puzzles alongside existing play/learn/settings/support entry points.
 
-**Problem:** The wrapper workflow generated and checksum-verified the JAR successfully but branch commits advanced before its push.
+## Testing Added / Restored
 
-**Fix:** Added fetch/rebase and bounded retry logic. The official Gradle wrapper JAR is now present on the working branch.
+### JVM Tests
 
-## Documentation Added
+Current consolidated tests include coverage for:
 
-Root documentation:
+- v4 active-game codec round trip,
+- v1 migration,
+- v3 replay migration,
+- malformed saved-state rejection,
+- deterministic Daily Challenge keys,
+- deterministic ISO Weekly Challenge keys,
+- type-separated deterministic challenge seeds,
+- existing engine solver/generator regression suite.
 
-- `README.md`
-- `CONTRIBUTING.md`
-- `CODE_OF_CONDUCT.md`
-- `SECURITY.md`
-- `SUPPORT.md`
-- `AUTHORS.md`
-- `THIRD_PARTY_NOTICES.md`
-- `CHANGELOG.md`
-- `ROADMAP.md`
-- `what_changed.md`
+### Android / Room Instrumentation Sources
 
-`docs/` documentation:
+Added challenge Room coverage for:
 
-- `README.md`
-- `GETTING_STARTED.md`
-- `INSTALLATION.md`
-- `DEVELOPMENT_SETUP.md`
-- `ARCHITECTURE.md`
-- `SUDOKU_ENGINE.md`
-- `PUZZLE_GENERATION.md`
-- `DIFFICULTY_SYSTEM.md`
-- `GAME_RULES.md`
-- `UI_UX.md`
-- `DESIGN_SYSTEM.md`
-- `ACCESSIBILITY.md`
-- `LOCALIZATION.md`
-- `TESTING.md`
-- `SECURITY.md`
-- `PRIVACY.md`
-- `DATA_STORAGE.md`
-- `BACKUP_RESTORE.md`
-- `BUILDING.md`
-- `RELEASING.md`
-- `CONTRIBUTING_GUIDE.md`
-- `TROUBLESHOOTING.md`
-- `FAQ.md`
-- `ROADMAP.md`
-- `CHANGELOG_GUIDE.md`
-- `RELEASE_CHECKLIST.md`
-- `QA_MATRIX.md`
+- storing Daily results,
+- querying results,
+- unique challenge type/key behavior,
+- Daily/Weekly namespace separation.
 
-## Git / Commit Policy Used
+Existing instrumentation sources continue to compile as part of CI.
 
-Repository work uses small Conventional Commit messages such as:
+## CI Quality Gate
+
+Current standard Android CI runs:
+
+1. English/Hindi translation parity.
+2. `:sudoku-engine:test`.
+3. `:app:testDebugUnitTest`.
+4. `:app:assembleDebugAndroidTest`.
+5. `:app:lintDebug`.
+6. `:app:assembleDebug`.
+7. Report upload.
+
+CI was also improved so a lint failure prints the complete lint text report directly into the job log instead of hiding the remaining errors in an artifact.
+
+## Build / Lint Defects Found and Fixed During Consolidation
+
+### Divergent repository history
+
+**Problem:** phase branches were not strictly cumulative; directly merging the newer-looking branch could remove v0.5 features.
+
+**Fix:** created `feature/v0.6-consolidated` and reconstructed the cumulative line explicitly.
+
+### kapt / plugin classpath conflict
+
+**Problem:** the divergent Room branch exposed a build-plugin conflict with the kapt setup.
+
+**Fix:** moved Room processing to KSP2 on the consolidated line.
+
+### Missing cumulative Room sources
+
+**Problem:** a partial branch referenced Room history/saved-puzzle classes without carrying every required DAO/database source.
+
+**Fix:** restored the complete Room entity/DAO/repository/database layer.
+
+### Duplicate localization helpers
+
+**Problem:** consolidation temporarily produced duplicate `localizedDifficultyLabel` / theme helper declarations.
+
+**Fix:** removed the duplicate file and retained the original v0.4 shared localization helpers.
+
+### Missing Android resource imports
+
+**Problem:** consolidated Game/Settings files used `stringResource`/`R` without all required imports.
+
+**Fix:** corrected imports and recompiled through JVM + instrumentation-test compilation.
+
+### Compose locale observability lint error
+
+**Problem:** UI code fell back to `Locale.getDefault()`, which is not observable by Compose configuration changes.
+
+**Fix:** History and Challenges now derive locale from `LocalConfiguration.current.locales[0]`.
+
+### Legacy untranslated bootstrap strings
+
+**Problem:** nine obsolete base strings produced `MissingTranslation` lint errors.
+
+**Fix:** removed unused bootstrap strings and kept the `SudokuNova` application name as an explicit `translatable="false"` brand value.
+
+## Current Verification State
+
+A fresh full CI run is currently executing on the latest consolidated head after the final MissingTranslation cleanup.
+
+The previous run had already passed:
+
+- translation parity,
+- engine tests,
+- Android JVM unit tests,
+- Android instrumentation-test APK compilation.
+
+Its only blocker was Android lint. The nine reported lint errors have now been removed and a new full run is validating the exact corrected head.
+
+Do **not** describe v0.6 as merged/release-ready until that latest gate is fully green and connected/emulator coverage is completed.
+
+## Important Remaining Consolidation Work
+
+### Restore v0.2 Gameplay Hardening onto the cumulative line
+
+Some v0.2 implementation exists only on the old divergent reference branch and still needs careful reapplication without replacing v0.4-v0.6 code.
+
+Remaining restoration targets include:
+
+- complete Cell-first / Number-first input behavior,
+- persisted input-mode preference,
+- hardware keyboard navigation/input,
+- complete haptic feedback layer,
+- complete sound feedback layer,
+- stronger process recreation/state restoration tests,
+- additional gameplay regression tests.
+
+### Restore v0.3 Logical Difficulty Calibration
+
+The following v0.3 engine work exists on a divergent reference branch and is not yet fully restored to the cumulative line:
+
+- `LogicalSolver`
+- `LogicalDifficultyAnalyzer`
+- `DifficultyCalibrator`
+- logical-technique evidence metadata,
+- generator calibration integration,
+- v0.3 deterministic calibration corpus/tests.
+
+This work must be reapplied after the v0.6 app/data consolidation gate is green.
+
+## Next Versions After Consolidation
+
+### v0.7 — Sharing / Import / Export / Backup
+
+Planned after cumulative v0.2-v0.6 restoration is verified:
+
+- safe puzzle-code format,
+- share puzzle codes,
+- paste/import with schema and size validation,
+- export/import local user data,
+- backup/restore UI,
+- result sharing foundation.
+
+### v0.8 — Advanced Learning / Variants Foundation
+
+Planned:
+
+- additional logical hint techniques,
+- practice mode,
+- learning progress,
+- selected Sudoku variants only after Classic 9×9 remains stable.
+
+### v0.9 — Release Hardening
+
+Planned:
+
+- full device matrix,
+- performance profiling,
+- accessibility audit,
+- dependency/license audit,
+- security/privacy audit,
+- release signing workflow using repository secrets only,
+- production APK/AAB verification,
+- final screenshots/store assets,
+- final documentation accuracy pass.
+
+### v1.0 — Stable Release
+
+A stable `v1.0.0` tag/release will only be created after all required functional, build, lint, instrumentation, accessibility, migration, security, and release gates pass.
+
+## Branding / Support
+
+- Project: **SudokuNova**
+- Tagline: **Think. Solve. Master the Grid.**
+- Repository: `https://github.com/sanskarIN/SudokuNova`
+- GitHub profile: `https://www.github.com/sanskarIN`
+- Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`
+- Business: `sanskarin@outlook.in`
+- Business: `sanskarin.business@gmail.com`
+- Support: `supportramsandesh@gmail.com`
+- Credit: **Made by the Sanskar**
+- License: **MIT**
+
+## Commit Policy
+
+Development uses focused Conventional Commit-style messages such as:
 
 - `feat:`
 - `fix:`
@@ -354,142 +442,5 @@ Repository work uses small Conventional Commit messages such as:
 - `ci:`
 - `chore:`
 - `refactor:`
-- `ui:`
 
-Requested commit identity is used for project-authored commits:
-
-- Name: `Sanskar`
-- Email: `sanskarin@outlook.in`
-
-Development history is intentionally preserved through many focused commits instead of one giant implementation commit.
-
-## Current CI State
-
-- The official Gradle 9.5 wrapper bootstrap workflow has completed successfully after checksum verification and committed the wrapper JAR.
-- Full Android CI is running against the latest manually authored build/code state after the Kotlin namespace, solver-test, and Compose `weight` fixes.
-- This section must be updated again when the latest full build/test/lint/assemble run completes.
-
-## Remaining Work
-
-### v0.2 — Gameplay Hardening
-
-- More gameplay regression tests.
-- Full Compose instrumentation test suite.
-- Process-death/recreation instrumentation coverage.
-- Number-first/smart-selection input modes.
-- Hardware keyboard controls for tablets/Chromebooks.
-- Complete haptics/sound implementation behind settings.
-- More configurable validation modes.
-- Full string-resource conversion for localization.
-
-### v0.3 — Difficulty / Engine Calibration
-
-- Technique-aware logical difficulty model.
-- Calibrated deterministic puzzle corpus.
-- Generator/solver benchmarks.
-- Advanced hint-technique implementation/tests.
-
-### v0.4 — UX / Accessibility / Localization
-
-- Onboarding and first-game tooltips.
-- Full TalkBack audit.
-- Large-text/font-scale audit.
-- High-contrast implementation refinement.
-- Reduced-motion audit.
-- Hindi translation.
-- Tablet/foldable refinements.
-
-### v0.5 — Player Data
-
-- Room-backed game history.
-- Per-difficulty statistics.
-- Favorites/saved puzzles.
-- History filtering.
-- Expanded achievements.
-- Versioned migrations/tests.
-
-### v0.6 — Challenges
-
-- Daily Challenge calendar/archive.
-- Daily performance history.
-- Weekly Challenge.
-- Optional special challenge modes.
-
-### v0.7 — Custom Puzzle / Sharing / Backup
-
-- Save/archive custom puzzles.
-- Safe puzzle-code sharing.
-- Export/import with schema validation and size limits.
-- Backup/restore UI.
-- Optional result image export.
-
-### v0.8+ — Advanced Learning and Variants
-
-- More logical hint techniques.
-- Practice mode.
-- Learning progress.
-- Selected variants after Classic 9×9 is hardened, such as Mini/6×6/Diagonal/Hyper/Killer/Jigsaw as quality permits.
-- Large/complex variants remain later work rather than destabilizing v1.0 Classic.
-
-### v0.9 / v1.0 — Release Hardening
-
-- Full device QA matrix.
-- Performance profiling.
-- Accessibility audit.
-- Security/privacy audit.
-- Dependency/license audit.
-- Release signing workflow using secure secrets only.
-- Production APK/AAB verification.
-- Real screenshots/store assets.
-- Final documentation accuracy audit.
-- Stable GitHub release/tag when all release gates pass.
-
-## Known Limitations
-
-- Classic 9×9 is the implemented gameplay variant; additional variants are planned.
-- Difficulty scoring is a development-stage approximation and needs human-technique calibration.
-- Current achievements are a basic subset.
-- Full game history/favorites are not yet implemented.
-- Daily Challenge archive/calendar is not yet implemented.
-- Haptics/sounds have persisted preference foundations but the full feedback playback layer remains later work.
-- High contrast/reduced motion have preference foundations and require complete UI behavior audits.
-- Some Compose user-facing strings remain directly embedded in source and must be migrated to Android string resources before localization is called complete.
-- A complete instrumentation/device QA suite is still required before stable release.
-
-## Branding / Support Verified
-
-- Project: **SudokuNova**
-- Tagline: **Think. Solve. Master the Grid.**
-- Repository: https://github.com/sanskarIN/SudokuNova
-- GitHub: https://www.github.com/sanskarIN
-- Buy Me a Coffee: https://buymeacoffee.com/sanskarIN
-- Business: `sanskarin@outlook.in`
-- Business: `sanskarin.business@gmail.com`
-- Support: `supportramsandesh@gmail.com`
-- Credit: **Made by the Sanskar**
-- License: **MIT**
-
-## v0.2 Hardening Verification Update
-
-Additional v0.2 work now implemented and pushed:
-
-- Saved-game structural integrity validation through `GameStateIntegrity`.
-- Codec rejects corrupted original clues, invalid selected-cell indexes, and inconsistent completed states.
-- Regression tests cover structural integrity and corrupted codec payloads.
-- Hardware keyboard shortcuts for 1–9/numpad, erase, Notes, Hint, Pause, Ctrl+Z, and Ctrl+Y.
-- Number-first selection is persisted immediately and codec v1 saves migrate to v2 safely.
-- Haptics and sound settings now affect actual game interactions.
-- Compose smoke tests are scroll-safe on smaller devices.
-- Standard CI compiles the instrumentation APK.
-- Pull requests to `main` run connected Compose tests on an Android API 35 emulator through `.github/workflows/instrumentation.yml`.
-- `docs/KEYBOARD_SHORTCUTS.md` documents hardware-keyboard behavior.
-
-Fresh-clone local verification on the pushed v0.2 branch passed the current non-device quality gate:
-
-- `:sudoku-engine:test`
-- `:app:testDebugUnitTest`
-- `:app:assembleDebugAndroidTest`
-- `:app:lintDebug`
-- `:app:assembleDebug`
-
-The pull-request emulator run is the next merge gate.
+The project is intentionally being developed through many focused commits rather than one giant implementation commit.

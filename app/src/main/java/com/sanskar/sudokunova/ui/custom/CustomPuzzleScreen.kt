@@ -27,12 +27,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sanskar.sudokunova.R
+import com.sanskar.sudokunova.data.history.HistoryRepository
+import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.SudokuBoard
+import kotlinx.coroutines.launch
 
 @Composable
 fun CustomPuzzleRoute(
@@ -41,8 +51,16 @@ fun CustomPuzzleRoute(
     viewModel: CustomPuzzleViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val repository = remember(context) { HistoryRepository(context.applicationContext) }
+    val scope = rememberCoroutineScope()
+    var saveStatus by remember { mutableStateOf<String?>(null) }
+    val savedText = stringResource(R.string.v05_saved_success)
+    val duplicateText = stringResource(R.string.v05_saved_duplicate)
+
     CustomPuzzleScreen(
         state = state,
+        saveStatus = saveStatus,
         onBack = onBack,
         onSelect = viewModel::select,
         onInput = viewModel::input,
@@ -50,6 +68,25 @@ fun CustomPuzzleRoute(
         onClear = viewModel::clear,
         onValidate = viewModel::validate,
         onSolve = viewModel::showSolution,
+        onSave = {
+            if (!state.isUnique) return@CustomPuzzleScreen
+            val puzzle = state.board.toPuzzleString()
+            scope.launch {
+                val existing = repository.findSavedPuzzle(puzzle)
+                if (existing != null) {
+                    saveStatus = duplicateText
+                } else {
+                    val id = repository.savePuzzle(
+                        puzzle = puzzle,
+                        solution = state.solution?.toPuzzleString(),
+                        title = null,
+                        difficulty = Difficulty.MEDIUM,
+                        source = "custom",
+                    )
+                    saveStatus = if (id > 0L) savedText else duplicateText
+                }
+            }
+        },
         onPlay = { onPlay(state.board.toPuzzleString()) },
     )
 }
@@ -58,6 +95,7 @@ fun CustomPuzzleRoute(
 @Composable
 private fun CustomPuzzleScreen(
     state: CustomPuzzleUiState,
+    saveStatus: String?,
     onBack: () -> Unit,
     onSelect: (Int) -> Unit,
     onInput: (Int) -> Unit,
@@ -65,15 +103,16 @@ private fun CustomPuzzleScreen(
     onClear: () -> Unit,
     onValidate: () -> Unit,
     onSolve: () -> Unit,
+    onSave: () -> Unit,
     onPlay: () -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Custom Puzzle") },
+                title = { Text(stringResource(R.string.v04_custom_puzzle)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.v04_back))
                     }
                 },
             )
@@ -119,21 +158,33 @@ private fun CustomPuzzleScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text("Erase") }
-                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text("Clear") }
-                Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text("Validate") }
+                OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_erase)) }
+                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_clear)) }
+                Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_validate)) }
             }
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text("Solve") }
+                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }
+                OutlinedButton(
+                    onClick = onSave,
+                    enabled = state.isUnique,
+                    modifier = Modifier.weight(1f),
+                ) { Text(stringResource(R.string.v05_save_puzzle)) }
                 Button(
                     onClick = onPlay,
                     enabled = state.isUnique,
                     modifier = Modifier.weight(1f),
-                ) { Text("Play puzzle") }
+                ) { Text(stringResource(R.string.v04_play_puzzle)) }
+            }
+            if (saveStatus != null) {
+                Text(
+                    saveStatus,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
             Spacer(Modifier.height(24.dp))
         }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v04_tagline">सोचें। हल करें। ग्रिड में महारत पाएँ।</string>
+    <string name="v04_choose_difficulty">कठिनाई चुनें</string>
+    <string name="v04_continue_description">जहाँ छोड़ा था वहीं से सहेजी गई Sudoku पहेली जारी रखें।</string>
+    <string name="v04_daily_description">आज के लिए एक निर्धारित ऑफलाइन पहेली।</string>
+    <string name="v04_support_optional">ओपन-सोर्स विकास को जारी रखने में सहयोग करें।</string>
+</resources>

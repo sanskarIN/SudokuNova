@@ -2,6 +2,7 @@ package com.sanskar.sudokunova.ui.game
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,11 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.engine.SudokuBoard as EngineBoard
 import com.sanskar.sudokunova.game.GameState
@@ -57,7 +60,7 @@ fun SudokuBoardView(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Paused",
+                        text = stringResource(R.string.v04_paused),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -91,6 +94,7 @@ fun SudokuBoardView(
                                     peer = isPeer,
                                     sameValue = isSameValue,
                                     conflict = isConflict,
+                                    highContrast = settings.highContrast,
                                     row = row,
                                     column = column,
                                     onClick = { onCellSelected(index) },
@@ -101,13 +105,20 @@ fun SudokuBoardView(
                     }
                 }
 
-                val gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                val gridColor = MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = if (settings.highContrast) 1f else 0.8f,
+                )
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val cellWidth = size.width / 9f
                     val cellHeight = size.height / 9f
                     for (i in 0..9) {
                         val major = i % 3 == 0
-                        val strokeWidth = if (major) 3.dp.toPx() else 1.dp.toPx()
+                        val strokeWidth = when {
+                            settings.highContrast && major -> 4.dp.toPx()
+                            settings.highContrast -> 1.5.dp.toPx()
+                            major -> 3.dp.toPx()
+                            else -> 1.dp.toPx()
+                        }
                         drawLine(
                             color = gridColor,
                             start = androidx.compose.ui.geometry.Offset(i * cellWidth, 0f),
@@ -121,7 +132,10 @@ fun SudokuBoardView(
                             strokeWidth = strokeWidth,
                         )
                     }
-                    drawRect(color = gridColor, style = Stroke(width = 3.dp.toPx()))
+                    drawRect(
+                        color = gridColor,
+                        style = Stroke(width = if (settings.highContrast) 4.dp.toPx() else 3.dp.toPx()),
+                    )
                 }
             }
         }
@@ -137,6 +151,7 @@ private fun SudokuCell(
     peer: Boolean,
     sameValue: Boolean,
     conflict: Boolean,
+    highContrast: Boolean,
     row: Int,
     column: Int,
     onClick: () -> Unit,
@@ -146,21 +161,30 @@ private fun SudokuCell(
     val background = when {
         conflict -> scheme.errorContainer
         selected -> scheme.primaryContainer
-        sameValue -> scheme.secondaryContainer
-        peer -> scheme.surfaceVariant.copy(alpha = 0.55f)
+        sameValue -> if (highContrast) scheme.secondaryContainer else scheme.secondaryContainer.copy(alpha = 0.88f)
+        peer -> scheme.surfaceVariant.copy(alpha = if (highContrast) 0.82f else 0.55f)
         else -> Color.Transparent
     }
-    val description = buildString {
-        append("Row ${row + 1}, column ${column + 1}. ")
-        if (value == 0) append("Empty") else append("Value $value")
-        if (original) append(", original clue")
-        if (conflict) append(", conflict")
+    val baseDescription = if (value == EngineBoard.EMPTY) {
+        stringResource(R.string.v04_cell_empty, row + 1, column + 1)
+    } else {
+        stringResource(R.string.v04_cell_value, row + 1, column + 1, value)
     }
+    val originalSuffix = if (original) stringResource(R.string.v04_original_clue_suffix) else ""
+    val conflictSuffix = if (conflict) stringResource(R.string.v04_conflict_suffix) else ""
+    val description = baseDescription + originalSuffix + conflictSuffix
+    val borderColor = when {
+        conflict -> scheme.error
+        selected -> scheme.primary
+        else -> Color.Transparent
+    }
+    val borderWidth = if (highContrast && (conflict || selected)) 2.dp else 0.dp
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(background)
+            .border(borderWidth, borderColor)
             .semantics { contentDescription = description }
             .clickable(onClick = onClick)
             .padding(2.dp),
@@ -170,20 +194,24 @@ private fun SudokuCell(
             value != EngineBoard.EMPTY -> Text(
                 text = value.toString(),
                 fontSize = 22.sp,
-                fontWeight = if (original) FontWeight.Bold else FontWeight.Medium,
+                fontWeight = when {
+                    original -> FontWeight.Bold
+                    highContrast -> FontWeight.SemiBold
+                    else -> FontWeight.Medium
+                },
                 color = when {
                     conflict -> scheme.onErrorContainer
                     original -> scheme.onSurface
                     else -> scheme.primary
                 },
             )
-            notes.isNotEmpty() -> NotesGrid(notes)
+            notes.isNotEmpty() -> NotesGrid(notes, highContrast)
         }
     }
 }
 
 @Composable
-private fun NotesGrid(notes: Set<Int>) {
+private fun NotesGrid(notes: Set<Int>, highContrast: Boolean) {
     Column(modifier = Modifier.fillMaxSize()) {
         repeat(3) { row ->
             Row(modifier = Modifier.weight(1f)) {
@@ -196,7 +224,8 @@ private fun NotesGrid(notes: Set<Int>) {
                         if (number in notes) {
                             Text(
                                 text = number.toString(),
-                                fontSize = 9.sp,
+                                fontSize = if (highContrast) 10.sp else 9.sp,
+                                fontWeight = if (highContrast) FontWeight.Medium else FontWeight.Normal,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }

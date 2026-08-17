@@ -6,13 +6,15 @@ import com.sanskar.sudokunova.engine.SudokuBoard
 object GameStateCodec {
     private const val VERSION_1 = "1"
     private const val VERSION_2 = "2"
+    private const val VERSION_3 = "3"
+    private const val VERSION_4 = "4"
 
     fun encode(state: GameState): String {
         val notes = state.notes.joinToString(separator = "/") { candidates ->
             candidates.sorted().joinToString(separator = "")
         }
         return listOf(
-            VERSION_2,
+            VERSION_4,
             state.puzzle.toPuzzleString(),
             state.solution.toPuzzleString(),
             state.board.toPuzzleString(),
@@ -28,6 +30,9 @@ object GameStateCodec {
             state.isPaused.toString(),
             state.status.name,
             state.isDailyChallenge.toString(),
+            state.replayOfHistoryId?.toString().orEmpty(),
+            state.challengeType.orEmpty(),
+            state.challengeKey?.toString().orEmpty(),
         ).joinToString(separator = "|")
     }
 
@@ -36,57 +41,132 @@ object GameStateCodec {
         when (parts.firstOrNull()) {
             VERSION_1 -> decodeV1(parts)
             VERSION_2 -> decodeV2(parts)
-            else -> error("Unsupported saved-game version.")
+            VERSION_3 -> decodeV3(parts)
+            VERSION_4 -> decodeV4(parts)
+            else -> error("Unsupported saved-game version")
         }
     }.getOrNull()
 
     private fun decodeV1(parts: List<String>): GameState {
         require(parts.size == 15)
-        return GameState(
-            puzzle = SudokuBoard.parse(parts[1]),
-            solution = SudokuBoard.parse(parts[2]),
-            board = SudokuBoard.parse(parts[3]),
-            notes = decodeNotes(parts[4]),
-            selectedIndex = parts[5].toInt().coerceIn(0, SudokuBoard.CELL_COUNT - 1),
+        return baseState(
+            parts = parts,
             selectedNumber = null,
-            notesMode = parts[6].toBooleanStrict(),
-            elapsedSeconds = parts[7].toLong().coerceAtLeast(0),
-            mistakes = parts[8].toInt().coerceAtLeast(0),
-            hintsUsed = parts[9].toInt().coerceAtLeast(0),
-            difficulty = Difficulty.valueOf(parts[10]),
-            seed = parts[11].toLong(),
-            isPaused = parts[12].toBooleanStrict(),
-            status = GameStatus.valueOf(parts[13]),
-            isDailyChallenge = parts[14].toBooleanStrict(),
+            notesModeIndex = 6,
+            elapsedIndex = 7,
+            mistakesIndex = 8,
+            hintsIndex = 9,
+            difficultyIndex = 10,
+            seedIndex = 11,
+            pausedIndex = 12,
+            statusIndex = 13,
+            dailyIndex = 14,
         )
     }
 
     private fun decodeV2(parts: List<String>): GameState {
         require(parts.size == 16)
-        val selectedNumber = parts[6].takeIf(String::isNotBlank)?.toInt()
-        require(selectedNumber == null || selectedNumber in 1..9)
-        return GameState(
-            puzzle = SudokuBoard.parse(parts[1]),
-            solution = SudokuBoard.parse(parts[2]),
-            board = SudokuBoard.parse(parts[3]),
-            notes = decodeNotes(parts[4]),
-            selectedIndex = parts[5].toInt().coerceIn(0, SudokuBoard.CELL_COUNT - 1),
+        val selectedNumber = parseSelectedNumber(parts[6])
+        return baseState(
+            parts = parts,
             selectedNumber = selectedNumber,
-            notesMode = parts[7].toBooleanStrict(),
-            elapsedSeconds = parts[8].toLong().coerceAtLeast(0),
-            mistakes = parts[9].toInt().coerceAtLeast(0),
-            hintsUsed = parts[10].toInt().coerceAtLeast(0),
-            difficulty = Difficulty.valueOf(parts[11]),
-            seed = parts[12].toLong(),
-            isPaused = parts[13].toBooleanStrict(),
-            status = GameStatus.valueOf(parts[14]),
-            isDailyChallenge = parts[15].toBooleanStrict(),
+            notesModeIndex = 7,
+            elapsedIndex = 8,
+            mistakesIndex = 9,
+            hintsIndex = 10,
+            difficultyIndex = 11,
+            seedIndex = 12,
+            pausedIndex = 13,
+            statusIndex = 14,
+            dailyIndex = 15,
         )
+    }
+
+    private fun decodeV3(parts: List<String>): GameState {
+        require(parts.size == 17)
+        val selectedNumber = parseSelectedNumber(parts[6])
+        val replay = parts[16].takeIf(String::isNotBlank)?.toLong()
+        require(replay == null || replay > 0L)
+        return baseState(
+            parts = parts,
+            selectedNumber = selectedNumber,
+            notesModeIndex = 7,
+            elapsedIndex = 8,
+            mistakesIndex = 9,
+            hintsIndex = 10,
+            difficultyIndex = 11,
+            seedIndex = 12,
+            pausedIndex = 13,
+            statusIndex = 14,
+            dailyIndex = 15,
+        ).copy(replayOfHistoryId = replay)
+    }
+
+    private fun decodeV4(parts: List<String>): GameState {
+        require(parts.size == 19)
+        val selectedNumber = parseSelectedNumber(parts[6])
+        val replay = parts[16].takeIf(String::isNotBlank)?.toLong()
+        require(replay == null || replay > 0L)
+        val challengeType = parts[17].takeIf(String::isNotBlank)
+        val challengeKey = parts[18].takeIf(String::isNotBlank)?.toLong()
+        require((challengeType == null) == (challengeKey == null))
+        return baseState(
+            parts = parts,
+            selectedNumber = selectedNumber,
+            notesModeIndex = 7,
+            elapsedIndex = 8,
+            mistakesIndex = 9,
+            hintsIndex = 10,
+            difficultyIndex = 11,
+            seedIndex = 12,
+            pausedIndex = 13,
+            statusIndex = 14,
+            dailyIndex = 15,
+        ).copy(
+            replayOfHistoryId = replay,
+            challengeType = challengeType,
+            challengeKey = challengeKey,
+        )
+    }
+
+    private fun baseState(
+        parts: List<String>,
+        selectedNumber: Int?,
+        notesModeIndex: Int,
+        elapsedIndex: Int,
+        mistakesIndex: Int,
+        hintsIndex: Int,
+        difficultyIndex: Int,
+        seedIndex: Int,
+        pausedIndex: Int,
+        statusIndex: Int,
+        dailyIndex: Int,
+    ): GameState = GameState(
+        puzzle = SudokuBoard.parse(parts[1]),
+        solution = SudokuBoard.parse(parts[2]),
+        board = SudokuBoard.parse(parts[3]),
+        notes = decodeNotes(parts[4]),
+        selectedIndex = parts[5].toInt().also { require(it in 0 until SudokuBoard.CELL_COUNT) },
+        selectedNumber = selectedNumber,
+        notesMode = parts[notesModeIndex].toBooleanStrict(),
+        elapsedSeconds = parts[elapsedIndex].toLong().also { require(it >= 0L) },
+        mistakes = parts[mistakesIndex].toInt().also { require(it >= 0) },
+        hintsUsed = parts[hintsIndex].toInt().also { require(it >= 0) },
+        difficulty = Difficulty.valueOf(parts[difficultyIndex]),
+        seed = parts[seedIndex].toLong(),
+        isPaused = parts[pausedIndex].toBooleanStrict(),
+        status = GameStatus.valueOf(parts[statusIndex]),
+        isDailyChallenge = parts[dailyIndex].toBooleanStrict(),
+    )
+
+    private fun parseSelectedNumber(value: String): Int? = value.takeIf(String::isNotBlank)?.toInt()?.also {
+        require(it in 1..9)
     }
 
     private fun decodeNotes(encodedNotes: String): List<Set<Int>> {
         val decoded = encodedNotes.split('/').map { cell ->
-            cell.map { it.digitToInt() }.filter { it in 1..9 }.toSet()
+            require(cell.all { it in '1'..'9' })
+            cell.map { it.digitToInt() }.toSet()
         }
         require(decoded.size == SudokuBoard.CELL_COUNT)
         return decoded

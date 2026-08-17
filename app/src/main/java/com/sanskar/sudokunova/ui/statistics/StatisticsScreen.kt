@@ -20,10 +20,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sanskar.sudokunova.data.PlayerStatistics
+import com.sanskar.sudokunova.R
 
 @Composable
 fun StatisticsRoute(
@@ -43,10 +45,10 @@ private fun StatisticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Statistics") },
+                title = { Text(stringResource(R.string.v04_statistics)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.v04_back))
                     }
                 },
             )
@@ -61,8 +63,8 @@ private fun StatisticsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    StatCard("Completed", statistics.gamesCompleted.toString(), Modifier.weight(1f))
-                    StatCard("Completion", "${statistics.completionRate}%", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_completed), statistics.gamesCompleted.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_completion), "${statistics.completionRate}%", Modifier.weight(1f))
                 }
             }
             item {
@@ -70,8 +72,8 @@ private fun StatisticsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    StatCard("Current streak", statistics.currentStreak.toString(), Modifier.weight(1f))
-                    StatCard("Longest streak", statistics.longestStreak.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_current_streak), statistics.currentStreak.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_longest_streak), statistics.longestStreak.toString(), Modifier.weight(1f))
                 }
             }
             item {
@@ -79,8 +81,8 @@ private fun StatisticsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    StatCard("Best time", statistics.bestTimeSeconds?.let(::formatTime) ?: "—", Modifier.weight(1f))
-                    StatCard("Play time", formatTime(statistics.totalPlaySeconds), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_best_time), statistics.bestTimeSeconds?.let(::formatTime) ?: "—", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_play_time), formatTime(statistics.totalPlaySeconds), Modifier.weight(1f))
                 }
             }
             item {
@@ -88,8 +90,8 @@ private fun StatisticsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    StatCard("Perfect games", statistics.perfectGames.toString(), Modifier.weight(1f))
-                    StatCard("No-hint games", statistics.noHintGames.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_perfect_games), statistics.perfectGames.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_no_hint_games), statistics.noHintGames.toString(), Modifier.weight(1f))
                 }
             }
             item {
@@ -97,32 +99,32 @@ private fun StatisticsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    StatCard("Mistakes", statistics.totalMistakes.toString(), Modifier.weight(1f))
-                    StatCard("Hints used", statistics.totalHints.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_mistakes), statistics.totalMistakes.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.v04_hints_used), statistics.totalHints.toString(), Modifier.weight(1f))
                 }
             }
             item {
-                Text("Achievements", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.v04_achievements), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))
             }
             item {
-                AchievementCard("First Puzzle", "Complete your first puzzle.", statistics.gamesCompleted >= 1)
+                AchievementCard(stringResource(R.string.v04_first_puzzle), stringResource(R.string.v04_first_puzzle_desc), statistics.gamesCompleted >= 1)
             }
             item {
-                AchievementCard("10 Wins", "Complete 10 puzzles.", statistics.gamesCompleted >= 10)
+                AchievementCard(stringResource(R.string.v04_ten_wins), stringResource(R.string.v04_ten_wins_desc), statistics.gamesCompleted >= 10)
             }
             item {
-                AchievementCard("100 Wins", "Complete 100 puzzles.", statistics.gamesCompleted >= 100)
+                AchievementCard(stringResource(R.string.v04_hundred_wins), stringResource(R.string.v04_hundred_wins_desc), statistics.gamesCompleted >= 100)
             }
             item {
-                AchievementCard("Perfect Game", "Finish with no mistakes and no hints.", statistics.perfectGames >= 1)
+                AchievementCard(stringResource(R.string.v04_perfect_game), stringResource(R.string.v04_perfect_game_desc), statistics.perfectGames >= 1)
             }
             item {
-                AchievementCard("Seven-Day Streak", "Complete puzzles on seven consecutive days.", statistics.longestStreak >= 7)
+                AchievementCard(stringResource(R.string.v04_seven_day_streak), stringResource(R.string.v04_seven_day_streak_desc), statistics.longestStreak >= 7)
             }
             item {
-                AchievementCard("Thirty-Day Streak", "Complete puzzles on thirty consecutive days.", statistics.longestStreak >= 30)
+                AchievementCard(stringResource(R.string.v04_thirty_day_streak), stringResource(R.string.v04_thirty_day_streak_desc), statistics.longestStreak >= 30)
             }
-            item { Text("Statistics are stored locally on this device.", modifier = Modifier.padding(vertical = 20.dp)) }
+            item { Text(stringResource(R.string.v04_statistics_local), modifier = Modifier.padding(vertical = 20.dp)) }
         }
     }
 }
@@ -142,7 +144,7 @@ private fun AchievementCard(title: String, description: String, unlocked: Boolea
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                if (unlocked) "✓ $title" else "○ $title",
+                if (unlocked) stringResource(R.string.v04_unlocked_format, title) else stringResource(R.string.v04_locked_format, title),
                 style = MaterialTheme.typography.titleLarge,
                 color = if (unlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )

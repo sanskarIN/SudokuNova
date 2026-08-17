@@ -1,7 +1,8 @@
 [versions]
-room = "2.8.3"
 agp = "9.3.1"
 kotlin = "2.4.10"
+ksp = "2.3.10"
+room = "2.8.3"
 composeBom = "2026.08.00"
 coreKtx = "1.19.0"
 splashscreen = "1.2.0"
@@ -39,7 +40,7 @@ androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "a
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 
 [plugins]
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v06_challenges">Challenges</string>
+    <string name="v06_back">Back</string>
+    <string name="v06_daily">Daily</string>
+    <string name="v06_weekly">Weekly</string>
+    <string name="v06_daily_archive">Daily Challenge archive</string>
+    <string name="v06_weekly_archive">Weekly Challenge archive</string>
+    <string name="v06_today">Today</string>
+    <string name="v06_this_week">This week</string>
+    <string name="v06_completed">Completed</string>
+    <string name="v06_not_completed">Not completed</string>
+    <string name="v06_play_challenge">Play challenge</string>
+    <string name="v06_replay_challenge">Replay challenge</string>
+    <string name="v06_challenge_result">%1$s · %2$s · %3$d mistakes · %4$d hints</string>
+    <string name="v06_challenge_offline">Challenge puzzles are deterministic and work offline. No account is required.</string>
+    <string name="v06_week_label">Week of %1$s</string>
+</resources>

@@ -22,11 +22,15 @@ data class GameState(
     val isPaused: Boolean = false,
     val status: GameStatus = GameStatus.PLAYING,
     val isDailyChallenge: Boolean = false,
+    val replayOfHistoryId: Long? = null,
+    val challengeType: String? = null,
+    val challengeKey: Long? = null,
 ) {
     init {
-        require(selectedNumber == null || selectedNumber in 1..9) {
-            "Selected number must be null or in the range 1..9."
-        }
+        require(selectedIndex in 0 until SudokuBoard.CELL_COUNT)
+        require(selectedNumber == null || selectedNumber in 1..9)
+        require(replayOfHistoryId == null || replayOfHistoryId > 0L)
+        require((challengeType == null) == (challengeKey == null))
     }
 
     val progressPercent: Int
@@ -43,6 +47,8 @@ data class GameState(
         fun fromGenerated(
             generated: GeneratedPuzzle,
             dailyChallenge: Boolean = false,
+            challengeType: String? = null,
+            challengeKey: Long? = null,
         ): GameState = GameState(
             puzzle = generated.puzzle,
             solution = generated.solution,
@@ -50,6 +56,8 @@ data class GameState(
             difficulty = generated.difficulty,
             seed = generated.seed,
             isDailyChallenge = dailyChallenge,
+            challengeType = challengeType,
+            challengeKey = challengeKey,
         )
     }
 }

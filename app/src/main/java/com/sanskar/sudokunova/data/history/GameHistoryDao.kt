@@ -43,7 +43,7 @@ interface GameHistoryDao {
             MIN(elapsedSeconds) AS bestSeconds,
             SUM(CASE WHEN isPerfect = 1 THEN 1 ELSE 0 END) AS perfectGames
         FROM game_history
-        WHERE completed = 1
+        WHERE completed = 1 AND replayOfHistoryId IS NULL
         GROUP BY difficulty
         ORDER BY difficulty
         """,

@@ -29,10 +29,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.engine.Difficulty
+import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
 
 @Composable
 fun HomeRoute(
@@ -42,6 +45,8 @@ fun HomeRoute(
     onCustomPuzzle: () -> Unit,
     onLearn: () -> Unit,
     onStatistics: () -> Unit,
+    onHistory: () -> Unit,
+    onSavedPuzzles: () -> Unit,
     onSettings: () -> Unit,
     onAbout: () -> Unit,
     onSupport: () -> Unit,
@@ -56,6 +61,8 @@ fun HomeRoute(
         onCustomPuzzle = onCustomPuzzle,
         onLearn = onLearn,
         onStatistics = onStatistics,
+        onHistory = onHistory,
+        onSavedPuzzles = onSavedPuzzles,
         onSettings = onSettings,
         onAbout = onAbout,
         onSupport = onSupport,
@@ -71,6 +78,8 @@ private fun HomeScreen(
     onCustomPuzzle: () -> Unit,
     onLearn: () -> Unit,
     onStatistics: () -> Unit,
+    onHistory: () -> Unit,
+    onSavedPuzzles: () -> Unit,
     onSettings: () -> Unit,
     onAbout: () -> Unit,
     onSupport: () -> Unit,
@@ -81,9 +90,9 @@ private fun HomeScreen(
     ) {
         item {
             Spacer(Modifier.height(20.dp))
-            Text("SudokuNova", style = MaterialTheme.typography.displaySmall)
+            Text(stringResource(R.string.v04_app_name), style = MaterialTheme.typography.displaySmall)
             Text(
-                "Think. Solve. Master the Grid.",
+                stringResource(R.string.v04_tagline),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -93,22 +102,22 @@ private fun HomeScreen(
             item {
                 Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    Text("  Continue game")
+                    Text("  ${stringResource(R.string.v04_continue_game)}")
                 }
             }
         }
 
         item {
             FeatureCard(
-                title = "Daily Challenge",
-                subtitle = "A deterministic puzzle for today — fully offline.",
+                title = stringResource(R.string.v04_daily_challenge),
+                subtitle = stringResource(R.string.v04_daily_description),
                 icon = Icons.Default.PlayArrow,
                 onClick = onDailyChallenge,
             )
         }
 
         item {
-            Text("Choose difficulty", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.v04_choose_difficulty), style = MaterialTheme.typography.titleLarge)
         }
 
         items(Difficulty.entries.chunked(2).size) { rowIndex ->
@@ -122,7 +131,7 @@ private fun HomeScreen(
                         onClick = { onStartGame(difficulty) },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text(difficulty.displayName)
+                        Text(localizedDifficultyLabel(difficulty))
                     }
                 }
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
@@ -130,24 +139,30 @@ private fun HomeScreen(
         }
 
         item {
-            Text("Explore", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.v04_quick_play), style = MaterialTheme.typography.titleLarge)
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CompactAction("Custom", Icons.Default.Edit, Modifier.weight(1f), onCustomPuzzle)
-                CompactAction("Learn", Icons.Default.School, Modifier.weight(1f), onLearn)
+                CompactAction(stringResource(R.string.v04_custom), Icons.Default.Edit, Modifier.weight(1f), onCustomPuzzle)
+                CompactAction(stringResource(R.string.v04_learn), Icons.Default.School, Modifier.weight(1f), onLearn)
             }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CompactAction("Statistics", Icons.Default.BarChart, Modifier.weight(1f), onStatistics)
-                CompactAction("Settings", Icons.Default.Settings, Modifier.weight(1f), onSettings)
+                CompactAction(stringResource(R.string.v04_statistics), Icons.Default.BarChart, Modifier.weight(1f), onStatistics)
+                CompactAction(stringResource(R.string.v05_history), Icons.Default.BarChart, Modifier.weight(1f), onHistory)
             }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CompactAction("About", Icons.Default.Info, Modifier.weight(1f), onAbout)
-                CompactAction("Support", Icons.Default.Favorite, Modifier.weight(1f), onSupport)
+                CompactAction(stringResource(R.string.v05_saved_puzzles), Icons.Default.Favorite, Modifier.weight(1f), onSavedPuzzles)
+                CompactAction(stringResource(R.string.v04_settings), Icons.Default.Settings, Modifier.weight(1f), onSettings)
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                CompactAction(stringResource(R.string.v04_about), Icons.Default.Info, Modifier.weight(1f), onAbout)
+                CompactAction(stringResource(R.string.v04_buy_me_a_coffee), Icons.Default.Favorite, Modifier.weight(1f), onSupport)
             }
         }
 
@@ -156,10 +171,10 @@ private fun HomeScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             ) {
                 Column(Modifier.padding(18.dp)) {
-                    Text("Open source, ad-free by default", style = MaterialTheme.typography.titleLarge)
+                    Text(stringResource(R.string.v04_open_source), style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Core Sudoku gameplay works offline and does not require an account or tracking.",
+                        stringResource(R.string.v04_support_optional),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }

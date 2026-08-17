@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -12,8 +12,8 @@ android {
         applicationId = "in.sanskar.sudokunova"
         minSdk = 26
         targetSdk = 37
-        versionCode = 200
-        versionName = "0.2.0"
+        versionCode = 600
+        versionName = "0.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -72,7 +72,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
@@ -93,9 +93,6 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
 
-
-kapt {
-    arguments {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }

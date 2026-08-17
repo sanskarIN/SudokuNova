@@ -76,3 +76,9 @@ Before stable release verify at minimum:
 - Portrait and landscape/window resize where supported
 - Standard phone and tablet
 - Minimum supported Android version
+
+## v0.4 High-Contrast and Localized Semantics
+
+The High Contrast setting now affects the playable Sudoku board rather than acting only as stored preference state. It increases major/minor grid strength, emphasizes selected/conflict borders, strengthens peer-cell distinction, and increases note emphasis.
+
+Sudoku cell semantic descriptions are now Android resources and have English/Hindi variants. They announce row, column, empty/value state, original clue state, and conflict state without relying on color alone.

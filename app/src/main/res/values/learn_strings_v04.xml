@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v04_learn_sudoku">Learn Sudoku</string>
+    <string name="v04_learn_heading">Build technique step by step</string>
+    <string name="v04_lesson_what_title">What is Sudoku?</string>
+    <string name="v04_lesson_what_body">Fill a 9×9 grid so every row, every column, and every 3×3 box contains the digits 1 through 9 exactly once. The starting clues never change.</string>
+    <string name="v04_lesson_candidates_title">Candidates and pencil marks</string>
+    <string name="v04_lesson_candidates_body">For an empty cell, remove digits already present in its row, column, and box. The values left are its candidates. Notes help you track them without committing to a final answer.</string>
+    <string name="v04_lesson_naked_single_title">Naked Single</string>
+    <string name="v04_lesson_naked_single_body">When an empty cell has only one possible candidate, that candidate must be the answer for the cell. Scan constrained rows, columns, and boxes first.</string>
+    <string name="v04_lesson_hidden_single_title">Hidden Single</string>
+    <string name="v04_lesson_hidden_single_body">A digit can sometimes fit in only one cell of a row, column, or box even when that cell has several candidates. That unique location fixes the digit.</string>
+    <string name="v04_lesson_naked_pair_title">Naked Pair</string>
+    <string name="v04_lesson_naked_pair_body">If exactly two cells in one unit contain the same two candidates, those digits are reserved for the pair. Remove the pair digits from the other cells in that unit.</string>
+    <string name="v04_lesson_pointing_title">Pointing Pair / Triple</string>
+    <string name="v04_lesson_pointing_body">If all candidates for a digit inside one 3×3 box lie in a single row or column, that digit cannot appear elsewhere in the same row or column outside the box.</string>
+    <string name="v04_lesson_box_line_title">Box-Line Reduction</string>
+    <string name="v04_lesson_box_line_body">When every candidate for a digit in a row or column lies inside one box, remove that digit from the other cells of that box.</string>
+    <string name="v04_lesson_xwing_title">X-Wing</string>
+    <string name="v04_lesson_xwing_body">If a digit appears in exactly two candidate positions in each of two rows and the positions share the same two columns, those four cells form an X-Wing. The digit can be removed from other cells in those columns.</string>
+    <string name="v04_lesson_habits_title">Solving habits</string>
+    <string name="v04_lesson_habits_body">Work from certain logic, keep notes tidy, rescan units after every placement, and avoid guessing when a logical move is available. Accuracy usually improves speed over time.</string>
+</resources>

@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -34,14 +34,32 @@ jobs:
       - name: Set up Gradle cache and validate wrapper
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Verify English/Hindi translation parity
+        run: python scripts/verify_translations.py
+
       - name: Verify engine tests
         run: ./gradlew :sudoku-engine:test --stacktrace
 
       - name: Verify Android unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
 
+      - name: Compile Android instrumentation tests
+        run: ./gradlew :app:assembleDebugAndroidTest --stacktrace
+
       - name: Run Android lint
-        run: ./gradlew :app:lintDebug --stacktrace
+        shell: bash
+        run: |
+          set +e
+          ./gradlew :app:lintDebug --stacktrace
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            report="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
+            if [ -f "$report" ]; then
+              echo "----- FULL ANDROID LINT REPORT -----"
+              cat "$report"
+            fi
+          fi
+          exit "$status"
 
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace

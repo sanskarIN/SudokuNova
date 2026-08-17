@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v04_learn_sudoku">Sudoku सीखें</string>
+    <string name="v04_learn_heading">तकनीक को चरण-दर-चरण सीखें</string>
+    <string name="v04_lesson_what_title">Sudoku क्या है?</string>
+    <string name="v04_lesson_what_body">9×9 ग्रिड को इस तरह भरें कि हर पंक्ति, हर कॉलम और हर 3×3 बॉक्स में 1 से 9 तक के अंक ठीक एक बार आएँ। शुरुआती संकेत कभी नहीं बदलते।</string>
+    <string name="v04_lesson_candidates_title">उम्मीदवार और पेंसिल मार्क</string>
+    <string name="v04_lesson_candidates_body">खाली सेल के लिए उसकी पंक्ति, कॉलम और बॉक्स में मौजूद अंकों को हटाएँ। बचे हुए अंक उसके उम्मीदवार हैं। नोट्स अंतिम उत्तर दर्ज किए बिना इन्हें ट्रैक करने में मदद करते हैं।</string>
+    <string name="v04_lesson_naked_single_title">Naked Single</string>
+    <string name="v04_lesson_naked_single_body">जब किसी खाली सेल में केवल एक संभव उम्मीदवार बचे, वही उस सेल का उत्तर होगा। पहले अधिक सीमित पंक्तियों, कॉलम और बॉक्स को देखें।</string>
+    <string name="v04_lesson_hidden_single_title">Hidden Single</string>
+    <string name="v04_lesson_hidden_single_body">कभी-कभी किसी पंक्ति, कॉलम या बॉक्स में कोई अंक केवल एक ही सेल में रखा जा सकता है, भले उस सेल में कई उम्मीदवार हों। वही अद्वितीय स्थान उस अंक को तय करता है।</string>
+    <string name="v04_lesson_naked_pair_title">Naked Pair</string>
+    <string name="v04_lesson_naked_pair_body">यदि एक ही यूनिट के ठीक दो सेल में समान दो उम्मीदवार हों, तो वे दोनों अंक उसी जोड़ी के लिए सुरक्षित हैं। उन अंकों को उस यूनिट के अन्य सेल से हटाएँ।</string>
+    <string name="v04_lesson_pointing_title">Pointing Pair / Triple</string>
+    <string name="v04_lesson_pointing_body">यदि किसी 3×3 बॉक्स में किसी अंक के सभी उम्मीदवार एक ही पंक्ति या कॉलम में हों, तो उस बॉक्स के बाहर उसी पंक्ति या कॉलम में वह अंक नहीं हो सकता।</string>
+    <string name="v04_lesson_box_line_title">Box-Line Reduction</string>
+    <string name="v04_lesson_box_line_body">जब किसी पंक्ति या कॉलम में किसी अंक के सभी उम्मीदवार एक ही बॉक्स के भीतर हों, तो उस बॉक्स के बाकी सेल से उस अंक को हटाएँ।</string>
+    <string name="v04_lesson_xwing_title">X-Wing</string>
+    <string name="v04_lesson_xwing_body">यदि किसी अंक के ठीक दो उम्मीदवार स्थान दो अलग पंक्तियों में हों और वे समान दो कॉलम साझा करें, तो वे चार सेल X-Wing बनाते हैं। उन कॉलम के अन्य सेल से उस अंक को हटाया जा सकता है।</string>
+    <string name="v04_lesson_habits_title">हल करने की अच्छी आदतें</string>
+    <string name="v04_lesson_habits_body">पक्के तर्क से काम करें, नोट्स साफ रखें, हर अंक भरने के बाद यूनिट को दोबारा देखें और जब तर्क उपलब्ध हो तो अनुमान से बचें। समय के साथ सही हल करना गति भी बढ़ाता है।</string>
+</resources>
