@@ -12,8 +12,8 @@ android {
         applicationId = "in.sanskar.sudokunova"
         minSdk = 26
         targetSdk = 37
-        versionCode = 200
-        versionName = "0.2.0"
+        versionCode = 600
+        versionName = "0.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -92,7 +92,6 @@ dependencies {
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
-
 
 kapt {
     arguments {
