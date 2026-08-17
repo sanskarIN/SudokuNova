@@ -1,0 +1,71 @@
+name: Apply v0.2 Input Persistence Fix
+
+on:
+  push:
+    branches:
+      - feature/v0.2-gameplay-hardening
+    paths:
+      - .github/workflows/v02-input-persistence-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.2-gameplay-hardening
+          fetch-depth: 0
+      - name: Persist selected number and remove unused helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt')
+          text = path.read_text()
+          old = '''        if (settings.value.inputMode == InputMode.NUMBER_FIRST) {
+              setGame(
+                  state.copy(selectedNumber = if (state.selectedNumber == value) null else value),
+                  save = false,
+              )
+              return
+          }
+          '''
+          new = '''        if (settings.value.inputMode == InputMode.NUMBER_FIRST) {
+              setGame(
+                  state.copy(selectedNumber = if (state.selectedNumber == value) null else value),
+                  save = true,
+              )
+              return
+          }
+          '''
+          if old not in text:
+              raise SystemExit('number-first selection block not found')
+          text = text.replace(old, new, 1)
+          unused = '''    fun clearSelectedNumber() {
+              mutateGame(save = false) { state -> state.copy(selectedNumber = null) }
+          }
+
+          '''
+          if unused not in text:
+              raise SystemExit('unused selected-number helper not found')
+          text = text.replace(unused, '', 1)
+          path.write_text(text)
+          PY
+          git rm .github/workflows/v02-input-persistence-fix.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt
+          git commit -m 'fix: persist number-first selection immediately'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin feature/v0.2-gameplay-hardening
+            git rebase origin/feature/v0.2-gameplay-hardening
+            if git push origin HEAD:feature/v0.2-gameplay-hardening; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
