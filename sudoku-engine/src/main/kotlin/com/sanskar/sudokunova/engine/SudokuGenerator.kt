@@ -36,7 +36,10 @@ class SudokuGenerator(
                     seed = seed,
                 )
 
-                if (best == null || distanceToRequested(generated, difficulty) < distanceToRequested(best!!, difficulty)) {
+                val currentBest = best
+                if (currentBest == null ||
+                    distanceToRequested(generated, difficulty) < distanceToRequested(currentBest, difficulty)
+                ) {
                     best = generated
                 }
 
