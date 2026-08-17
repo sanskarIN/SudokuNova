@@ -6,7 +6,9 @@
     <string name="v08_technique_naked_single">Naked Single</string>
     <string name="v08_technique_hidden_single">Hidden Single</string>
     <string name="v08_technique_naked_pair">Naked Pair</string>
+    <string name="v08_technique_hidden_pair">Hidden Pair</string>
     <string name="v08_technique_naked_triple">Naked Triple</string>
+    <string name="v08_technique_hidden_triple">Hidden Triple</string>
     <string name="v08_technique_pointing_pair_triple">Pointing Pair / Triple</string>
     <string name="v08_technique_box_line_reduction">Box-Line Reduction</string>
     <string name="v08_technique_reveal">Reveal</string>
@@ -19,7 +21,9 @@
     <string name="v08_explain_naked_single">%1$s has only one candidate: %2$d.</string>
     <string name="v08_explain_hidden_single">%1$d can appear only once in %2$s, at %3$s.</string>
     <string name="v08_explain_naked_pair">In %1$s, %2$s contain only %3$s. Remove %3$s from %4$s.</string>
+    <string name="v08_explain_hidden_pair">In %1$s, candidates %2$s can appear only in %3$s. Remove every other candidate from those cells.</string>
     <string name="v08_explain_naked_triple">In %1$s, %2$s collectively contain only %3$s. Remove %3$s from %4$s.</string>
+    <string name="v08_explain_hidden_triple">In %1$s, candidates %2$s can appear only in %3$s. Remove every other candidate from those cells.</string>
     <string name="v08_explain_pointing">In %1$s, candidate %2$d is confined to %3$s. Remove %2$d from %4$s.</string>
     <string name="v08_explain_box_line">In %1$s, candidate %2$d is confined to %3$s. Remove %2$d from %4$s.</string>
     <string name="v08_explain_reveal">No supported logical placement was found. Reveal row %1$d, column %2$d as %3$d only if you want a stronger hint.</string>
