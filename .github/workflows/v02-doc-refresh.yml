@@ -1,0 +1,84 @@
+name: Apply v0.2 Documentation Refresh
+
+on:
+  push:
+    branches:
+      - feature/v0.2-gameplay-hardening
+    paths:
+      - .github/workflows/v02-doc-refresh.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.2-gameplay-hardening
+          fetch-depth: 0
+
+      - name: Refresh v0.2 implementation documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text()
+          added = '''### Added\n'''
+          added_block = '''### Added\n- v0.2 development: persistent Cell First and Number First input modes.\n- v0.2 development: hardware keyboard shortcuts for number input, erase, notes, hint, pause, undo, and redo.\n- v0.2 development: actual haptic and click-sound feedback behind existing user settings.\n- v0.2 development: saved-game structural integrity validation and codec-v1 migration coverage.\n- v0.2 development: Compose instrumentation smoke tests plus a pull-request emulator workflow.\n'''
+          if added in text:
+              text = text.replace(added, added_block, 1)
+          fixed = '''### Fixed\n'''
+          fixed_block = '''### Fixed\n- v0.2 development: corrupted saved-game payloads with invalid cell selection, changed original clues, or impossible completed state are rejected instead of resumed.\n- v0.2 development: number-first selection is persisted immediately for reliable process restoration.\n- v0.2 development: Compose smoke-test targets are scroll-safe on small phone viewports.\n'''
+          if fixed in text:
+              text = text.replace(fixed, fixed_block, 1)
+          changelog.write_text(text)
+
+          docs_index = Path('docs/README.md')
+          text = docs_index.read_text()
+          marker = '- [Testing](TESTING.md)\n'
+          if '- [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md)' not in text and marker in text:
+              text = text.replace(marker, marker + '- [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md)\n', 1)
+          docs_index.write_text(text)
+
+          testing = Path('docs/TESTING.md')
+          text = testing.read_text()
+          if '## Pull-Request Emulator Gate' not in text:
+              text += '''\n## Pull-Request Emulator Gate\n\n`.github/workflows/instrumentation.yml` runs `:app:connectedDebugAndroidTest` on an Android API 35 x86_64 emulator for pull requests targeting `main` (and manual workflow dispatch). The standard CI workflow also compiles the instrumentation APK on every source change so test-source compilation failures are caught earlier.\n\nThe current Compose smoke suite covers Home entry points, Settings/input-mode navigation, and Custom Puzzle navigation. Expand connected tests as gameplay state injection/test fixtures mature.\n'''
+          testing.write_text(text)
+
+          notices = Path('THIRD_PARTY_NOTICES.md')
+          text = notices.read_text()
+          marker = '## Maintaining This File\n'
+          block = '''## Android Emulator Runner GitHub Action\n\nPull-request instrumentation automation uses `ReactiveCircus/android-emulator-runner@v2` to provision an Android emulator in GitHub Actions. That action remains subject to the license and notices in its own repository.\n\n'''
+          if '## Android Emulator Runner GitHub Action' not in text and marker in text:
+              text = text.replace(marker, block + marker, 1)
+          notices.write_text(text)
+
+          changed = Path('what_changed.md')
+          text = changed.read_text()
+          appendix = '''\n## v0.2 Hardening Verification Update\n\nAdditional v0.2 work now implemented and pushed:\n\n- Saved-game structural integrity validation through `GameStateIntegrity`.\n- Codec rejects corrupted original clues, invalid selected-cell indexes, and inconsistent completed states.\n- Regression tests cover structural integrity and corrupted codec payloads.\n- Hardware keyboard shortcuts for 1–9/numpad, erase, Notes, Hint, Pause, Ctrl+Z, and Ctrl+Y.\n- Number-first selection is persisted immediately and codec v1 saves migrate to v2 safely.\n- Haptics and sound settings now affect actual game interactions.\n- Compose smoke tests are scroll-safe on smaller devices.\n- Standard CI compiles the instrumentation APK.\n- Pull requests to `main` run connected Compose tests on an Android API 35 emulator through `.github/workflows/instrumentation.yml`.\n- `docs/KEYBOARD_SHORTCUTS.md` documents hardware-keyboard behavior.\n\nFresh-clone local verification on the pushed v0.2 branch passed the current non-device quality gate:\n\n- `:sudoku-engine:test`\n- `:app:testDebugUnitTest`\n- `:app:assembleDebugAndroidTest`\n- `:app:lintDebug`\n- `:app:assembleDebug`\n\nThe pull-request emulator run is the next merge gate.\n'''
+          if '## v0.2 Hardening Verification Update' not in text:
+              text += appendix
+          changed.write_text(text)
+          PY
+
+          git rm .github/workflows/v02-doc-refresh.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add CHANGELOG.md THIRD_PARTY_NOTICES.md what_changed.md docs/README.md docs/TESTING.md
+          git commit -m 'docs: record v0.2 gameplay hardening and emulator testing'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.2-gameplay-hardening
+            git rebase origin/feature/v0.2-gameplay-hardening
+            if git push origin HEAD:feature/v0.2-gameplay-hardening; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
