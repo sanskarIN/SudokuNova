@@ -1,0 +1,72 @@
+name: Apply v0.2 Scroll-Safe Test Fix
+
+on:
+  push:
+    branches:
+      - feature/v0.2-gameplay-hardening
+    paths:
+      - .github/workflows/v02-scroll-safe-tests.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.2-gameplay-hardening
+          fetch-depth: 0
+
+      - name: Make LazyColumn smoke-test targets scroll-safe
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/androidTest/java/com/sanskar/sudokunova/MainActivityTest.kt')
+          text = path.read_text()
+          text = text.replace(
+              'import androidx.compose.ui.test.performClick\n',
+              'import androidx.compose.ui.test.performClick\nimport androidx.compose.ui.test.performScrollTo\n',
+              1,
+          )
+          text = text.replace(
+              'composeRule.onNodeWithText("Custom").assertIsDisplayed()',
+              'composeRule.onNodeWithText("Custom").performScrollTo().assertIsDisplayed()',
+              1,
+          )
+          text = text.replace(
+              'composeRule.onNodeWithText("Settings").assertIsDisplayed()',
+              'composeRule.onNodeWithText("Settings").performScrollTo().assertIsDisplayed()',
+              1,
+          )
+          text = text.replace(
+              'composeRule.onNodeWithText("Settings").performClick()',
+              'composeRule.onNodeWithText("Settings").performScrollTo().performClick()',
+              1,
+          )
+          text = text.replace(
+              'composeRule.onNodeWithText("Custom").performClick()',
+              'composeRule.onNodeWithText("Custom").performScrollTo().performClick()',
+              1,
+          )
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v02-scroll-safe-tests.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/androidTest/java/com/sanskar/sudokunova/MainActivityTest.kt
+          git commit -m 'test: make Compose smoke tests scroll-safe'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.2-gameplay-hardening
+            git rebase origin/feature/v0.2-gameplay-hardening
+            if git push origin HEAD:feature/v0.2-gameplay-hardening; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
