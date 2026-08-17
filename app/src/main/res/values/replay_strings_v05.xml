@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v05_replay">Replay</string>
+    <string name="v05_replay_badge">Replay</string>
+    <string name="v05_replay_history">Replay this completed puzzle</string>
+</resources>
