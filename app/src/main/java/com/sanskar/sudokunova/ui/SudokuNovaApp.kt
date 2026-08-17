@@ -18,6 +18,7 @@ import com.sanskar.sudokunova.ui.game.GameRoute
 import com.sanskar.sudokunova.ui.history.HistoryRoute
 import com.sanskar.sudokunova.ui.home.HomeRoute
 import com.sanskar.sudokunova.ui.learn.LearnScreen
+import com.sanskar.sudokunova.ui.learn.LearningProgressRoute
 import com.sanskar.sudokunova.ui.saved.SavedPuzzlesRoute
 import com.sanskar.sudokunova.ui.settings.SettingsScreen
 import com.sanskar.sudokunova.ui.statistics.StatisticsRoute
@@ -35,6 +36,7 @@ private object Routes {
     const val SAVED = "saved"
     const val TRANSFER = "transfer"
     const val LEARN = "learn"
+    const val LEARNING_PROGRESS = "learning-progress"
     const val STATISTICS = "statistics"
     const val SETTINGS = "settings"
     const val ABOUT = "about"
@@ -172,7 +174,14 @@ fun SudokuNovaApp(
             }
 
             composable(Routes.LEARN) {
-                LearnScreen(onBack = { navController.popBackStack() })
+                LearnScreen(
+                    onBack = { navController.popBackStack() },
+                    onLearningProgress = { navController.navigate(Routes.LEARNING_PROGRESS) },
+                )
+            }
+
+            composable(Routes.LEARNING_PROGRESS) {
+                LearningProgressRoute(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.STATISTICS) {
