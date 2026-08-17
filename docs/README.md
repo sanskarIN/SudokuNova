@@ -19,6 +19,7 @@ This directory contains implementation-aligned documentation for SudokuNova. A f
 - [Difficulty System](DIFFICULTY_SYSTEM.md)
 - [Game Rules](GAME_RULES.md)
 - [Data Storage](DATA_STORAGE.md)
+- [History and Saved Puzzles](HISTORY_AND_SAVED_PUZZLES.md)
 
 ## Product and Design
 

@@ -70,3 +70,9 @@ When introduced:
 ## Reset Behavior
 
 Statistics reset removes only statistics/streak keys. It intentionally leaves user preferences and the current active game unchanged.
+
+## v0.5 Room History Database
+
+SudokuNova now uses a Room database named `sudokunova.db` for completed-game history and saved puzzles. The initial Room schema is version 1 and is exported to `app/schemas/`. DataStore remains responsible for lightweight settings, active-game state, and aggregate statistics.
+
+Production database construction does not use destructive migration. Any future schema version must include an explicit migration and migration test. See [History and Saved Puzzles](HISTORY_AND_SAVED_PUZZLES.md).

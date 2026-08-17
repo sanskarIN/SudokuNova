@@ -5,6 +5,11 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 ## [Unreleased]
 
 ### Added
+- v0.5 development: Room schema v1 for completed-game history and saved puzzles with exported schema JSON.
+- v0.5 development: History screen with favorites, difficulty filters, per-difficulty summaries, deletion, and replay.
+- v0.5 development: Saved Puzzles screen with favorites, deletion, and replayable validated custom puzzles.
+- v0.5 development: replay provenance so replay attempts stay visible without inflating normal aggregate statistics.
+- v0.5 development: connected Room persistence tests and History/Saved Compose navigation tests.
 - Android application foundation using Kotlin, Jetpack Compose, and Material 3.
 - Platform-independent Sudoku engine module.
 - Immutable 9×9 board model with validation, conflicts, candidates, and serialization.

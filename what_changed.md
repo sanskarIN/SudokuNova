@@ -468,3 +468,26 @@ Development history is intentionally preserved through many focused commits inst
 - Support: `supportramsandesh@gmail.com`
 - Credit: **Made by the Sanskar**
 - License: **MIT**
+
+## v0.5 Player History and Saved Puzzles
+
+Implemented and pushed:
+
+- Room 2.8.3 persistence configured with Kotlin kapt and schema export.
+- `SudokuNovaDatabase` schema v1 with `game_history` and `saved_puzzles`.
+- Game history DAO/repository with newest-first history, favorites, difficulty filtering, and per-difficulty summaries.
+- Saved puzzle DAO/repository with a unique puzzle index, favorites, and deletion.
+- Completed games are persisted into Room in addition to existing DataStore aggregates.
+- History UI with All/Favorites scope, difficulty filters, summary cards, favorite/delete actions, and replay.
+- Saved Puzzles UI with All/Favorites scope, favorite/delete actions, and play flow.
+- Validated custom puzzles can be saved locally with duplicate detection.
+- Replay provenance is carried through `GameState` codec v3 and history rows.
+- Replay attempts remain visible but are excluded from normal per-difficulty summary statistics and do not increment DataStore aggregate progression statistics.
+- Room instrumentation tests cover insert/read, favorites, summary aggregation, unique saved-puzzle constraints, and replay summary exclusion.
+- Compose smoke tests cover History and Saved Puzzles navigation.
+- Room schema v1 is exported and committed under `app/schemas/`.
+- Added `docs/HISTORY_AND_SAVED_PUZZLES.md`.
+- v0.5 English/Hindi resource parity is enforced by the existing translation checker.
+- Android development version advanced to `0.5.0` / versionCode `500`.
+
+Room schema v1 is the first Room schema; there is no prior Room schema to migrate. Starting with schema v2, explicit migrations and migration tests are mandatory.
