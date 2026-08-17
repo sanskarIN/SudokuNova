@@ -4,8 +4,9 @@ enum class LogicalTechnique(val rank: Int) {
     NAKED_SINGLE(1),
     HIDDEN_SINGLE(2),
     NAKED_PAIR(3),
-    POINTING_PAIR_OR_TRIPLE(4),
-    BOX_LINE_REDUCTION(5),
+    NAKED_TRIPLE(4),
+    POINTING_PAIR_OR_TRIPLE(5),
+    BOX_LINE_REDUCTION(6),
 }
 
 data class LogicalSolveResult(
