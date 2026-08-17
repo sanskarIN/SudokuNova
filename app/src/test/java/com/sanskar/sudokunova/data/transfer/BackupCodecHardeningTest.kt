@@ -64,6 +64,29 @@ class BackupCodecHardeningTest {
     }
 
     @Test
+    fun savedPuzzleTimestampBeyondSupportedRangeCannotBeEncoded() {
+        val backup = SudokuNovaBackup(
+            settings = UserSettings(),
+            history = emptyList(),
+            savedPuzzles = listOf(
+                BackupSavedPuzzleRecord(
+                    puzzle = puzzle,
+                    solution = solution,
+                    title = "Future puzzle",
+                    difficulty = "EASY",
+                    source = "custom",
+                    createdAtEpochMillis = Long.MAX_VALUE,
+                    isFavorite = false,
+                ),
+            ),
+            challengeResults = emptyList(),
+        )
+
+        val result = runCatching { BackupCodec.encode(backup) }
+        check(result.isFailure)
+    }
+
+    @Test
     fun modifiedBackupWithInvalidChronologyIsRejected() {
         val valid = SudokuNovaBackup(
             settings = UserSettings(),

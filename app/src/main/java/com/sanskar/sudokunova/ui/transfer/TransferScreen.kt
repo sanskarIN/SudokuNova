@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +47,9 @@ import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.transfer.BackupFileIo
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun TransferRoute(
@@ -77,6 +81,7 @@ private fun TransferScreen(
     onRestoreBackup: (String) -> Unit,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val clipboard = remember(context) {
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
@@ -95,15 +100,24 @@ private fun TransferScreen(
         val textToWrite = pendingExportText
         pendingExportText = null
         if (uri != null && textToWrite != null) {
-            transientMessage = if (BackupFileIo.write(context, uri, textToWrite)) exportSuccess else exportFailed
+            coroutineScope.launch {
+                val written = withContext(Dispatchers.IO) {
+                    BackupFileIo.write(context, uri, textToWrite)
+                }
+                transientMessage = if (written) exportSuccess else exportFailed
+            }
         }
     }
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri != null) {
-            val imported = BackupFileIo.read(context, uri)
-            if (imported == null) transientMessage = importFailed else pendingRestore = imported
+            coroutineScope.launch {
+                val imported = withContext(Dispatchers.IO) {
+                    BackupFileIo.read(context, uri)
+                }
+                if (imported == null) transientMessage = importFailed else pendingRestore = imported
+            }
         }
     }
 

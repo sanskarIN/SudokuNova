@@ -66,6 +66,24 @@ class BackupRepositoryTest {
     }
 
     @Test
+    fun restorePromotesFavoritesOnNaturalDuplicatesWithoutDuplicatingRows() = runBlocking {
+        val withoutFavorites = sampleBackup().copy(
+            history = sampleBackup().history.map { it.copy(isFavorite = false) },
+            savedPuzzles = sampleBackup().savedPuzzles.map { it.copy(isFavorite = false) },
+        )
+
+        repository.importBackup(withoutFavorites)
+        val second = repository.importBackup(sampleBackup())
+
+        assertEquals(0, second.historyImported)
+        assertEquals(1, second.historySkipped)
+        assertEquals(0, second.savedPuzzlesImported)
+        assertEquals(1, second.savedPuzzlesSkipped)
+        assertEquals(true, database.gameHistoryDao().observeAll().first().single().isFavorite)
+        assertEquals(true, database.savedPuzzleDao().observeAll().first().single().isFavorite)
+    }
+
+    @Test
     fun restoreAppliesValidatedSettings() = runBlocking {
         repository.importBackup(sampleBackup())
         val settings = AppPreferencesRepository(context).settings.first()

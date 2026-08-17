@@ -70,7 +70,11 @@ class BackupRepository(context: Context) {
     }
 
     suspend fun importBackup(backup: SudokuNovaBackup): BackupImportResult {
-        val existingHistory = historyDao.observeAll().first().map(::historySignature).toMutableSet()
+        val existingHistoryEntities = historyDao.observeAll().first()
+        val historySignatures = existingHistoryEntities.map(::historySignature).toMutableSet()
+        val historyIds = existingHistoryEntities.associate { historySignature(it) to it.id }.toMutableMap()
+        val historyFavorites = existingHistoryEntities.associate { historySignature(it) to it.isFavorite }.toMutableMap()
+        val existingSavedByPuzzle = savedDao.observeAll().first().associateBy { it.puzzle }.toMutableMap()
 
         var historyImported = 0
         var historySkipped = 0
@@ -97,17 +101,31 @@ class BackupRepository(context: Context) {
                     replayOfHistoryId = null,
                 )
                 val signature = historySignature(entity)
-                if (!existingHistory.add(signature)) {
+                if (!historySignatures.add(signature)) {
+                    val existingId = historyIds[signature]
+                    if (record.isFavorite && historyFavorites[signature] != true && existingId != null) {
+                        historyDao.setFavorite(existingId, true)
+                        historyFavorites[signature] = true
+                    }
                     historySkipped++
                 } else {
-                    historyDao.insert(entity)
+                    val id = historyDao.insert(entity)
+                    historyIds[signature] = id
+                    historyFavorites[signature] = record.isFavorite
                     historyImported++
                 }
             }
 
             backup.savedPuzzles.forEach { record ->
-                val id = savedDao.insert(
-                    SavedPuzzleEntity(
+                val existing = existingSavedByPuzzle[record.puzzle]
+                if (existing != null) {
+                    if (record.isFavorite && !existing.isFavorite) {
+                        savedDao.setFavorite(existing.id, true)
+                        existingSavedByPuzzle[record.puzzle] = existing.copy(isFavorite = true)
+                    }
+                    savedSkipped++
+                } else {
+                    val entity = SavedPuzzleEntity(
                         puzzle = record.puzzle,
                         solution = record.solution,
                         title = record.title,
@@ -115,9 +133,19 @@ class BackupRepository(context: Context) {
                         source = record.source,
                         createdAtEpochMillis = record.createdAtEpochMillis,
                         isFavorite = record.isFavorite,
-                    ),
-                )
-                if (id > 0L) savedImported++ else savedSkipped++
+                    )
+                    val id = savedDao.insert(entity)
+                    if (id > 0L) {
+                        savedImported++
+                        existingSavedByPuzzle[record.puzzle] = entity.copy(id = id)
+                    } else {
+                        val conflicted = savedDao.getByPuzzle(record.puzzle)
+                        if (conflicted != null && record.isFavorite && !conflicted.isFavorite) {
+                            savedDao.setFavorite(conflicted.id, true)
+                        }
+                        savedSkipped++
+                    }
+                }
             }
 
             backup.challengeResults.forEach { record ->

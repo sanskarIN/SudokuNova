@@ -185,7 +185,7 @@ object BackupCodec {
         validatePuzzle(record.puzzle)
         record.solution?.let { validatePuzzleAndSolution(record.puzzle, it) }
         Difficulty.valueOf(record.difficulty)
-        require(record.createdAtEpochMillis >= 0L)
+        require(record.createdAtEpochMillis in 0..MAX_EPOCH_MILLIS)
         return listOf(
             "P",
             record.puzzle,
@@ -206,7 +206,7 @@ object BackupCodec {
         val title = decodeOptional(fields[3])
         Difficulty.valueOf(fields[4])
         val source = decodeRequired(fields[5])
-        val created = fields[6].toLong().also { require(it >= 0L) }
+        val created = fields[6].toLong().also { require(it in 0..MAX_EPOCH_MILLIS) }
         return BackupSavedPuzzleRecord(
             puzzle = fields[1],
             solution = solution,
