@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sanskar.sudokunova.R
+import com.sanskar.sudokunova.data.InputMode
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.ui.common.localizedThemeLabel
 import com.sanskar.sudokunova.ui.theme.AppTheme
@@ -41,6 +42,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onTheme: (AppTheme) -> Unit,
     onDynamicColor: (Boolean) -> Unit,
+    onInputMode: (InputMode) -> Unit,
     onHighlightPeers: (Boolean) -> Unit,
     onHighlightSame: (Boolean) -> Unit,
     onAutoCheck: (Boolean) -> Unit,
@@ -91,6 +93,26 @@ fun SettingsScreen(
 
             item { HorizontalDivider() }
             item { SectionTitle(stringResource(R.string.v04_gameplay)) }
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.v06_input_mode)) },
+                    supportingContent = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterChip(
+                                selected = settings.inputMode == InputMode.CELL_FIRST,
+                                onClick = { onInputMode(InputMode.CELL_FIRST) },
+                                label = { Text(stringResource(R.string.v06_cell_first)) },
+                            )
+                            FilterChip(
+                                selected = settings.inputMode == InputMode.NUMBER_FIRST,
+                                onClick = { onInputMode(InputMode.NUMBER_FIRST) },
+                                label = { Text(stringResource(R.string.v06_number_first)) },
+                            )
+                        }
+                    },
+                    overlineContent = { Text(stringResource(R.string.v06_input_mode_desc)) },
+                )
+            }
             item { ToggleSetting(stringResource(R.string.v04_highlight_peers), stringResource(R.string.v04_highlight_peers_desc), settings.highlightPeers, onHighlightPeers) }
             item { ToggleSetting(stringResource(R.string.v04_highlight_same), stringResource(R.string.v04_highlight_same_desc), settings.highlightSameNumbers, onHighlightSame) }
             item { ToggleSetting(stringResource(R.string.v04_auto_check), stringResource(R.string.v04_auto_check_desc), settings.autoCheckMistakes, onAutoCheck) }
