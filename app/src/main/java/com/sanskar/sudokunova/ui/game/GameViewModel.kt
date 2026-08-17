@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.sanskar.sudokunova.data.AppPreferencesRepository
 import com.sanskar.sudokunova.data.UserSettings
+import com.sanskar.sudokunova.data.learning.LearningProgressRepository
 import com.sanskar.sudokunova.data.challenge.ChallengeDescriptor
 import com.sanskar.sudokunova.data.challenge.ChallengeKeys
 import com.sanskar.sudokunova.data.challenge.ChallengeRepository
@@ -49,6 +50,7 @@ class GameViewModel(
     private val repository = AppPreferencesRepository(application.applicationContext)
     private val historyRepository = HistoryRepository(application.applicationContext)
     private val challengeRepository = ChallengeRepository(application.applicationContext)
+    private val learningProgressRepository = LearningProgressRepository(application.applicationContext)
     private val solver = SudokuSolver()
     private val generator = SudokuGenerator(solver)
     private val hintEngine = HintEngine(solver)
@@ -166,6 +168,11 @@ class GameViewModel(
         if (teachingHint != null) {
             _pendingTeachingHint.value = teachingHint
             _pendingHint.value = null
+            viewModelScope.launch {
+                teachingHint.techniques.toSet().forEach { technique ->
+                    learningProgressRepository.recordHintViewed(technique)
+                }
+            }
             mutateGame { it.copy(selectedIndex = teachingHint.placement.cellIndex) }
             return
         }
