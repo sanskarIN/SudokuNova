@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v07_share_result">Share result</string>
+    <string name="v07_result_text">I solved a %1$s SudokuNova puzzle in %2$s with %3$d mistakes and %4$d hints. Think. Solve. Master the Grid.</string>
+</resources>
