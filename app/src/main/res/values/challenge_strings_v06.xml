@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="v06_challenges">Challenges</string>
+    <string name="v06_back">Back</string>
     <string name="v06_daily">Daily</string>
     <string name="v06_weekly">Weekly</string>
     <string name="v06_daily_archive">Daily Challenge archive</string>
@@ -14,4 +15,11 @@
     <string name="v06_challenge_result">%1$s · %2$s · %3$d mistakes · %4$d hints</string>
     <string name="v06_challenge_offline">Challenge puzzles are deterministic and work offline. No account is required.</string>
     <string name="v06_week_label">Week of %1$s</string>
+    <string name="v06_difficulty_beginner">Beginner</string>
+    <string name="v06_difficulty_easy">Easy</string>
+    <string name="v06_difficulty_medium">Medium</string>
+    <string name="v06_difficulty_hard">Hard</string>
+    <string name="v06_difficulty_expert">Expert</string>
+    <string name="v06_difficulty_master">Master</string>
+    <string name="v06_difficulty_extreme">Extreme</string>
 </resources>
