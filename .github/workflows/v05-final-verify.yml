@@ -1,0 +1,89 @@
+name: Verify v0.5 Player History
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-final-verify.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Ensure one-time v0.5 workflows completed
+        shell: bash
+        run: |
+          set -euo pipefail
+          extras=$(find .github/workflows -maxdepth 1 -type f -name 'v05-*.yml' ! -name 'v05-final-verify.yml' -print)
+          if [ -n "$extras" ]; then
+            echo "Unfinished one-time workflows:"
+            echo "$extras"
+            exit 1
+          fi
+
+      - name: Verify localization
+        run: python scripts/verify_translations.py
+
+      - name: Verify Room schema v1
+        shell: bash
+        run: |
+          test -f app/schemas/com.sanskar.sudokunova.data.history.SudokuNovaDatabase/1.json
+          grep -q 'game_history' app/schemas/com.sanskar.sudokunova.data.history.SudokuNovaDatabase/1.json
+          grep -q 'saved_puzzles' app/schemas/com.sanskar.sudokunova.data.history.SudokuNovaDatabase/1.json
+
+      - name: Verify source wiring
+        shell: bash
+        run: |
+          grep -q 'const val HISTORY = "history"' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'const val SAVED = "saved"' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'replayOf={replayOf}' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'VERSION_3' app/src/main/java/com/sanskar/sudokunova/game/GameStateCodec.kt
+          grep -q 'replayOfHistoryId' app/src/main/java/com/sanskar/sudokunova/game/GameState.kt
+
+      - name: Verify engine tests
+        run: ./gradlew :sudoku-engine:test --stacktrace
+
+      - name: Verify Android unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Compile instrumentation tests
+        run: ./gradlew :app:assembleDebugAndroidTest --stacktrace
+
+      - name: Run Android lint
+        run: ./gradlew :app:lintDebug --stacktrace
+
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Remove successful one-time gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git rm .github/workflows/v05-final-verify.yml
+          git commit -m 'test: verify v0.5 player history quality gate'
+          for attempt in 1 2 3 4 5 6 7 8; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
