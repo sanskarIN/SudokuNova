@@ -36,4 +36,15 @@
     <string name="v08_reset_learning_progress_question">सीखने की प्रगति रीसेट करें?</string>
     <string name="v08_reset_learning_progress_body">यह सभी तार्किक तकनीकों के स्थानीय संकेत और अभ्यास की प्रगति मिटा देगा। आपका गेम इतिहास और पहेलियाँ नहीं बदलेंगी।</string>
     <string name="v08_open_learning_progress">सीखने की प्रगति खोलें</string>
+
+    <string name="v08_guided_practice">मार्गदर्शित अभ्यास</string>
+    <string name="v08_guided_practice_desc">तार्किक कारण पढ़ें, लक्ष्य खाना चुनें, फिर वह अंक चुनें जो सीखने के चरण को पूरा करता है।</string>
+    <string name="v08_open_guided_practice">मार्गदर्शित अभ्यास शुरू करें</string>
+    <string name="v08_practice_loading">एक निश्चित अभ्यास पहेली तैयार की जा रही है…</string>
+    <string name="v08_practice_reasoning">तर्क को समझें</string>
+    <string name="v08_practice_choose_value">एक खाना चुनें, फिर एक अंक चुनें।</string>
+    <string name="v08_practice_correct">सही। आपने यह सीखने का चरण पूरा कर लिया।</string>
+    <string name="v08_practice_incorrect">यह इस सीखने के चरण को पूरा नहीं करता। तर्क फिर देखें और दोबारा प्रयास करें।</string>
+    <string name="v08_next_practice">अगला अभ्यास</string>
+    <string name="v08_practice_generation_failed">उपयुक्त अभ्यास पहेली तैयार नहीं की जा सकी।</string>
 </resources>
