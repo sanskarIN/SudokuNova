@@ -1,0 +1,66 @@
+name: Apply v0.5 Navigation Smoke Tests
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-navigation-tests.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Add History and Saved Puzzles navigation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/androidTest/java/com/sanskar/sudokunova/MainActivityTest.kt')
+          text = path.read_text()
+          if 'fun historyScreenIsReachable()' not in text:
+              insert = '''
+              @Test
+              fun historyScreenIsReachable() {
+                  composeRule.onNodeWithText("History").performScrollTo().performClick()
+                  composeRule.onNodeWithText("History").assertIsDisplayed()
+                  composeRule.onNodeWithText("All difficulties").assertIsDisplayed()
+              }
+
+              @Test
+              fun savedPuzzlesScreenIsReachable() {
+                  composeRule.onNodeWithText("Saved Puzzles").performScrollTo().performClick()
+                  composeRule.onNodeWithText("Saved Puzzles").assertIsDisplayed()
+                  composeRule.onNodeWithText("Favorites").assertIsDisplayed()
+              }
+          '''
+              marker = '\n}\n'
+              pos = text.rfind(marker)
+              if pos < 0:
+                  raise SystemExit('test class closing brace not found')
+              text = text[:pos] + insert + text[pos:]
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-navigation-tests.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/androidTest/java/com/sanskar/sudokunova/MainActivityTest.kt
+          git commit -m 'test: cover History and Saved Puzzles navigation'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
