@@ -4,7 +4,9 @@ enum class LogicalTechnique(val rank: Int) {
     NAKED_SINGLE(1),
     HIDDEN_SINGLE(2),
     NAKED_PAIR(3),
+    HIDDEN_PAIR(4),
     NAKED_TRIPLE(5),
+    HIDDEN_TRIPLE(5),
     POINTING_PAIR_OR_TRIPLE(4),
     BOX_LINE_REDUCTION(5),
 }
