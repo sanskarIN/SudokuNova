@@ -1,0 +1,133 @@
+name: Apply v0.5 History Navigation
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-history-navigation.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Wire History through app and Home
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          # App navigation
+          app = Path('app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt')
+          text = app.read_text()
+          history_import = 'import com.sanskar.sudokunova.ui.history.HistoryRoute\n'
+          if history_import not in text:
+              anchor = 'import com.sanskar.sudokunova.ui.home.HomeRoute\n'
+              if anchor not in text:
+                  raise SystemExit('HomeRoute import anchor missing')
+              text = text.replace(anchor, anchor + history_import, 1)
+          if 'const val HISTORY = "history"' not in text:
+              anchor = '    const val STATISTICS = "statistics"\n'
+              if anchor not in text:
+                  raise SystemExit('STATISTICS route anchor missing')
+              text = text.replace(anchor, anchor + '    const val HISTORY = "history"\n', 1)
+          if 'onHistory = { navController.navigate(Routes.HISTORY) }' not in text:
+              anchor = '                    onStatistics = { navController.navigate(Routes.STATISTICS) },\n'
+              if anchor not in text:
+                  raise SystemExit('HomeRoute statistics callback anchor missing')
+              text = text.replace(anchor, anchor + '                    onHistory = { navController.navigate(Routes.HISTORY) },\n', 1)
+          if 'composable(Routes.HISTORY)' not in text:
+              anchor = '''            composable(Routes.STATISTICS) {
+                  StatisticsRoute(onBack = { navController.popBackStack() })
+              }
+
+          '''
+              if anchor not in text:
+                  raise SystemExit('Statistics composable anchor missing')
+              block = anchor + '''            composable(Routes.HISTORY) {
+                  HistoryRoute(onBack = { navController.popBackStack() })
+              }
+
+          '''
+              text = text.replace(anchor, block, 1)
+          app.write_text(text)
+
+          # Home callbacks and action card
+          home = Path('app/src/main/java/com/sanskar/sudokunova/ui/home/HomeScreen.kt')
+          text = home.read_text()
+          if 'onHistory: () -> Unit,' not in text:
+              text = text.replace(
+                  '    onStatistics: () -> Unit,\n',
+                  '    onStatistics: () -> Unit,\n    onHistory: () -> Unit,\n',
+              )
+          if 'onHistory = onHistory,' not in text:
+              text = text.replace(
+                  '        onStatistics = onStatistics,\n',
+                  '        onStatistics = onStatistics,\n        onHistory = onHistory,\n',
+              )
+          # Add a History button/card adjacent to Statistics using common button/card shapes.
+          if 'R.string.v05_history' not in text:
+              # Prefer a direct button text replacement insertion after Statistics action.
+              candidates = [
+                  '''                    HomeAction(
+                      title = stringResource(R.string.v04_statistics),
+                      onClick = onStatistics,
+                  )
+          ''',
+                  '''                HomeAction(
+                    title = stringResource(R.string.v04_statistics),
+                    onClick = onStatistics,
+                )
+          ''',
+                  '''                    Button(onClick = onStatistics''',
+                  '''                    OutlinedButton(onClick = onStatistics''',
+              ]
+              inserted = False
+              for candidate in candidates[:2]:
+                  if candidate in text:
+                      indent = candidate.split('HomeAction')[0]
+                      addition = candidate + f'''{indent}HomeAction(
+          {indent}    title = stringResource(R.string.v05_history),
+          {indent}    onClick = onHistory,
+          {indent})
+          '''
+                      text = text.replace(candidate, addition, 1)
+                      inserted = True
+                      break
+              if not inserted:
+                  # Generic safest insertion: duplicate the Statistics text action line and change label/callback.
+                  import re
+                  pattern = re.compile(r'(?P<block>[^\n]*onClick\s*=\s*onStatistics[^\n]*\n(?:.*\n){0,5}?.*v04_statistics.*\n)', re.MULTILINE)
+                  match = pattern.search(text)
+                  if match:
+                      block = match.group('block')
+                      history_block = block.replace('onStatistics', 'onHistory').replace('v04_statistics', 'v05_history')
+                      text = text[:match.end()] + history_block + text[match.end():]
+                      inserted = True
+              if not inserted:
+                  raise SystemExit('Unable to locate Statistics action to add History entry')
+          home.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-history-navigation.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt app/src/main/java/com/sanskar/sudokunova/ui/home/HomeScreen.kt
+          git commit -m 'ui: add History destination to Home navigation'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
