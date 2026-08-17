@@ -1,0 +1,131 @@
+name: Apply v0.4 Secondary Screen Localization
+
+on:
+  push:
+    branches:
+      - feature/v0.4-accessibility-localization
+    paths:
+      - .github/workflows/v04-secondary-localization.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.4-accessibility-localization
+          fetch-depth: 0
+
+      - name: Localize Custom Puzzle, Statistics, and About screens
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          def add_import(text, anchor, new_import):
+              if new_import not in text:
+                  if anchor not in text:
+                      raise SystemExit(f'Import anchor not found: {anchor}')
+                  text = text.replace(anchor, anchor + new_import, 1)
+              return text
+
+          # Custom Puzzle
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/custom/CustomPuzzleScreen.kt')
+          text = path.read_text()
+          text = add_import(text, 'import androidx.compose.ui.Modifier\n', 'import androidx.compose.ui.res.stringResource\n')
+          text = add_import(text, 'import com.sanskar.sudokunova.engine.SudokuBoard\n', 'import com.sanskar.sudokunova.R\n')
+          replacements = {
+              'title = { Text("Custom Puzzle") }': 'title = { Text(stringResource(R.string.v04_custom_puzzle)) }',
+              'contentDescription = "Back"': 'contentDescription = stringResource(R.string.v04_back)',
+              'OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text("Erase") }': 'OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_erase)) }',
+              'OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text("Clear") }': 'OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_clear)) }',
+              'Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text("Validate") }': 'Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_validate)) }',
+              'OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text("Solve") }': 'OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }',
+              ') { Text("Play puzzle") }': ') { Text(stringResource(R.string.v04_play_puzzle)) }',
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+          path.write_text(text)
+
+          # Statistics
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/statistics/StatisticsScreen.kt')
+          text = path.read_text()
+          text = add_import(text, 'import androidx.compose.ui.Modifier\n', 'import androidx.compose.ui.res.stringResource\n')
+          text = add_import(text, 'import com.sanskar.sudokunova.data.PlayerStatistics\n', 'import com.sanskar.sudokunova.R\n')
+          replacements = {
+              'title = { Text("Statistics") }': 'title = { Text(stringResource(R.string.v04_statistics)) }',
+              'contentDescription = "Back"': 'contentDescription = stringResource(R.string.v04_back)',
+              'StatCard("Completed", statistics.gamesCompleted.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_completed), statistics.gamesCompleted.toString(), Modifier.weight(1f))',
+              'StatCard("Completion", "${statistics.completionRate}%", Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_completion), "${statistics.completionRate}%", Modifier.weight(1f))',
+              'StatCard("Current streak", statistics.currentStreak.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_current_streak), statistics.currentStreak.toString(), Modifier.weight(1f))',
+              'StatCard("Longest streak", statistics.longestStreak.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_longest_streak), statistics.longestStreak.toString(), Modifier.weight(1f))',
+              'StatCard("Best time", statistics.bestTimeSeconds?.let(::formatTime) ?: "—", Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_best_time), statistics.bestTimeSeconds?.let(::formatTime) ?: "—", Modifier.weight(1f))',
+              'StatCard("Play time", formatTime(statistics.totalPlaySeconds), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_play_time), formatTime(statistics.totalPlaySeconds), Modifier.weight(1f))',
+              'StatCard("Perfect games", statistics.perfectGames.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_perfect_games), statistics.perfectGames.toString(), Modifier.weight(1f))',
+              'StatCard("No-hint games", statistics.noHintGames.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_no_hint_games), statistics.noHintGames.toString(), Modifier.weight(1f))',
+              'StatCard("Mistakes", statistics.totalMistakes.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_mistakes), statistics.totalMistakes.toString(), Modifier.weight(1f))',
+              'StatCard("Hints used", statistics.totalHints.toString(), Modifier.weight(1f))': 'StatCard(stringResource(R.string.v04_hints_used), statistics.totalHints.toString(), Modifier.weight(1f))',
+              'Text("Achievements", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))': 'Text(stringResource(R.string.v04_achievements), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))',
+              'AchievementCard("First Puzzle", "Complete your first puzzle.", statistics.gamesCompleted >= 1)': 'AchievementCard(stringResource(R.string.v04_first_puzzle), stringResource(R.string.v04_first_puzzle_desc), statistics.gamesCompleted >= 1)',
+              'AchievementCard("10 Wins", "Complete 10 puzzles.", statistics.gamesCompleted >= 10)': 'AchievementCard(stringResource(R.string.v04_ten_wins), stringResource(R.string.v04_ten_wins_desc), statistics.gamesCompleted >= 10)',
+              'AchievementCard("100 Wins", "Complete 100 puzzles.", statistics.gamesCompleted >= 100)': 'AchievementCard(stringResource(R.string.v04_hundred_wins), stringResource(R.string.v04_hundred_wins_desc), statistics.gamesCompleted >= 100)',
+              'AchievementCard("Perfect Game", "Finish with no mistakes and no hints.", statistics.perfectGames >= 1)': 'AchievementCard(stringResource(R.string.v04_perfect_game), stringResource(R.string.v04_perfect_game_desc), statistics.perfectGames >= 1)',
+              'AchievementCard("Seven-Day Streak", "Complete puzzles on seven consecutive days.", statistics.longestStreak >= 7)': 'AchievementCard(stringResource(R.string.v04_seven_day_streak), stringResource(R.string.v04_seven_day_streak_desc), statistics.longestStreak >= 7)',
+              'AchievementCard("Thirty-Day Streak", "Complete puzzles on thirty consecutive days.", statistics.longestStreak >= 30)': 'AchievementCard(stringResource(R.string.v04_thirty_day_streak), stringResource(R.string.v04_thirty_day_streak_desc), statistics.longestStreak >= 30)',
+              'Text("Statistics are stored locally on this device.", modifier = Modifier.padding(vertical = 20.dp))': 'Text(stringResource(R.string.v04_statistics_local), modifier = Modifier.padding(vertical = 20.dp))',
+              'if (unlocked) "✓ $title" else "○ $title",': 'if (unlocked) stringResource(R.string.v04_unlocked_format, title) else stringResource(R.string.v04_locked_format, title),',
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+          path.write_text(text)
+
+          # About
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/about/AboutScreen.kt')
+          text = path.read_text()
+          text = add_import(text, 'import androidx.compose.ui.Modifier\n', 'import androidx.compose.ui.res.stringResource\n')
+          text = add_import(text, 'import com.sanskar.sudokunova.BuildConfig\n', 'import com.sanskar.sudokunova.R\n')
+          replacements = {
+              'title = { Text("About SudokuNova") }': 'title = { Text(stringResource(R.string.v04_about_sudokunova)) }',
+              'contentDescription = "Back"': 'contentDescription = stringResource(R.string.v04_back)',
+              'Text("SudokuNova", style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 16.dp))': 'Text(stringResource(R.string.v04_app_name), style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 16.dp))',
+              'Text("Think. Solve. Master the Grid.", color = MaterialTheme.colorScheme.onSurfaceVariant)': 'Text(stringResource(R.string.v04_tagline), color = MaterialTheme.colorScheme.onSurfaceVariant)',
+              'Text("Version ${BuildConfig.VERSION_NAME}", modifier = Modifier.padding(top = 8.dp))': 'Text(stringResource(R.string.v04_version_format, BuildConfig.VERSION_NAME), modifier = Modifier.padding(top = 8.dp))',
+              'Text("Made by the Sanskar", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 12.dp))': 'Text(stringResource(R.string.v04_made_by), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 12.dp))',
+              'Text("Open source", style = MaterialTheme.typography.titleLarge)': 'Text(stringResource(R.string.v04_open_source), style = MaterialTheme.typography.titleLarge)',
+              '"SudokuNova is released under the MIT License. Core gameplay is offline-first, requires no account, and includes no analytics by default."': 'stringResource(R.string.v04_open_source_desc)',
+              ') { Text("Open GitHub repository") }': ') { Text(stringResource(R.string.v04_open_github)) }',
+              'Text("Support SudokuNova", style = MaterialTheme.typography.titleLarge)': 'Text(stringResource(R.string.v04_support_sudokunova), style = MaterialTheme.typography.titleLarge)',
+              'Text("If SudokuNova helps you, you can support continued open-source development through Buy Me a Coffee.")': 'Text(stringResource(R.string.v04_support_desc))',
+              ') { Text("☕ Buy Me a Coffee") }': ') { Text("☕ ${stringResource(R.string.v04_buy_me_a_coffee)}") }',
+              'Text("Contact", style = MaterialTheme.typography.titleLarge)': 'Text(stringResource(R.string.v04_contact), style = MaterialTheme.typography.titleLarge)',
+              'Text("Business: sanskarin@outlook.in")': 'Text(stringResource(R.string.v04_business_email_one))',
+              'Text("Business: sanskarin.business@gmail.com")': 'Text(stringResource(R.string.v04_business_email_two))',
+              'Text("Support: supportramsandesh@gmail.com")': 'Text(stringResource(R.string.v04_support_email))',
+              ') { Text("Email support") }': ') { Text(stringResource(R.string.v04_email_support)) }',
+              '"Privacy: SudokuNova stores settings, active game state, and gameplay statistics locally using Android DataStore. You can reset statistics from Settings. No gameplay data is transmitted by the base application."': 'stringResource(R.string.v04_privacy_summary)',
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v04-secondary-localization.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add \
+            app/src/main/java/com/sanskar/sudokunova/ui/custom/CustomPuzzleScreen.kt \
+            app/src/main/java/com/sanskar/sudokunova/ui/statistics/StatisticsScreen.kt \
+            app/src/main/java/com/sanskar/sudokunova/ui/about/AboutScreen.kt
+          git commit -m 'feat: localize custom statistics and about screens'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.4-accessibility-localization
+            git rebase origin/feature/v0.4-accessibility-localization
+            if git push origin HEAD:feature/v0.4-accessibility-localization; then exit 0; fi
+            sleep 2
+          done
+          exit 1
