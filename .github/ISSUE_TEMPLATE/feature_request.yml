@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest an improvement that fits SudokuNova's product goals
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or user need
+      description: What problem would this solve for Sudoku players or contributors?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe behavior and user experience, not only implementation details.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Gameplay
+        - Sudoku engine
+        - Challenges
+        - Learning / hints
+        - Statistics / history
+        - Accessibility
+        - UI / UX
+        - Settings / themes
+        - Documentation
+        - Build / CI
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Trade-offs / alternatives
+      description: Note complexity, privacy, performance, accessibility, or maintenance considerations.
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Project principles
+      options:
+        - label: The idea does not require payment to access core Sudoku gameplay.
+          required: true
+        - label: The idea does not require unnecessary sensitive permissions.
+          required: true
+        - label: I searched existing issues and ROADMAP.md first.
+          required: true
