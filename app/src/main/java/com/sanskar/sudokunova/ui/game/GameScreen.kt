@@ -2,6 +2,7 @@ package com.sanskar.sudokunova.ui.game
 
 import android.view.SoundEffectConstants
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -37,10 +38,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -89,6 +99,7 @@ fun GameRoute(
             }
             playFeedback()
         },
+        onMoveSelection = viewModel::selectCell,
         onNumber = { number ->
             viewModel.selectNumber(number)
             if (settings.inputMode == InputMode.CELL_FIRST) {
@@ -154,6 +165,7 @@ private fun GameScreen(
     onBack: () -> Unit,
     onNewGame: () -> Unit,
     onCellSelected: (Int) -> Unit,
+    onMoveSelection: (Int) -> Unit,
     onNumber: (Int) -> Unit,
     onErase: () -> Unit,
     onToggleNotes: () -> Unit,
@@ -205,6 +217,7 @@ private fun GameScreen(
                     settings = settings,
                     modifier = Modifier.padding(padding),
                     onCellSelected = onCellSelected,
+                    onMoveSelection = onMoveSelection,
                     onNumber = onNumber,
                     onErase = onErase,
                     onToggleNotes = onToggleNotes,
@@ -256,6 +269,7 @@ private fun GameContent(
     settings: UserSettings,
     modifier: Modifier = Modifier,
     onCellSelected: (Int) -> Unit,
+    onMoveSelection: (Int) -> Unit,
     onNumber: (Int) -> Unit,
     onErase: () -> Unit,
     onToggleNotes: () -> Unit,
@@ -265,7 +279,51 @@ private fun GameContent(
     onPause: () -> Unit,
     onRestart: () -> Unit,
 ) {
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxSize()
+            .focusRequester(focusRequester)
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown || game.status != GameStatus.PLAYING || game.isPaused) {
+                    return@onPreviewKeyEvent false
+                }
+                when (val action = resolveGameKeyboardAction(event.key, event.utf16CodePoint)) {
+                    is GameKeyboardAction.MoveSelection -> {
+                        onMoveSelection(
+                            moveSudokuSelection(
+                                currentIndex = game.selectedIndex,
+                                rowDelta = action.rowDelta,
+                                columnDelta = action.columnDelta,
+                            ),
+                        )
+                        true
+                    }
+                    is GameKeyboardAction.EnterNumber -> {
+                        onNumber(action.value)
+                        true
+                    }
+                    GameKeyboardAction.Erase -> {
+                        onErase()
+                        true
+                    }
+                    GameKeyboardAction.ToggleNotes -> {
+                        onToggleNotes()
+                        true
+                    }
+                    GameKeyboardAction.Hint -> {
+                        onHint()
+                        true
+                    }
+                    null -> false
+                }
+            }
+            .focusable(),
+    ) {
         val wide = maxWidth >= 720.dp
         if (wide) {
             Row(
@@ -406,6 +464,12 @@ private fun ControlsPanel(
             )
             ActionButton(stringResource(R.string.v04_restart), Icons.Default.Refresh, onRestart)
         }
+
+        Text(
+            stringResource(R.string.v06_keyboard_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
