@@ -22,4 +22,18 @@
     <string name="v08_explain_box_line">%1$s में संभावित अंक %2$d केवल %3$s तक सीमित है। %4$s से %2$d हटाएँ।</string>
     <string name="v08_explain_reveal">कोई समर्थित तार्किक प्लेसमेंट नहीं मिला। अधिक मजबूत संकेत चाहिए तो पंक्ति %1$d, स्तंभ %2$d में %3$d दिखाएँ।</string>
     <string name="v08_affected_cells">प्रभावित खाने: %1$s</string>
+
+    <string name="v08_learning_progress">सीखने की प्रगति</string>
+    <string name="v08_learning_progress_desc">तार्किक संकेत और अभ्यास की प्रगति इसी डिवाइस पर स्थानीय रूप से देखें।</string>
+    <string name="v08_hint_views">देखे गए संकेत: %1$d</string>
+    <string name="v08_practice_attempts">अभ्यास प्रयास: %1$d</string>
+    <string name="v08_accuracy">सटीकता: %1$d%%</string>
+    <string name="v08_no_accuracy">सटीकता: अभी कोई प्रयास नहीं</string>
+    <string name="v08_completed_steps">पूरे किए चरण: %1$d</string>
+    <string name="v08_completed_sessions">पूरे किए सत्र: %1$d</string>
+    <string name="v08_total_progress">%1$d संकेत · %2$d अभ्यास प्रयास · %3$d पूरे चरण</string>
+    <string name="v08_reset_learning_progress">सीखने की प्रगति रीसेट करें</string>
+    <string name="v08_reset_learning_progress_question">सीखने की प्रगति रीसेट करें?</string>
+    <string name="v08_reset_learning_progress_body">यह सभी तार्किक तकनीकों के स्थानीय संकेत और अभ्यास की प्रगति मिटा देगा। आपका गेम इतिहास और पहेलियाँ नहीं बदलेंगी।</string>
+    <string name="v08_open_learning_progress">सीखने की प्रगति खोलें</string>
 </resources>
