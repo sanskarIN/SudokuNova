@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sanskar.sudokunova.data.AppPreferencesRepository
+import com.sanskar.sudokunova.data.InputMode
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.ui.theme.AppTheme
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +22,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setTheme(value: AppTheme) = launchUpdate { repository.setTheme(value) }
     fun setDynamicColor(value: Boolean) = launchUpdate { repository.setDynamicColor(value) }
+    fun setInputMode(value: InputMode) = launchUpdate { repository.setInputMode(value) }
     fun setHighlightPeers(value: Boolean) = launchUpdate { repository.setHighlightPeers(value) }
     fun setHighlightSameNumbers(value: Boolean) = launchUpdate { repository.setHighlightSameNumbers(value) }
     fun setAutoCheck(value: Boolean) = launchUpdate { repository.setAutoCheck(value) }
