@@ -46,6 +46,7 @@ private val lessons = listOf(
 fun LearnScreen(
     onBack: () -> Unit,
     onLearningProgress: () -> Unit = {},
+    onGuidedPractice: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -71,6 +72,14 @@ fun LearnScreen(
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(vertical = 16.dp),
                 )
+            }
+            item {
+                OutlinedButton(
+                    onClick = onGuidedPractice,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                ) {
+                    Text(stringResource(R.string.v08_open_guided_practice))
+                }
             }
             item {
                 OutlinedButton(
