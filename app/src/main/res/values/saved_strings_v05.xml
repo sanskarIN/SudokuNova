@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v05_saved_puzzles">Saved Puzzles</string>
+    <string name="v05_save_puzzle">Save puzzle</string>
+    <string name="v05_saved">Saved</string>
+    <string name="v05_saved_success">Puzzle saved locally.</string>
+    <string name="v05_saved_duplicate">This puzzle is already saved.</string>
+    <string name="v05_no_saved_puzzles">No saved puzzles yet.</string>
+    <string name="v05_saved_hint">Validated custom puzzles can be saved here for later play.</string>
+    <string name="v05_play_saved">Play saved puzzle</string>
+    <string name="v05_delete_saved">Delete saved puzzle</string>
+    <string name="v05_source_custom">Custom</string>
+    <string name="v05_source_history">History</string>
+</resources>
