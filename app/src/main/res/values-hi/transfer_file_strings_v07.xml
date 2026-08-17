@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v07_export_backup_file">बैकअप फ़ाइल निर्यात करें</string>
+    <string name="v07_import_backup_file">बैकअप फ़ाइल आयात करें</string>
+    <string name="v07_export_file_success">बैकअप फ़ाइल निर्यात हुई।</string>
+    <string name="v07_export_file_failed">चुनी गई बैकअप फ़ाइल लिखी नहीं जा सकी।</string>
+    <string name="v07_import_file_failed">चुनी गई फ़ाइल से सीमित आकार वाला SudokuNova बैकअप पढ़ा नहीं जा सका।</string>
+    <string name="v07_file_backup_info">फ़ाइल आयात/निर्यात Android के दस्तावेज़ पिकर का उपयोग करता है और व्यापक स्टोरेज अनुमति नहीं माँगता।</string>
+</resources>

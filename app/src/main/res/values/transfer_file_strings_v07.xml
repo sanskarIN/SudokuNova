@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v07_export_backup_file">Export backup file</string>
+    <string name="v07_import_backup_file">Import backup file</string>
+    <string name="v07_export_file_success">Backup file exported.</string>
+    <string name="v07_export_file_failed">Could not write the selected backup file.</string>
+    <string name="v07_import_file_failed">Could not read a bounded SudokuNova backup from the selected file.</string>
+    <string name="v07_file_backup_info">File import/export uses Android’s document picker and does not request broad storage permission.</string>
+</resources>

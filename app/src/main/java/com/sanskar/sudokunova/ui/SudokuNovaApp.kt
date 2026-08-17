@@ -22,6 +22,7 @@ import com.sanskar.sudokunova.ui.saved.SavedPuzzlesRoute
 import com.sanskar.sudokunova.ui.settings.SettingsScreen
 import com.sanskar.sudokunova.ui.statistics.StatisticsRoute
 import com.sanskar.sudokunova.ui.theme.SudokuNovaTheme
+import com.sanskar.sudokunova.ui.transfer.TransferRoute
 
 private object Routes {
     const val HOME = "home"
@@ -32,6 +33,7 @@ private object Routes {
     const val CHALLENGES = "challenges"
     const val HISTORY = "history"
     const val SAVED = "saved"
+    const val TRANSFER = "transfer"
     const val LEARN = "learn"
     const val STATISTICS = "statistics"
     const val SETTINGS = "settings"
@@ -158,6 +160,17 @@ fun SudokuNovaApp(
                 )
             }
 
+            composable(Routes.TRANSFER) {
+                TransferRoute(
+                    onBack = { navController.popBackStack() },
+                    onPlayImported = { puzzle, difficulty ->
+                        navController.navigate(
+                            "game/${difficulty.name}?daily=false&resume=false&custom=$puzzle",
+                        )
+                    },
+                )
+            }
+
             composable(Routes.LEARN) {
                 LearnScreen(onBack = { navController.popBackStack() })
             }
@@ -183,6 +196,7 @@ fun SudokuNovaApp(
                     onReducedMotion = appViewModel::setReducedMotion,
                     onHighContrast = appViewModel::setHighContrast,
                     onMistakeLimit = appViewModel::setMistakeLimit,
+                    onBackupTransfer = { navController.navigate(Routes.TRANSFER) },
                     onResetStatistics = appViewModel::resetStatistics,
                 )
             }

@@ -1,5 +1,22 @@
 # What Changed
 
+## Current v0.7 Development — Safe Sharing / Import / Export / Backup
+
+**Working branch:** `feature/v0.7-safe-sharing`  
+**Target version:** `0.7.0` / versionCode `700`  
+**Milestone issue:** `#19`
+
+v0.7 is actively being verified and is **not yet merged/release-ready**. The branch adds checksum-protected puzzle codes, bounded backup codecs, duplicate-safe local restore, Backup & Transfer UI, clipboard/share actions, Storage Access Framework file import/export without broad storage permission, puzzle sharing from player-data surfaces, and account-free result sharing.
+
+Security hardening includes strict schema/version checks, a 2 MiB backup bound, record-count limits, bounded metadata fields/counters/timestamps, non-negative challenge keys, puzzle/solution consistency, uniqueness validation before imported puzzles are playable, and rejection of modified checksums. Imported Room IDs are never trusted or reused.
+
+Room restore is transactional and duplicate-safe; backed-up DataStore settings are applied only after the Room transaction succeeds. Because Room and DataStore are separate stores, cross-store atomicity is not claimed.
+
+New tests cover puzzle-code validation, backup round trips/tampering, bounded file streams, metadata hardening, duplicate-safe restore, restored settings, and Backup & Transfer navigation. Detailed format/security documentation is in `docs/TRANSFER_BACKUP_V07.md`.
+
+The v0.7 milestone must pass both standard Android CI and API-35 connected instrumentation on the final PR head before merge.
+
+
 ## Current Development State
 
 **Merged cumulative milestone:** `v0.6.0-development`  

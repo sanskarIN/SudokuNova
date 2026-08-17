@@ -1,0 +1,199 @@
+package com.sanskar.sudokunova.data.transfer
+
+import android.content.Context
+import androidx.room.withTransaction
+import com.sanskar.sudokunova.data.AppPreferencesRepository
+import com.sanskar.sudokunova.data.challenge.ChallengeResultEntity
+import com.sanskar.sudokunova.data.history.GameHistoryEntity
+import com.sanskar.sudokunova.data.history.SavedPuzzleEntity
+import com.sanskar.sudokunova.data.history.SudokuNovaDatabase
+import com.sanskar.sudokunova.data.restoreSettings
+import kotlinx.coroutines.flow.first
+
+private const val IMPORTED_REPLAY_SENTINEL = 0L
+
+class BackupRepository(context: Context) {
+    private val appContext = context.applicationContext
+    private val preferences = AppPreferencesRepository(appContext)
+    private val database = SudokuNovaDatabase.get(appContext)
+    private val historyDao = database.gameHistoryDao()
+    private val savedDao = database.savedPuzzleDao()
+    private val challengeDao = database.challengeResultDao()
+
+    suspend fun exportBackup(): SudokuNovaBackup = SudokuNovaBackup(
+        settings = preferences.settings.first(),
+        history = historyDao.observeAll().first().map { entity ->
+            BackupHistoryRecord(
+                puzzle = entity.puzzle,
+                solution = entity.solution,
+                difficulty = entity.difficulty,
+                completed = entity.completed,
+                elapsedSeconds = entity.elapsedSeconds,
+                mistakes = entity.mistakes,
+                hintsUsed = entity.hintsUsed,
+                startedAtEpochMillis = entity.startedAtEpochMillis,
+                completedAtEpochMillis = entity.completedAtEpochMillis,
+                isDailyChallenge = entity.isDailyChallenge,
+                isPerfect = entity.isPerfect,
+                isFavorite = entity.isFavorite,
+                isReplay = entity.replayOfHistoryId != null,
+            )
+        },
+        savedPuzzles = savedDao.observeAll().first().map { entity ->
+            BackupSavedPuzzleRecord(
+                puzzle = entity.puzzle,
+                solution = entity.solution,
+                title = entity.title,
+                difficulty = entity.difficulty,
+                source = entity.source,
+                createdAtEpochMillis = entity.createdAtEpochMillis,
+                isFavorite = entity.isFavorite,
+            )
+        },
+        challengeResults = challengeDao.observeAll().first().map { entity ->
+            BackupChallengeRecord(
+                challengeType = entity.challengeType,
+                challengeKey = entity.challengeKey,
+                difficulty = entity.difficulty,
+                puzzle = entity.puzzle,
+                elapsedSeconds = entity.elapsedSeconds,
+                mistakes = entity.mistakes,
+                hintsUsed = entity.hintsUsed,
+                completedAtEpochMillis = entity.completedAtEpochMillis,
+                perfect = entity.perfect,
+            )
+        },
+    )
+
+    suspend fun exportText(): String = BackupCodec.encode(exportBackup())
+
+    suspend fun importText(raw: String): BackupImportResult? {
+        val backup = BackupCodec.decode(raw) ?: return null
+        return importBackup(backup)
+    }
+
+    suspend fun importBackup(backup: SudokuNovaBackup): BackupImportResult {
+        val existingHistoryEntities = historyDao.observeAll().first()
+        val historySignatures = existingHistoryEntities.map(::historySignature).toMutableSet()
+        val historyIds = existingHistoryEntities.associate { historySignature(it) to it.id }.toMutableMap()
+        val historyFavorites = existingHistoryEntities.associate { historySignature(it) to it.isFavorite }.toMutableMap()
+        val existingSavedByPuzzle = savedDao.observeAll().first().associateBy { it.puzzle }.toMutableMap()
+
+        var historyImported = 0
+        var historySkipped = 0
+        var savedImported = 0
+        var savedSkipped = 0
+        var challengesImported = 0
+        var challengesSkipped = 0
+
+        database.withTransaction {
+            backup.history.forEach { record ->
+                val entity = GameHistoryEntity(
+                    puzzle = record.puzzle,
+                    solution = record.solution,
+                    difficulty = record.difficulty,
+                    completed = record.completed,
+                    elapsedSeconds = record.elapsedSeconds,
+                    mistakes = record.mistakes,
+                    hintsUsed = record.hintsUsed,
+                    startedAtEpochMillis = record.startedAtEpochMillis,
+                    completedAtEpochMillis = record.completedAtEpochMillis,
+                    isDailyChallenge = record.isDailyChallenge,
+                    isPerfect = record.isPerfect,
+                    isFavorite = record.isFavorite,
+                    replayOfHistoryId = if (record.isReplay) IMPORTED_REPLAY_SENTINEL else null,
+                )
+                val signature = historySignature(entity)
+                if (!historySignatures.add(signature)) {
+                    val existingId = historyIds[signature]
+                    if (record.isFavorite && historyFavorites[signature] != true && existingId != null) {
+                        historyDao.setFavorite(existingId, true)
+                        historyFavorites[signature] = true
+                    }
+                    historySkipped++
+                } else {
+                    val id = historyDao.insert(entity)
+                    historyIds[signature] = id
+                    historyFavorites[signature] = record.isFavorite
+                    historyImported++
+                }
+            }
+
+            backup.savedPuzzles.forEach { record ->
+                val existing = existingSavedByPuzzle[record.puzzle]
+                if (existing != null) {
+                    if (record.isFavorite && !existing.isFavorite) {
+                        savedDao.setFavorite(existing.id, true)
+                        existingSavedByPuzzle[record.puzzle] = existing.copy(isFavorite = true)
+                    }
+                    savedSkipped++
+                } else {
+                    val entity = SavedPuzzleEntity(
+                        puzzle = record.puzzle,
+                        solution = record.solution,
+                        title = record.title,
+                        difficulty = record.difficulty,
+                        source = record.source,
+                        createdAtEpochMillis = record.createdAtEpochMillis,
+                        isFavorite = record.isFavorite,
+                    )
+                    val id = savedDao.insert(entity)
+                    if (id > 0L) {
+                        savedImported++
+                        existingSavedByPuzzle[record.puzzle] = entity.copy(id = id)
+                    } else {
+                        val conflicted = savedDao.getByPuzzle(record.puzzle)
+                        if (conflicted != null && record.isFavorite && !conflicted.isFavorite) {
+                            savedDao.setFavorite(conflicted.id, true)
+                        }
+                        savedSkipped++
+                    }
+                }
+            }
+
+            backup.challengeResults.forEach { record ->
+                val id = challengeDao.insert(
+                    ChallengeResultEntity(
+                        challengeType = record.challengeType,
+                        challengeKey = record.challengeKey,
+                        difficulty = record.difficulty,
+                        puzzle = record.puzzle,
+                        elapsedSeconds = record.elapsedSeconds,
+                        mistakes = record.mistakes,
+                        hintsUsed = record.hintsUsed,
+                        completedAtEpochMillis = record.completedAtEpochMillis,
+                        perfect = record.perfect,
+                    ),
+                )
+                if (id > 0L) challengesImported++ else challengesSkipped++
+            }
+        }
+
+        preferences.restoreSettings(backup.settings)
+
+        return BackupImportResult(
+            historyImported = historyImported,
+            historySkipped = historySkipped,
+            savedPuzzlesImported = savedImported,
+            savedPuzzlesSkipped = savedSkipped,
+            challengesImported = challengesImported,
+            challengesSkipped = challengesSkipped,
+            settingsApplied = true,
+        )
+    }
+
+    private fun historySignature(entity: GameHistoryEntity): String = listOf(
+        entity.puzzle,
+        entity.solution,
+        entity.difficulty,
+        entity.completed,
+        entity.elapsedSeconds,
+        entity.mistakes,
+        entity.hintsUsed,
+        entity.startedAtEpochMillis,
+        entity.completedAtEpochMillis,
+        entity.isDailyChallenge,
+        entity.isPerfect,
+        entity.replayOfHistoryId != null,
+    ).joinToString("|")
+}

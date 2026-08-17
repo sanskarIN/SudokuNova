@@ -53,6 +53,7 @@ fun SettingsScreen(
     onReducedMotion: (Boolean) -> Unit,
     onHighContrast: (Boolean) -> Unit,
     onMistakeLimit: (Int) -> Unit,
+    onBackupTransfer: () -> Unit,
     onResetStatistics: () -> Unit,
 ) {
     var showResetDialog by remember { mutableStateOf(false) }
@@ -142,6 +143,17 @@ fun SettingsScreen(
 
             item { HorizontalDivider() }
             item { SectionTitle(stringResource(R.string.v04_data)) }
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.v07_backup_transfer)) },
+                    supportingContent = { Text(stringResource(R.string.v07_backup_transfer_desc)) },
+                    trailingContent = {
+                        TextButton(onClick = onBackupTransfer) {
+                            Text(stringResource(R.string.v07_backup_transfer))
+                        }
+                    },
+                )
+            }
             item {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.v04_reset_statistics)) },
