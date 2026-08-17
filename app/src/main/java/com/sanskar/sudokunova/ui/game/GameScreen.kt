@@ -46,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.game.GameState
 import com.sanskar.sudokunova.game.GameStatus
+import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
 
 @Composable
 fun GameRoute(
@@ -79,10 +80,10 @@ fun GameRoute(
             title = { Text(hint!!.technique.displayName) },
             text = { Text(hint!!.explanation) },
             confirmButton = {
-                TextButton(onClick = viewModel::applyHint) { Text("Apply hint") }
+                TextButton(onClick = viewModel::applyHint) { Text(stringResource(R.string.v04_apply_hint)) }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::dismissHint) { Text("Not now") }
+                TextButton(onClick = viewModel::dismissHint) { Text(stringResource(R.string.v04_not_now)) }
             },
         )
     }
@@ -108,10 +109,10 @@ private fun GameScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("SudokuNova") },
+                title = { Text(stringResource(R.string.v04_app_name)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.v04_back))
                     }
                 },
             )
@@ -125,7 +126,7 @@ private fun GameScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
                     Spacer(Modifier.height(12.dp))
-                    Text("Generating a unique puzzle…")
+                    Text(stringResource(R.string.v04_generating_unique_puzzle))
                 }
             }
 
@@ -136,7 +137,7 @@ private fun GameScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(uiState.message, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(16.dp))
-                    Button(onClick = onNewGame) { Text("New game") }
+                    Button(onClick = onNewGame) { Text(stringResource(R.string.v04_new_game)) }
                 }
             }
 
@@ -160,7 +161,7 @@ private fun GameScreen(
                 if (game.status == GameStatus.COMPLETED) {
                     AlertDialog(
                         onDismissRequest = {},
-                        title = { Text("Puzzle complete!") },
+                        title = { Text(stringResource(R.string.v04_puzzle_complete)) },
                         text = {
                             Text(
                                 "${game.difficulty.displayName} solved in ${formatTime(game.elapsedSeconds)} " +
@@ -168,22 +169,22 @@ private fun GameScreen(
                             )
                         },
                         confirmButton = {
-                            TextButton(onClick = onNewGame) { Text("Play another") }
+                            TextButton(onClick = onNewGame) { Text(stringResource(R.string.v04_play_another)) }
                         },
                         dismissButton = {
-                            TextButton(onClick = onBack) { Text("Home") }
+                            TextButton(onClick = onBack) { Text(stringResource(R.string.v04_home)) }
                         },
                     )
                 } else if (game.status == GameStatus.FAILED) {
                     AlertDialog(
                         onDismissRequest = {},
-                        title = { Text("Mistake limit reached") },
-                        text = { Text("You can restart this puzzle and try again.") },
+                        title = { Text(stringResource(R.string.v04_mistake_limit_reached)) },
+                        text = { Text(stringResource(R.string.v04_restart_try_again)) },
                         confirmButton = {
-                            TextButton(onClick = onRestart) { Text("Restart") }
+                            TextButton(onClick = onRestart) { Text(stringResource(R.string.v04_restart)) }
                         },
                         dismissButton = {
-                            TextButton(onClick = onBack) { Text("Home") }
+                            TextButton(onClick = onBack) { Text(stringResource(R.string.v04_home)) }
                         },
                     )
                 }
@@ -273,12 +274,18 @@ private fun GameMeta(game: GameState, settings: UserSettings) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column {
-            Text(game.difficulty.displayName, style = MaterialTheme.typography.titleLarge)
-            Text("${game.progressPercent}% complete", style = MaterialTheme.typography.bodyLarge)
+            Text(localizedDifficultyLabel(game.difficulty), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.v04_percent_complete, game.progressPercent), style = MaterialTheme.typography.bodyLarge)
         }
         Column(horizontalAlignment = Alignment.End) {
             if (settings.showTimer) Text(formatTime(game.elapsedSeconds))
-            Text("Mistakes: ${game.mistakes}${if (settings.mistakeLimit > 0) "/${settings.mistakeLimit}" else ""}")
+            Text(
+            if (settings.mistakeLimit > 0) {
+                stringResource(R.string.v04_mistakes_limited, game.mistakes, settings.mistakeLimit)
+            } else {
+                stringResource(R.string.v04_mistakes_unlimited, game.mistakes)
+            },
+        )
         }
     }
 }
@@ -303,11 +310,11 @@ private fun ControlsPanel(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            ActionButton("Undo", Icons.AutoMirrored.Filled.Undo, onUndo)
-            ActionButton("Redo", Icons.AutoMirrored.Filled.Redo, onRedo)
-            ActionButton("Erase", Icons.AutoMirrored.Filled.Backspace, onErase)
+            ActionButton(stringResource(R.string.v04_undo), Icons.AutoMirrored.Filled.Undo, onUndo)
+            ActionButton(stringResource(R.string.v04_redo), Icons.AutoMirrored.Filled.Redo, onRedo)
+            ActionButton(stringResource(R.string.v04_erase), Icons.AutoMirrored.Filled.Backspace, onErase)
             ActionButton(
-                if (game.notesMode) "Notes on" else "Notes",
+                if (game.notesMode) stringResource(R.string.v04_notes_on) else stringResource(R.string.v04_notes),
                 Icons.Default.Edit,
                 onToggleNotes,
                 selected = game.notesMode,
@@ -318,13 +325,13 @@ private fun ControlsPanel(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            ActionButton("Hint", Icons.Default.Lightbulb, onHint)
+            ActionButton(stringResource(R.string.v04_hint), Icons.Default.Lightbulb, onHint)
             ActionButton(
-                if (game.isPaused) "Resume" else "Pause",
+                if (game.isPaused) stringResource(R.string.v04_resume) else stringResource(R.string.v04_pause),
                 if (game.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
                 onPause,
             )
-            ActionButton("Restart", Icons.Default.Refresh, onRestart)
+            ActionButton(stringResource(R.string.v04_restart), Icons.Default.Refresh, onRestart)
         }
     }
 }
