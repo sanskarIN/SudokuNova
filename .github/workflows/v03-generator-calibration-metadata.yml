@@ -1,0 +1,71 @@
+name: Apply v0.3 Generated Puzzle Calibration Metadata
+
+on:
+  push:
+    branches:
+      - feature/v0.3-difficulty-calibration
+    paths:
+      - .github/workflows/v03-generator-calibration-metadata.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.3-difficulty-calibration
+          fetch-depth: 0
+
+      - name: Attach calibrated assessment to generated puzzles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/SudokuGenerator.kt')
+          text = path.read_text()
+          old_fields = '''    val assessment: DifficultyAssessment,
+              val seed: Long,
+          )'''
+          new_fields = '''    val assessment: DifficultyAssessment,
+              val calibratedAssessment: CalibratedDifficultyAssessment? = null,
+              val seed: Long,
+          )'''
+          if old_fields not in text:
+              raise SystemExit('GeneratedPuzzle field block not found')
+          text = text.replace(old_fields, new_fields, 1)
+          old_args = '''                    assessment = assessment,
+                      seed = seed,
+          '''
+          new_args = '''                    assessment = assessment,
+                      calibratedAssessment = DifficultyCalibrator.calibrate(
+                          board = puzzle,
+                          legacyAssessment = assessment,
+                          requestedDifficulty = difficulty,
+                      ),
+                      seed = seed,
+          '''
+          if old_args not in text:
+              raise SystemExit('GeneratedPuzzle constructor block not found')
+          text = text.replace(old_args, new_args, 1)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v03-generator-calibration-metadata.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/SudokuGenerator.kt
+          git commit -m 'feat: attach calibrated evidence to generated puzzles'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.3-difficulty-calibration
+            git rebase origin/feature/v0.3-difficulty-calibration
+            if git push origin HEAD:feature/v0.3-difficulty-calibration; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
