@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -42,7 +43,10 @@ private val lessons = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LearnScreen(onBack: () -> Unit) {
+fun LearnScreen(
+    onBack: () -> Unit,
+    onLearningProgress: () -> Unit = {},
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -67,6 +71,14 @@ fun LearnScreen(onBack: () -> Unit) {
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(vertical = 16.dp),
                 )
+            }
+            item {
+                OutlinedButton(
+                    onClick = onLearningProgress,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                ) {
+                    Text(stringResource(R.string.v08_open_learning_progress))
+                }
             }
             items(lessons) { lesson ->
                 Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
