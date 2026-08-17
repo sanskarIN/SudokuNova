@@ -256,7 +256,7 @@ private fun HistoryCard(
     onReplay: () -> Unit,
 ) {
     val difficulty = runCatching { Difficulty.valueOf(item.difficulty) }.getOrNull()
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = LocalConfiguration.current.locales[0]
     val date = item.completedAtEpochMillis?.let { formatDateTime(it, locale) } ?: "—"
 
     Card(modifier = Modifier.fillMaxWidth()) {
