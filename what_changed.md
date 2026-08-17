@@ -1,42 +1,28 @@
 # What Changed
 
-## Current v0.7 Development — Safe Sharing / Import / Export / Backup
-
-**Working branch:** `feature/v0.7-safe-sharing`  
-**Target version:** `0.7.0` / versionCode `700`  
-**Milestone issue:** `#19`
-
-v0.7 is actively being verified and is **not yet merged/release-ready**. The branch adds checksum-protected puzzle codes, bounded backup codecs, duplicate-safe local restore, Backup & Transfer UI, clipboard/share actions, Storage Access Framework file import/export without broad storage permission, puzzle sharing from player-data surfaces, and account-free result sharing.
-
-Security hardening includes strict schema/version checks, a 2 MiB backup bound, record-count limits, bounded metadata fields/counters/timestamps, non-negative challenge keys, puzzle/solution consistency, uniqueness validation before imported puzzles are playable, and rejection of modified checksums. Imported Room IDs are never trusted or reused.
-
-Room restore is transactional and duplicate-safe; backed-up DataStore settings are applied only after the Room transaction succeeds. Because Room and DataStore are separate stores, cross-store atomicity is not claimed.
-
-New tests cover puzzle-code validation, backup round trips/tampering, bounded file streams, metadata hardening, duplicate-safe restore, restored settings, and Backup & Transfer navigation. Detailed format/security documentation is in `docs/TRANSFER_BACKUP_V07.md`.
-
-The v0.7 milestone must pass both standard Android CI and API-35 connected instrumentation on the final PR head before merge.
-
-
 ## Current Development State
 
-**Merged cumulative milestone:** `v0.6.0-development`  
-**Authoritative branch after consolidation:** `main`  
-**Cumulative merge commit:** `2c78872948a18e06555ed8e47229c719f8f126b7`  
-**Merged PR:** `#17` — `feat: consolidate SudokuNova v0.2–v0.6 cumulative development`  
+**Latest merged milestone:** `v0.7.0`  
+**Authoritative cumulative branch:** `main`  
+**v0.7 merged PR:** `#20` — `feat: add v0.7 safe sharing import export and backup`  
+**v0.7 merge commit:** `e51044c9b2f1b1a6a9c9e6522886abeb1e82ec74`  
+**Final verified v0.7 PR head:** `f6c90a3988cc1919cf7ac07cf317e1f65e1318c4`  
+**Completed milestone issue:** `#19`  
+**Next focused milestone issue:** `#21` — v0.8 teaching steps, advanced hints, practice, and local learning progress  
 **Android application ID:** `in.sanskar.sudokunova`  
 **Kotlin source namespace:** `com.sanskar.sudokunova`  
 **License:** MIT  
 **Project commit email:** `sanskarin@outlook.in`
 
-The earlier v0.2–v0.6 phase branches diverged from one another. Their useful work was rebuilt onto one cumulative line, current `main` ancestry was explicitly joined, every required quality gate was rerun, and the consolidated branch was merged only after standard CI and connected API-35 instrumentation were both green.
+SudokuNova now has one cumulative v0.2–v0.7 history. Older divergent phase branches remain reference-only and must not replace or bypass `main`.
 
-## Final v0.2–v0.6 Verification
+## Final v0.7 Verification — GREEN
 
-The final PR head was `807cdc7d1ca0ed988539bc64e1fee7783b985db1`.
+v0.7 was merged only after both required gates passed on the exact clean head `f6c90a3988cc1919cf7ac07cf317e1f65e1318c4`.
 
 ### Standard Android CI — GREEN
 
-Run: `32030210323`
+Run: `32035368535`
 
 Passed:
 
@@ -46,50 +32,224 @@ Passed:
 4. `:app:assembleDebugAndroidTest`.
 5. `:app:lintDebug`.
 6. `:app:assembleDebug`.
-7. report upload.
+7. report upload and post-job cleanup.
 
 ### API-35 Connected Instrumentation — GREEN
 
-Run: `32030210239`
+Run: `32035368537`
 
-Passed on an Android API 35 x86_64 Pixel 6 emulator:
+Passed on the Android API-35 emulator gate, including Compose navigation and Room-backed transfer/restore coverage.
 
-- Compose navigation smoke tests.
-- Room instrumentation tests.
-- Daily/Weekly challenge persistence tests.
-- History/Saved Puzzles navigation coverage.
-- Settings input-mode coverage.
-- Custom Puzzle entry/save coverage.
+The final connected suite includes regression coverage for:
 
-### Connected-test defect fixed before merge
+- duplicate-safe backup restore,
+- restored settings,
+- Favorite-state promotion on natural duplicates,
+- replay-provenance preservation,
+- replay exclusion from normal difficulty summaries,
+- Backup & Transfer navigation,
+- existing History/Saved Puzzles/Challenges/Settings/Custom Puzzle smoke coverage.
 
-The first connected emulator run exposed two smoke-test defects rather than application defects:
+## v0.7 — Safe Sharing / Import / Export / Backup
 
-1. `Play challenge` legitimately appeared more than once in the challenge archive, but the test expected a single node.
-2. The Settings smoke test attempted to resolve off-screen LazyColumn rows before those rows were composed.
+### Puzzle codes
 
-Fixes:
+Classic 9×9 puzzle sharing uses the versioned `SNP1` text format.
 
-- Challenge smoke test now intentionally selects the first matching `Play challenge` node.
-- Settings smoke test verifies the immediately composed Cell-first/Number-first controls instead of assuming off-screen rows are already in the semantics tree.
+Implemented protections:
 
-Both standard and connected gates were rerun on the corrected exact head before merge.
+- maximum code length of 160 characters,
+- CRC32 integrity checksum,
+- version validation,
+- difficulty validation,
+- 81-cell digit validation,
+- Sudoku clue-layout validation,
+- unique-solution validation before an imported puzzle can be played.
 
-## Repository History Consolidation
+Puzzle codes can be copied/shared from supported History and Saved Puzzle surfaces without exposing local database IDs or private application state.
 
-A repository-history audit found that earlier v0.2, v0.3, v0.4, v0.5, and v0.6 work had been developed on divergent branches. Directly merging those branches could remove later functionality.
+### Local backup format
 
-The cumulative line was rebuilt and an explicit two-parent Git merge commit joined current `main` history without replacing the verified cumulative implementation tree:
+Local backup/restore uses the versioned `SNB1` format.
 
-- cumulative parent: `0ffe1e085525f16237de588846269a8819e957bb`
-- then-current main parent: `b404d950481be2d778b00613eeff2d608fb8a475`
-- ancestry-join commit: `fae2ffc0881c2ad52fbee549f9d8dc6f4de39d74`
+Supported exported data:
 
-A temporary one-time Actions synchronization workflow was removed after ancestry was repaired.
+- user settings,
+- completed-game history,
+- saved puzzles,
+- Daily/Weekly challenge results.
 
-## Build / Toolchain
+Intentionally excluded:
 
-Current cumulative build configuration includes:
+- active/in-progress game state,
+- credentials,
+- signing material,
+- arbitrary paths,
+- executable content,
+- raw Room primary keys,
+- raw replay source IDs.
+
+Replay/non-replay provenance is preserved as a bounded semantic flag instead of restoring an untrusted source ID.
+
+### Backup hard limits and validation
+
+The decoder fails closed for invalid or unsupported input.
+
+Current limits/validation include:
+
+- maximum encoded backup size: 2 MiB,
+- maximum history records: 5,000,
+- maximum saved puzzles: 2,000,
+- maximum challenge results: 2,000,
+- bounded Base64 metadata fields,
+- bounded counters and elapsed times,
+- bounded timestamps,
+- chronology validation,
+- non-negative challenge keys,
+- difficulty/challenge enum validation,
+- puzzle/solution consistency,
+- perfect-result consistency,
+- unknown-record rejection,
+- checksum validation,
+- NUL/newline rejection in decoded metadata.
+
+CRC32 is used as an integrity/error-detection checksum; the format does not claim cryptographic authentication.
+
+### Duplicate-safe restore
+
+Room-backed restore is transactional.
+
+Restore behavior:
+
+- imported database IDs are never trusted or reused,
+- natural/exact duplicate History records are skipped,
+- duplicate Saved Puzzles use the existing unique puzzle identity,
+- duplicate challenge results use the existing `(challengeType, challengeKey)` identity,
+- backed-up `Favorite=true` can promote an existing History/Saved Puzzle record,
+- restore never demotes an existing Favorite because a backup says false,
+- replay/non-replay provenance participates in History identity so replay attempts do not collapse into normal attempts,
+- replay attempts remain excluded from normal aggregate difficulty summaries after restore.
+
+Backed-up DataStore settings are applied only after the Room transaction succeeds. Room and DataStore are separate stores, so cross-store atomicity is explicitly not claimed.
+
+### File and clipboard transfer
+
+Backup & Transfer supports:
+
+- clipboard backup copy,
+- Android share sheet backup sharing,
+- restore from clipboard with confirmation,
+- `.snb` file export through Android Storage Access Framework,
+- `.snb` file import through Android Storage Access Framework,
+- no broad storage permission,
+- bounded stream reading before parsing,
+- file read/write on `Dispatchers.IO` rather than blocking the Compose/UI thread.
+
+### Result sharing
+
+Account-free, non-sensitive game result summaries can be shared through Android's standard share sheet.
+
+### v0.7 documentation
+
+Detailed format, privacy, validation, restore behavior, and security notes are maintained in:
+
+- `docs/TRANSFER_BACKUP_V07.md`
+
+## v0.7 Review Defects Found and Fixed Before Merge
+
+### Main-thread document I/O
+
+**Problem:** Storage Access Framework read/write originally occurred directly in Activity-result callbacks.
+
+**Fix:** file operations now run on `Dispatchers.IO`, while Compose state updates return to the coroutine's main context.
+
+### Favorite state lost on duplicate restore
+
+**Problem:** a local duplicate was skipped even when the backup carried `Favorite=true`.
+
+**Fix:** duplicate restore now promotes Favorite state without inserting another row and never demotes a local Favorite.
+
+### Saved-puzzle timestamp bound asymmetry
+
+**Problem:** saved-puzzle creation time initially checked only non-negativity while other imported timestamps had a maximum supported epoch.
+
+**Fix:** saved-puzzle timestamps now use the same bounded epoch range and have regression coverage.
+
+### Replay provenance lost during backup/restore
+
+**Problem:** raw replay source IDs were correctly excluded, but restoring the record as `replayOfHistoryId=null` converted a replay attempt into a normal attempt and could inflate aggregate difficulty statistics.
+
+**Fix:** backup history now carries an `isReplay` semantic flag. Restore maps that to a local non-null sentinel rather than trusting/exporting the original source ID. Replay badges and summary exclusion remain correct after restore.
+
+### Temporary development workflows
+
+Several one-time helper workflows/scripts were used while applying repository-side patches. Every temporary helper was removed from the final PR tree before verification and merge. The final changed-file list contains only product source, tests, resources, documentation, build metadata, and the permanent translation verifier.
+
+## v0.2–v0.6 Cumulative Foundation Preserved
+
+### v0.2 gameplay hardening
+
+- Cell-first input.
+- Number-first input.
+- persisted input-mode preference.
+- persisted selected cell/number.
+- hardware keyboard arrows / 1–9 / erase / Notes / Hint.
+- settings-controlled haptic and click feedback.
+- safe keyboard movement that does not auto-place Number-first selections.
+
+### v0.3 logical difficulty foundation
+
+Current engine-supported logical techniques:
+
+- Naked Single.
+- Hidden Single.
+- Naked Pair.
+- Pointing Pair/Triple.
+- Box-Line Reduction.
+
+Current engine components:
+
+- `LogicalSolver`
+- `LogicalDifficultyAnalyzer`
+- `DifficultyCalibrator`
+- deterministic technique evidence/scoring at aggregate level.
+
+The generator's unique-solution requirement remains authoritative; logical difficulty evidence is additive and must never weaken puzzle correctness.
+
+### v0.4 accessibility/localization
+
+- English/Hindi resource-backed UI.
+- translation-parity CI gate.
+- localized difficulty/theme labels.
+- Sudoku accessibility semantics.
+- high-contrast behavior.
+- Material 3 foundation.
+- adaptive layouts.
+- localized Home/Game/Learn/Settings/Statistics/About/Custom/History/Saved/Challenges/Transfer surfaces.
+
+### v0.5 local player data
+
+Room-backed:
+
+- completed-game History,
+- Favorite History,
+- replay provenance,
+- Saved Puzzles,
+- custom-puzzle saving,
+- difficulty summaries,
+- replay-safe statistics.
+
+### v0.6 challenges
+
+- deterministic Daily challenge keys.
+- deterministic ISO Weekly challenge keys.
+- type-separated deterministic seeds.
+- Daily/Weekly archive.
+- first-completion challenge performance storage.
+- explicit Room migration `MIGRATION_1_2`.
+- challenge provenance in active-game codec v4.
+
+## Current Build / Toolchain
 
 - Android Gradle Plugin `9.3.1`
 - Kotlin `2.4.10`
@@ -100,226 +260,11 @@ Current cumulative build configuration includes:
 - target SDK `37`
 - min SDK `26`
 - Java/JVM target `17`
-- Android versionCode `600`
-- Android versionName `0.6.0`
+- Android versionCode `700`
+- Android versionName `0.7.0`
+- Gradle wrapper `9.5`
 
-Room processing uses KSP2. This replaced the divergent kapt configuration that exposed a build-plugin classpath conflict.
-
-## v0.2 Gameplay Hardening — Restored
-
-### Input modes
-
-- Cell-first mode.
-- Number-first mode.
-- Persisted input-mode preference.
-- Persisted selected cell.
-- Persisted selected number.
-- Number-first selected-number highlight.
-- Number-first cell placement behavior.
-
-### Hardware keyboard
-
-A testable keyboard mapping layer supports:
-
-- Arrow keys: move selected Sudoku cell.
-- `1`–`9`: number input.
-- Backspace/Delete: erase.
-- `N`: toggle Notes.
-- `H`: request Hint.
-- Movement clamped inside the 9×9 board.
-
-Keyboard movement is separated from touch selection so moving with arrows in Number-first mode does not accidentally place a number.
-
-### Feedback
-
-Settings-controlled local feedback is implemented:
-
-- Haptics.
-- Click sound effects.
-- Feedback on number/cell interaction, erase, notes, undo/redo, hint, pause, restart, and hint application.
-
-No network or tracking is required for feedback.
-
-## v0.3 Logical Difficulty Calibration — Restored
-
-Added a human-style logic layer without weakening the existing unique-solution generator gate.
-
-### Supported logical techniques
-
-- Naked Single.
-- Hidden Single.
-- Naked Pair candidate elimination.
-- Pointing Pair/Triple candidate elimination.
-- Box-Line Reduction candidate elimination.
-
-### Engine components
-
-- `LogicalSolver`
-- `LogicalDifficultyAnalyzer`
-- `DifficultyCalibrator`
-- deterministic logical evidence and scoring
-- unresolved-cell / hardest-technique evidence
-
-### Safety coverage
-
-Tests verify:
-
-- deterministic logical solving,
-- no invented values,
-- common-puzzle correctness,
-- generated puzzle correctness,
-- all-difficulty corpus consistency with each unique solution,
-- calibration determinism,
-- combined calibration never silently weakens the legacy score.
-
-The logical calibration remains additive/observational; public generator uniqueness requirements remain intact.
-
-## v0.4 Accessibility / Localization
-
-Preserved and verified:
-
-- English/Hindi resource-backed core UI.
-- translation parity CI check.
-- localized difficulty labels.
-- localized theme labels.
-- resource-backed Sudoku accessibility semantics.
-- High Contrast Sudoku board behavior.
-- Material 3 UI foundation.
-- localized Learn center.
-- localized Home, Game, Settings, Statistics, About, Custom Puzzle, History, Saved Puzzles, and Challenges surfaces.
-- adaptive phone/wider layouts.
-
-## v0.5 Local Player Data
-
-### Room database
-
-The local database includes:
-
-- `GameHistoryEntity`
-- `GameHistoryDao`
-- `SavedPuzzleEntity`
-- `SavedPuzzleDao`
-- `HistoryRepository`
-- versioned `SudokuNovaDatabase`
-- exported Room schema configuration
-
-### Game history
-
-Stored locally:
-
-- puzzle,
-- solution,
-- difficulty,
-- elapsed time,
-- mistakes,
-- hints,
-- timestamps,
-- Daily Challenge marker,
-- perfect-game marker,
-- favorite marker,
-- replay provenance.
-
-History UI includes:
-
-- All/Favorites filters.
-- difficulty filters.
-- per-difficulty summaries.
-- game count.
-- average/best time.
-- perfect-game count.
-- favorite/unfavorite.
-- delete.
-- replay.
-
-Replay attempts are excluded from normal aggregate difficulty summaries so repeated replaying does not inflate progress statistics.
-
-### Saved Puzzles
-
-Implemented:
-
-- local persistence.
-- unique puzzle constraint.
-- All/Favorites filtering.
-- favorite/unfavorite.
-- delete.
-- play saved puzzle.
-- source/difficulty metadata.
-
-Validated custom puzzles can be saved after uniqueness validation with duplicate detection and English/Hindi status feedback.
-
-## v0.6 Daily / Weekly Challenges
-
-### Deterministic challenge identity
-
-- Daily key: local epoch day.
-- Weekly key: ISO week-based year/week.
-- type-separated deterministic seeds.
-- Daily/Weekly namespaces cannot collide even if the numeric key matches.
-
-### Current challenge difficulty defaults
-
-- Daily: `MEDIUM`
-- Weekly: `HARD`
-
-### Challenge persistence
-
-Room stores:
-
-- challenge type,
-- challenge key,
-- difficulty,
-- puzzle,
-- elapsed time,
-- mistakes,
-- hints,
-- completion timestamp,
-- perfect status.
-
-Unique `(challengeType, challengeKey)` indexing preserves one first-completion result for each challenge.
-
-### Room migration
-
-Database v2 adds challenge results through explicit `MIGRATION_1_2`; destructive migration is not used.
-
-### Challenge archive
-
-Implemented:
-
-- Challenges destination.
-- Daily/Weekly selector.
-- 31-day Daily archive.
-- 13-week Weekly archive.
-- current challenge labels.
-- completion status.
-- saved performance.
-- play/replay.
-- English/Hindi challenge resources.
-- offline/account-free behavior.
-
-## Active Game Codec
-
-Active-game persistence is version **4**.
-
-Current state includes:
-
-- puzzle,
-- solution,
-- current board,
-- notes,
-- selected cell,
-- selected number,
-- Notes mode,
-- timer,
-- mistakes,
-- hints,
-- difficulty,
-- seed,
-- pause/status,
-- Daily marker,
-- replay source ID,
-- challenge type/key.
-
-Backward decoding supports v1, v2, v3, and v4 saves. Malformed indices, numbers, counters, replay IDs, notes, or challenge metadata are rejected.
+Room annotation processing uses KSP2.
 
 ## Current Navigation
 
@@ -332,103 +277,85 @@ Backward decoding supports v1, v2, v3, and v4 saves. Malformed indices, numbers,
 - Learn
 - Statistics
 - Settings
+- Backup & Transfer
 - About
 
-## CI / QA Infrastructure
+## Permanent CI / QA Gates
 
 ### Standard CI
 
-`.github/workflows/ci.yml` checks translations, engine tests, JVM tests, instrumentation-test compilation, lint, debug APK assembly, and reports.
+`.github/workflows/ci.yml` verifies:
 
-Lint failures print the full text report into CI logs.
+1. English/Hindi translation parity.
+2. engine tests.
+3. Android JVM tests.
+4. instrumentation-test APK compilation.
+5. Android lint.
+6. debug APK assembly.
+7. report upload.
 
 ### Connected instrumentation
 
 `.github/workflows/instrumentation.yml` runs connected tests on Android API 35 using an x86_64 Pixel 6 emulator with KVM and animations disabled.
 
-### Compose smoke tests
+## Important Historical Defects Already Fixed
 
-Current smoke coverage includes:
-
-- Home.
-- Challenges.
-- History.
-- Saved Puzzles.
-- Settings Cell-first/Number-first controls.
-- Custom Puzzle.
-
-### Engine and state regression coverage
-
-Includes:
-
-- Sudoku solver/generator validity and uniqueness.
-- v4 active-game round trip.
-- v1/v3 save migration.
-- malformed save rejection.
-- deterministic challenge keys.
-- keyboard mapping and grid movement.
-- logical technique safety.
-- all-difficulty logical corpus.
-
-## Important Bugs / Build Problems Fixed
-
-- Kotlin `in.*` package-keyword compiler failure → source namespace moved to `com.sanskar.sudokunova` while preserving Android application ID.
-- Compose invalid `weight` imports.
-- incorrect solver regression assertion.
+- Kotlin `in.*` package-keyword compiler failure → source namespace moved to `com.sanskar.sudokunova` while Android application ID remained unchanged.
+- invalid Compose `weight` imports.
+- solver regression assertion error.
 - DataStore typed statistics reset issue.
-- custom-puzzle solution preview data-loss issue.
-- Gradle wrapper push race during initial bootstrap.
-- Android unit-test JUnit API mismatch.
-- divergent phase history that could drop features.
+- custom-puzzle solution preview data loss.
+- Gradle wrapper bootstrap push race.
+- Android unit-test JUnit mismatch.
+- divergent v0.2–v0.6 branch histories that could drop features.
 - Room kapt/plugin classpath conflict → KSP2.
-- missing cumulative Room DAO/database sources.
+- missing cumulative DAO/database files.
 - duplicate localization helpers.
 - Compose locale observability lint error.
-- obsolete untranslated bootstrap resources.
+- obsolete untranslated resources.
 - challenge saved-state provenance mismatch.
 - replay statistics inflation risk.
-- connected Compose smoke-test assumptions about duplicate/off-screen nodes.
+- connected Compose assumptions about duplicate/off-screen nodes.
+- v0.7 main-thread backup file I/O.
+- v0.7 duplicate Favorite-state loss.
+- v0.7 replay-provenance loss after restore.
 
-## Next Milestone
+## Next Milestone — v0.8 Learning / Advanced Hints
 
-GitHub issue `#19` tracks **v0.7 — safe sharing, import/export, and backup/restore**.
+Focused GitHub issue: `#21` — **teaching steps, advanced hints, practice, and local learning progress**.
 
-Planned scope:
+The existing `LogicalSolver` already detects Naked Single, Hidden Single, Naked Pair, Pointing Pair/Triple, and Box-Line Reduction. The current `HintEngine` exposes only Naked Single, Hidden Single, and a stronger Reveal fallback.
 
-- versioned safe Classic 9×9 puzzle-code format.
-- copy/share puzzle code.
-- bounded and strictly validated paste/import.
-- versioned local user-data export/import.
-- backup/restore UI.
-- settings/history/saved-puzzles/challenge-results backup support.
-- duplicate/conflict handling without silent overwrite.
-- destructive-action confirmations.
-- result-sharing foundation without requiring an account.
-- English/Hindi resources.
-- codec/validator tests.
-- Room/import tests.
-- Compose smoke tests.
-- privacy/security/data-storage/backup documentation updates.
+v0.8 should therefore start by adding a deterministic, platform-independent **teaching-step evidence model** rather than duplicating solving logic in Compose.
+
+Planned order:
+
+1. structured teaching-step model with technique/source/target/candidate/placement evidence;
+2. deterministic step finder for currently proven techniques;
+3. tests proving every placement/elimination is solution-safe;
+4. refactor HintEngine to consume structured steps;
+5. localized app-layer explanations and board highlighting;
+6. interactive practice states;
+7. local learning progress;
+8. Hidden Pairs/Triples and Naked Triples only after correctness tests;
+9. X-Wing only after deterministic elimination evidence and regression coverage;
+10. no Sudoku variants until Classic 9×9 learning/hint behavior remains stable.
+
+v0.8 merge gate remains: translation parity, engine tests, Android JVM tests, instrumentation compilation, lint, debug APK assembly, and API-35 connected tests on the final clean PR head.
 
 ## Later Milestones
 
-### v0.8
-
-- advanced logical hints.
-- practice mode.
-- learning progress.
-- selected variants only after Classic 9×9 remains stable.
-
 ### v0.9
 
-- full device matrix.
-- performance profiling.
-- accessibility audit.
-- dependency/license audit.
-- security/privacy audit.
-- secure release-signing workflow.
-- production APK/AAB verification.
-- final screenshots/store assets.
+- full device matrix,
+- performance profiling,
+- accessibility audit,
+- dependency/license audit,
+- security/privacy audit,
+- release signing through repository secrets only,
+- production APK/AAB verification,
+- screenshots/store assets,
+- final documentation audit.
 
 ### v1.0
 
@@ -449,4 +376,4 @@ Stable release/tag only after all required functional, migration, CI, connected-
 
 ## Commit Policy
 
-Project-authored work continues to use many focused Conventional Commit-style commits (`feat:`, `fix:`, `test:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than one giant implementation commit.
+Project-authored work continues to use focused Conventional Commit-style messages (`feat:`, `fix:`, `test:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than one giant implementation commit.
