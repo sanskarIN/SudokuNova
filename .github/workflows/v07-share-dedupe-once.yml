@@ -1,0 +1,71 @@
+name: Wire v0.7 Share and Dedupe Once
+
+on:
+  push:
+    branches:
+      - feature/v0.7-safe-sharing
+    paths:
+      - '.github/workflows/v07-share-dedupe-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v6
+        with:
+          ref: feature/v0.7-safe-sharing
+          fetch-depth: 0
+
+      - name: Add puzzle sharing actions and history dedupe hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          history = Path('app/src/main/java/com/sanskar/sudokunova/ui/history/HistoryScreen.kt')
+          text = history.read_text()
+          if 'ui.transfer.PuzzleShareActions' not in text:
+              text = text.replace(
+                  'import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel\n',
+                  'import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel\nimport com.sanskar.sudokunova.ui.transfer.PuzzleShareActions\n',
+              )
+          marker = '''            Button(\n                onClick = onReplay,\n                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),\n            ) {\n                Text(stringResource(R.string.v05_replay))\n            }\n'''
+          if 'PuzzleShareActions(' not in text:
+              replacement = marker + '''            if (difficulty != null) {\n                PuzzleShareActions(\n                    puzzle = item.puzzle,\n                    difficulty = difficulty,\n                    modifier = Modifier.padding(top = 8.dp),\n                )\n            }\n'''
+              text = text.replace(marker, replacement)
+          history.write_text(text)
+
+          saved = Path('app/src/main/java/com/sanskar/sudokunova/ui/saved/SavedPuzzlesScreen.kt')
+          text = saved.read_text()
+          if 'ui.transfer.PuzzleShareActions' not in text:
+              text = text.replace(
+                  'import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel\n',
+                  'import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel\nimport com.sanskar.sudokunova.ui.transfer.PuzzleShareActions\n',
+              )
+          marker = '''            Button(\n                onClick = onPlay,\n                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),\n            ) {\n                Text(stringResource(R.string.v05_play_saved))\n            }\n'''
+          if 'PuzzleShareActions(' not in text:
+              replacement = marker + '''            if (difficulty != null) {\n                PuzzleShareActions(\n                    puzzle = item.puzzle,\n                    difficulty = difficulty,\n                    modifier = Modifier.padding(top = 8.dp),\n                )\n            }\n'''
+              text = text.replace(marker, replacement)
+          saved.write_text(text)
+
+          repo = Path('app/src/main/java/com/sanskar/sudokunova/data/transfer/BackupRepository.kt')
+          text = repo.read_text()
+          text = text.replace(
+              '''        entity.isDailyChallenge,\n        entity.isPerfect,\n        entity.isFavorite,\n''',
+              '''        entity.isDailyChallenge,\n        entity.isPerfect,\n''',
+          )
+          repo.write_text(text)
+          PY
+
+          git config user.name "Sanskar"
+          git config user.email "sanskarin@outlook.in"
+          git add app/src/main/java/com/sanskar/sudokunova/ui/history/HistoryScreen.kt \
+                  app/src/main/java/com/sanskar/sudokunova/ui/saved/SavedPuzzlesScreen.kt \
+                  app/src/main/java/com/sanskar/sudokunova/data/transfer/BackupRepository.kt
+          git commit -m "feat: expose puzzle sharing and harden restore dedupe" || true
+          git push origin HEAD:feature/v0.7-safe-sharing
