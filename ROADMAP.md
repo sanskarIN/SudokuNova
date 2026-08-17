@@ -162,3 +162,7 @@ Only if they can be implemented without compromising privacy or Android quality:
 ☕ Support continued open-source development: https://buymeacoffee.com/sanskarIN
 
 **Made by the Sanskar**
+
+## v0.7 — Safe Sharing / Import / Export / Backup
+
+In active development on the cumulative branch line. Scope includes versioned puzzle codes, checksum/bounds validation, duplicate-safe local backup restore, clipboard/share, Android document-picker file transfer, puzzle/result sharing, English/Hindi resources, and security/testing documentation. Merge requires standard CI plus API-35 connected instrumentation.
