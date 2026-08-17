@@ -34,6 +34,7 @@ import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.history.SavedPuzzleEntity
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
+import com.sanskar.sudokunova.ui.transfer.PuzzleShareActions
 
 @Composable
 fun SavedPuzzlesRoute(
@@ -185,6 +186,13 @@ private fun SavedPuzzleCard(
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             ) {
                 Text(stringResource(R.string.v05_play_saved))
+            }
+            if (difficulty != null) {
+                PuzzleShareActions(
+                    puzzle = item.puzzle,
+                    difficulty = difficulty,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
         }
     }

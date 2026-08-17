@@ -163,6 +163,5 @@ class BackupRepository(context: Context) {
         entity.completedAtEpochMillis,
         entity.isDailyChallenge,
         entity.isPerfect,
-        entity.isFavorite,
     ).joinToString("|")
 }
