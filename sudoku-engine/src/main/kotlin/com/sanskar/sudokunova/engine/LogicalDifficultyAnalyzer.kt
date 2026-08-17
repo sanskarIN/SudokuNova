@@ -12,6 +12,7 @@ data class LogicalDifficultyEvidence(
     val nakedSingles: Int,
     val hiddenSingles: Int,
     val nakedPairSignals: Int,
+    val nakedTripleSignals: Int,
     val pointingSignals: Int,
     val boxLineReductionSignals: Int,
     val unresolvedCells: Int,
@@ -26,7 +27,7 @@ data class LogicalDifficultyEvidence(
         get() = when {
             startingEmptyCells == 0 -> LogicalDifficultyBand.SOLVED
             solvedWithSingles -> LogicalDifficultyBand.SINGLES_ONLY
-            nakedPairSignals + pointingSignals + boxLineReductionSignals > 0 ->
+            nakedPairSignals + nakedTripleSignals + pointingSignals + boxLineReductionSignals > 0 ->
                 LogicalDifficultyBand.INTERMEDIATE_TECHNIQUES_LIKELY
             else -> LogicalDifficultyBand.ADVANCED_TECHNIQUES_LIKELY
         }
@@ -36,6 +37,7 @@ data class LogicalDifficultyEvidence(
             startingEmptyCells * 2 +
                 hiddenSingles * 3 +
                 nakedPairSignals * 10 +
+                nakedTripleSignals * 11 +
                 pointingSignals * 12 +
                 boxLineReductionSignals * 14 +
                 unresolvedCells * 20
@@ -75,6 +77,7 @@ object LogicalDifficultyAnalyzer {
             nakedSingles = nakedSingles,
             hiddenSingles = hiddenSingles,
             nakedPairSignals = countNakedPairSignals(remainingCandidates),
+            nakedTripleSignals = countNakedTripleSignals(remainingCandidates),
             pointingSignals = countPointingSignals(remainingCandidates),
             boxLineReductionSignals = countBoxLineReductionSignals(remainingCandidates),
             unresolvedCells = SudokuBoard.CELL_COUNT - board.clueCount,
@@ -122,6 +125,9 @@ object LogicalDifficultyAnalyzer {
         }
         return signals
     }
+
+    private fun countNakedTripleSignals(candidates: Map<Int, Set<Int>>): Int =
+        units().count { unit -> findNakedSubset(unit, candidates, subsetSize = 3) != null }
 
     private fun countPointingSignals(candidates: Map<Int, Set<Int>>): Int {
         var signals = 0
