@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v06_input_mode">इनपुट मोड</string>
+    <string name="v06_input_mode_desc">पहले सेल चुनना है या पहले संख्या चुननी है, यह तय करें।</string>
+    <string name="v06_cell_first">पहले सेल</string>
+    <string name="v06_number_first">पहले संख्या</string>
+    <string name="v06_keyboard_hint">कीबोर्ड: ऐरो कुंजियाँ चलाएँ, 1–9 संख्या भरें, N नोट्स बदलता है, Backspace मिटाता है और H संकेत खोलता है।</string>
+</resources>
