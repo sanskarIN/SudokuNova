@@ -22,4 +22,18 @@
     <string name="v08_explain_box_line">In %1$s, candidate %2$d is confined to %3$s. Remove %2$d from %4$s.</string>
     <string name="v08_explain_reveal">No supported logical placement was found. Reveal row %1$d, column %2$d as %3$d only if you want a stronger hint.</string>
     <string name="v08_affected_cells">Affected cells: %1$s</string>
+
+    <string name="v08_learning_progress">Learning Progress</string>
+    <string name="v08_learning_progress_desc">Track logical hints and practice locally on this device.</string>
+    <string name="v08_hint_views">Hint views: %1$d</string>
+    <string name="v08_practice_attempts">Practice attempts: %1$d</string>
+    <string name="v08_accuracy">Accuracy: %1$d%%</string>
+    <string name="v08_no_accuracy">Accuracy: no attempts yet</string>
+    <string name="v08_completed_steps">Completed steps: %1$d</string>
+    <string name="v08_completed_sessions">Completed sessions: %1$d</string>
+    <string name="v08_total_progress">%1$d hints · %2$d practice attempts · %3$d completed steps</string>
+    <string name="v08_reset_learning_progress">Reset learning progress</string>
+    <string name="v08_reset_learning_progress_question">Reset learning progress?</string>
+    <string name="v08_reset_learning_progress_body">This clears local hint and practice progress for every logical technique. Your game history and puzzles are not changed.</string>
+    <string name="v08_open_learning_progress">Open learning progress</string>
 </resources>
