@@ -61,4 +61,14 @@ class MainActivityTest {
         composeRule.onNodeWithText("Save puzzle").assertIsDisplayed()
         composeRule.onNodeWithText("Play puzzle").assertIsDisplayed()
     }
+
+    @Test
+    fun learningProgressIsReachableFromLearn() {
+        composeRule.onNodeWithText("Learn").performScrollTo().performClick()
+        composeRule.onNodeWithText("Learn Sudoku").assertIsDisplayed()
+        composeRule.onNodeWithText("Open learning progress").performScrollTo().performClick()
+        composeRule.onNodeWithText("Learning Progress").assertIsDisplayed()
+        composeRule.onNodeWithText("Naked Single").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Hint views: 0").performScrollTo().assertIsDisplayed()
+    }
 }
