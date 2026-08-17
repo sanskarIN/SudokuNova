@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.sanskar.sudokunova.data.InputMode
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.ui.theme.AppTheme
 
@@ -38,6 +39,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onTheme: (AppTheme) -> Unit,
     onDynamicColor: (Boolean) -> Unit,
+    onInputMode: (InputMode) -> Unit,
     onHighlightPeers: (Boolean) -> Unit,
     onHighlightSame: (Boolean) -> Unit,
     onAutoCheck: (Boolean) -> Unit,
@@ -90,6 +92,25 @@ fun SettingsScreen(
 
             item { HorizontalDivider() }
             item { SectionTitle("Gameplay") }
+            item {
+                ListItem(
+                    headlineContent = { Text("Input mode") },
+                    supportingContent = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterChip(
+                                selected = settings.inputMode == InputMode.CELL_FIRST,
+                                onClick = { onInputMode(InputMode.CELL_FIRST) },
+                                label = { Text("Cell first") },
+                            )
+                            FilterChip(
+                                selected = settings.inputMode == InputMode.NUMBER_FIRST,
+                                onClick = { onInputMode(InputMode.NUMBER_FIRST) },
+                                label = { Text("Number first") },
+                            )
+                        }
+                    },
+                )
+            }
             item { ToggleSetting("Highlight peers", "Highlight the selected row, column and box.", settings.highlightPeers, onHighlightPeers) }
             item { ToggleSetting("Highlight same numbers", "Highlight matching placed values.", settings.highlightSameNumbers, onHighlightSame) }
             item { ToggleSetting("Auto-check mistakes", "Mark entries that disagree with the solution.", settings.autoCheckMistakes, onAutoCheck) }
