@@ -22,6 +22,7 @@ object BackupCodec {
     private const val MAX_TEXT_FIELD_BYTES = 512
     private const val MAX_COUNTER = 1_000_000
     private const val MAX_ELAPSED_SECONDS = 315_576_000L
+    private const val MAX_EPOCH_MILLIS = 32_503_680_000_000L
 
     fun encode(backup: SudokuNovaBackup): String {
         require(backup.history.size <= MAX_HISTORY_RECORDS)
@@ -131,8 +132,9 @@ object BackupCodec {
     private fun encodeHistory(record: BackupHistoryRecord): String {
         validatePuzzleAndSolution(record.puzzle, record.solution)
         validateCounters(record.elapsedSeconds, record.mistakes, record.hintsUsed)
-        require(record.startedAtEpochMillis >= 0L)
-        require(record.completedAtEpochMillis == null || record.completedAtEpochMillis >= 0L)
+        require(record.startedAtEpochMillis in 0..MAX_EPOCH_MILLIS)
+        require(record.completedAtEpochMillis == null || record.completedAtEpochMillis in record.startedAtEpochMillis..MAX_EPOCH_MILLIS)
+        require(record.isPerfect == (record.mistakes == 0 && record.hintsUsed == 0))
         Difficulty.valueOf(record.difficulty)
         return listOf(
             "H",
@@ -159,8 +161,10 @@ object BackupCodec {
         val mistakes = fields[6].toInt()
         val hints = fields[7].toInt()
         validateCounters(elapsed, mistakes, hints)
-        val started = fields[8].toLong().also { require(it >= 0L) }
-        val completedAt = fields[9].takeIf(String::isNotBlank)?.toLong()?.also { require(it >= 0L) }
+        val started = fields[8].toLong().also { require(it in 0..MAX_EPOCH_MILLIS) }
+        val completedAt = fields[9].takeIf(String::isNotBlank)?.toLong()?.also { require(it in started..MAX_EPOCH_MILLIS) }
+        val perfect = fields[11].toBooleanStrict()
+        require(perfect == (mistakes == 0 && hints == 0))
         return BackupHistoryRecord(
             puzzle = fields[1],
             solution = fields[2],
@@ -172,7 +176,7 @@ object BackupCodec {
             startedAtEpochMillis = started,
             completedAtEpochMillis = completedAt,
             isDailyChallenge = fields[10].toBooleanStrict(),
-            isPerfect = fields[11].toBooleanStrict(),
+            isPerfect = perfect,
             isFavorite = fields[12].toBooleanStrict(),
         )
     }
@@ -219,7 +223,9 @@ object BackupCodec {
         Difficulty.valueOf(record.difficulty)
         validatePuzzle(record.puzzle)
         validateCounters(record.elapsedSeconds, record.mistakes, record.hintsUsed)
-        require(record.completedAtEpochMillis >= 0L)
+        require(record.challengeKey >= 0L)
+        require(record.completedAtEpochMillis in 0..MAX_EPOCH_MILLIS)
+        require(record.perfect == (record.mistakes == 0 && record.hintsUsed == 0))
         return listOf(
             "C",
             record.challengeType,
@@ -237,14 +243,16 @@ object BackupCodec {
     private fun decodeChallenge(fields: List<String>): BackupChallengeRecord {
         require(fields.size == 10)
         ChallengeType.valueOf(fields[1])
-        val key = fields[2].toLong()
+        val key = fields[2].toLong().also { require(it >= 0L) }
         Difficulty.valueOf(fields[3])
         validatePuzzle(fields[4])
         val elapsed = fields[5].toLong()
         val mistakes = fields[6].toInt()
         val hints = fields[7].toInt()
         validateCounters(elapsed, mistakes, hints)
-        val completedAt = fields[8].toLong().also { require(it >= 0L) }
+        val completedAt = fields[8].toLong().also { require(it in 0..MAX_EPOCH_MILLIS) }
+        val perfect = fields[9].toBooleanStrict()
+        require(perfect == (mistakes == 0 && hints == 0))
         return BackupChallengeRecord(
             challengeType = fields[1],
             challengeKey = key,
@@ -254,7 +262,7 @@ object BackupCodec {
             mistakes = mistakes,
             hintsUsed = hints,
             completedAtEpochMillis = completedAt,
-            perfect = fields[9].toBooleanStrict(),
+            perfect = perfect,
         )
     }
 

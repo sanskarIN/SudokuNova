@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.ui.transfer
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.sanskar.sudokunova.data.transfer.BackupCodec
 import com.sanskar.sudokunova.data.transfer.BackupImportResult
 import com.sanskar.sudokunova.data.transfer.BackupRepository
 import com.sanskar.sudokunova.engine.PuzzleCodeCodec
@@ -76,6 +77,10 @@ class TransferViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun restoreBackup(raw: String) {
+        if (raw.length > BackupCodec.MAX_BACKUP_BYTES) {
+            _uiState.value = _uiState.value.copy(importResult = null, status = TransferStatus.RESTORE_INVALID)
+            return
+        }
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(busy = true, importResult = null, status = TransferStatus.IDLE)
             val result = runCatching { withContext(Dispatchers.IO) { repository.importText(raw) } }.getOrNull()
