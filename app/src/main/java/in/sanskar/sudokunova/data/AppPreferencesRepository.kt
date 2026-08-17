@@ -133,7 +133,18 @@ class AppPreferencesRepository(
 
     suspend fun resetStatistics() {
         context.sudokuNovaDataStore.edit { preferences ->
-            Keys.STAT_KEYS.forEach(preferences::remove)
+            preferences.remove(Keys.GAMES_STARTED)
+            preferences.remove(Keys.GAMES_COMPLETED)
+            preferences.remove(Keys.GAMES_ABANDONED)
+            preferences.remove(Keys.TOTAL_PLAY_SECONDS)
+            preferences.remove(Keys.BEST_TIME_SECONDS)
+            preferences.remove(Keys.TOTAL_MISTAKES)
+            preferences.remove(Keys.TOTAL_HINTS)
+            preferences.remove(Keys.PERFECT_GAMES)
+            preferences.remove(Keys.NO_HINT_GAMES)
+            preferences.remove(Keys.CURRENT_STREAK)
+            preferences.remove(Keys.LONGEST_STREAK)
+            preferences.remove(Keys.LAST_COMPLETED_EPOCH_DAY)
         }
     }
 
@@ -173,20 +184,5 @@ class AppPreferencesRepository(
         val CURRENT_STREAK = intPreferencesKey("current_streak")
         val LONGEST_STREAK = intPreferencesKey("longest_streak")
         val LAST_COMPLETED_EPOCH_DAY = longPreferencesKey("last_completed_epoch_day")
-
-        val STAT_KEYS = listOf(
-            GAMES_STARTED,
-            GAMES_COMPLETED,
-            GAMES_ABANDONED,
-            TOTAL_PLAY_SECONDS,
-            BEST_TIME_SECONDS,
-            TOTAL_MISTAKES,
-            TOTAL_HINTS,
-            PERFECT_GAMES,
-            NO_HINT_GAMES,
-            CURRENT_STREAK,
-            LONGEST_STREAK,
-            LAST_COMPLETED_EPOCH_DAY,
-        )
     }
 }
