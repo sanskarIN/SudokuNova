@@ -50,6 +50,8 @@ class GameViewModel(
     }.getOrDefault(Difficulty.EASY)
     private val dailyChallenge = savedStateHandle.get<Boolean>("daily") ?: false
     private val resumeRequested = savedStateHandle.get<Boolean>("resume") ?: false
+    private val customPuzzle = savedStateHandle.get<String>("custom")
+        ?.takeIf { it.length == SudokuBoard.CELL_COUNT }
 
     private val _uiState = MutableStateFlow<GameScreenState>(GameScreenState.Loading)
     val uiState: StateFlow<GameScreenState> = _uiState.asStateFlow()
@@ -207,21 +209,26 @@ class GameViewModel(
             }
 
             if (restored != null && restored.status == GameStatus.PLAYING) {
-                _uiState.value = GameScreenState.Ready(restored.copy(isPaused = false))
-                persist(restored.copy(isPaused = false))
+                val resumed = restored.copy(isPaused = false)
+                _uiState.value = GameScreenState.Ready(resumed)
+                persist(resumed)
                 return@launch
             }
 
             runCatching {
-                val seed = if (dailyChallenge) {
-                    LocalDate.now().toEpochDay() * 1_000L + requestedDifficulty.ordinal
+                if (customPuzzle != null) {
+                    createCustomGame(customPuzzle)
                 } else {
-                    Random.nextLong()
+                    val seed = if (dailyChallenge) {
+                        LocalDate.now().toEpochDay() * 1_000L + requestedDifficulty.ordinal
+                    } else {
+                        Random.nextLong()
+                    }
+                    val generated = withContext(Dispatchers.Default) {
+                        generator.generate(requestedDifficulty, seed)
+                    }
+                    GameState.fromGenerated(generated, dailyChallenge)
                 }
-                val generated = withContext(Dispatchers.Default) {
-                    generator.generate(requestedDifficulty, seed)
-                }
-                GameState.fromGenerated(generated, dailyChallenge)
             }.onSuccess { game ->
                 repository.recordGameStarted()
                 _uiState.value = GameScreenState.Ready(game)
@@ -230,6 +237,22 @@ class GameViewModel(
                 _uiState.value = GameScreenState.Error(error.message ?: "Puzzle generation failed.")
             }
         }
+    }
+
+    private suspend fun createCustomGame(encodedPuzzle: String): GameState = withContext(Dispatchers.Default) {
+        val puzzle = SudokuBoard.parse(encodedPuzzle)
+        require(puzzle.isValid()) { "The custom puzzle contains contradictory clues." }
+        val analysis = solver.analyze(puzzle, solutionLimit = 2)
+        require(analysis.solutionCount == 1 && analysis.solution != null) {
+            "The custom puzzle must have exactly one solution before it can be played."
+        }
+        GameState(
+            puzzle = puzzle,
+            solution = requireNotNull(analysis.solution),
+            board = puzzle,
+            difficulty = requestedDifficulty,
+            seed = 0L,
+        )
     }
 
     private fun startTimer() {
