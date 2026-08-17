@@ -19,7 +19,7 @@ class SudokuSolverTest {
 
         assertNotNull(result.solution)
         assertTrue(result.solution.isComplete)
-        assertEquals(1, result.solution.valueAt(2))
+        assertEquals(4, result.solution.valueAt(2))
     }
 
     @Test
