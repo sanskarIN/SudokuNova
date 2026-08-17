@@ -39,10 +39,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.game.GameState
 import com.sanskar.sudokunova.game.GameStatus
@@ -280,12 +282,12 @@ private fun GameMeta(game: GameState, settings: UserSettings) {
         Column(horizontalAlignment = Alignment.End) {
             if (settings.showTimer) Text(formatTime(game.elapsedSeconds))
             Text(
-            if (settings.mistakeLimit > 0) {
-                stringResource(R.string.v04_mistakes_limited, game.mistakes, settings.mistakeLimit)
-            } else {
-                stringResource(R.string.v04_mistakes_unlimited, game.mistakes)
-            },
-        )
+                if (settings.mistakeLimit > 0) {
+                    stringResource(R.string.v04_mistakes_limited, game.mistakes, settings.mistakeLimit)
+                } else {
+                    stringResource(R.string.v04_mistakes_unlimited, game.mistakes)
+                },
+            )
         }
     }
 }
