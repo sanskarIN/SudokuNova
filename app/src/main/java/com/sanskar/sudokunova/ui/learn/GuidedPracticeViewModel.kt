@@ -125,11 +125,11 @@ class GuidedPracticeViewModel(
             val sequence = hintEngine.nextTeachingHint(generated.puzzle) ?: return@repeat
             val placementStep = sequence.steps.last()
             if (placementStep.technique !in PLACEMENT_TECHNIQUES) return@repeat
+            val initialSelection = generated.puzzle.emptyIndices().firstOrNull()
+                ?: sequence.placement.cellIndex
 
             return GuidedPracticeUiState.Ready(
-                game = GameState.fromGenerated(generated).copy(
-                    selectedIndex = sequence.placement.cellIndex,
-                ),
+                game = GameState.fromGenerated(generated).copy(selectedIndex = initialSelection),
                 sequence = sequence,
                 practice = TeachingPracticeState.start(listOf(placementStep)),
             )
