@@ -41,6 +41,7 @@ import com.sanskar.sudokunova.data.history.DifficultyHistorySummary
 import com.sanskar.sudokunova.data.history.GameHistoryEntity
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
+import com.sanskar.sudokunova.ui.transfer.GameResultShareAction
 import com.sanskar.sudokunova.ui.transfer.PuzzleShareActions
 import java.time.Instant
 import java.time.ZoneId
@@ -320,6 +321,15 @@ private fun HistoryCard(
                 PuzzleShareActions(
                     puzzle = item.puzzle,
                     difficulty = difficulty,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+            if (difficulty != null) {
+                GameResultShareAction(
+                    difficultyLabel = localizedDifficultyLabel(difficulty),
+                    timeLabel = formatTime(item.elapsedSeconds),
+                    mistakes = item.mistakes,
+                    hints = item.hintsUsed,
                     modifier = Modifier.padding(top = 8.dp),
                 )
             }
