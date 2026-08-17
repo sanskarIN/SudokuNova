@@ -91,7 +91,7 @@ private fun CustomPuzzleScreen(
             Text(state.message, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(12.dp))
             EditorBoard(
-                board = state.board,
+                board = state.displayedBoard,
                 selectedIndex = state.selectedIndex,
                 onSelect = onSelect,
             )
