@@ -1,0 +1,49 @@
+name: Apply v0.5 Translation Parity Update
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-translation-parity.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Include v0.5 localized strings in parity checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/verify_translations.py')
+          text = path.read_text()
+          old = 'if name.startswith("v04_") or name.startswith("difficulty_") or name.startswith("theme_"):'
+          new = 'if name.startswith(("v04_", "v05_", "difficulty_", "theme_")):'
+          if old not in text:
+              raise SystemExit('translation prefix condition not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
+          git rm .github/workflows/v05-translation-parity.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add scripts/verify_translations.py
+          git commit -m 'test: verify v0.5 English and Hindi string parity'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
