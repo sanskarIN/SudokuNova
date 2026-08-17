@@ -22,10 +22,18 @@ data class GameState(
     val isPaused: Boolean = false,
     val status: GameStatus = GameStatus.PLAYING,
     val isDailyChallenge: Boolean = false,
+    val challengeType: String? = null,
+    val challengeKey: Long? = null,
 ) {
     init {
+        require(selectedIndex in 0 until SudokuBoard.CELL_COUNT) {
+            "Selected index must be a valid Sudoku cell."
+        }
         require(selectedNumber == null || selectedNumber in 1..9) {
             "Selected number must be null or in the range 1..9."
+        }
+        require((challengeType == null) == (challengeKey == null)) {
+            "Challenge type and challenge key must either both be present or both be absent."
         }
     }
 
@@ -43,6 +51,8 @@ data class GameState(
         fun fromGenerated(
             generated: GeneratedPuzzle,
             dailyChallenge: Boolean = false,
+            challengeType: String? = if (dailyChallenge) "DAILY" else null,
+            challengeKey: Long? = null,
         ): GameState = GameState(
             puzzle = generated.puzzle,
             solution = generated.solution,
@@ -50,6 +60,8 @@ data class GameState(
             difficulty = generated.difficulty,
             seed = generated.seed,
             isDailyChallenge = dailyChallenge,
+            challengeType = challengeType,
+            challengeKey = challengeKey,
         )
     }
 }
