@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v04_made_by">Made by the Sanskar</string>
+    <string name="v04_version_format">Version %1$s</string>
+    <string name="v04_open_source_desc">SudokuNova is released under the MIT License. Core gameplay is offline-first, requires no account, and includes no analytics by default.</string>
+    <string name="v04_support_desc">If SudokuNova helps you, you can support continued open-source development through Buy Me a Coffee.</string>
+    <string name="v04_business_email_one">Business: sanskarin@outlook.in</string>
+    <string name="v04_business_email_two">Business: sanskarin.business@gmail.com</string>
+    <string name="v04_support_email">Support: supportramsandesh@gmail.com</string>
+    <string name="v04_privacy_summary">Privacy: SudokuNova stores settings, active game state, and gameplay statistics locally using Android DataStore. You can reset statistics from Settings. No gameplay data is transmitted by the base application.</string>
+
+    <string name="v04_first_puzzle">First Puzzle</string>
+    <string name="v04_first_puzzle_desc">Complete your first puzzle.</string>
+    <string name="v04_ten_wins">10 Wins</string>
+    <string name="v04_ten_wins_desc">Complete 10 puzzles.</string>
+    <string name="v04_hundred_wins">100 Wins</string>
+    <string name="v04_hundred_wins_desc">Complete 100 puzzles.</string>
+    <string name="v04_perfect_game">Perfect Game</string>
+    <string name="v04_perfect_game_desc">Finish with no mistakes and no hints.</string>
+    <string name="v04_seven_day_streak">Seven-Day Streak</string>
+    <string name="v04_seven_day_streak_desc">Complete puzzles on seven consecutive days.</string>
+    <string name="v04_thirty_day_streak">Thirty-Day Streak</string>
+    <string name="v04_thirty_day_streak_desc">Complete puzzles on thirty consecutive days.</string>
+    <string name="v04_unlocked_format">✓ %1$s</string>
+    <string name="v04_locked_format">○ %1$s</string>
+</resources>
