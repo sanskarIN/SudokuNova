@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.ui.common.localizedThemeLabel
 import com.sanskar.sudokunova.ui.theme.AppTheme
@@ -77,9 +78,7 @@ fun SettingsScreen(
                                 FilterChip(
                                     selected = settings.theme == theme,
                                     onClick = { onTheme(theme) },
-                                    label = {
-                                        Text(localizedThemeLabel(theme))
-                                    },
+                                    label = { Text(localizedThemeLabel(theme)) },
                                 )
                             }
                         }
