@@ -1,0 +1,154 @@
+name: Apply v0.5 Custom Puzzle Save Flow
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-custom-save.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Save validated custom puzzles to Room
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/custom/CustomPuzzleScreen.kt')
+          text = path.read_text()
+
+          imports = [
+              ('import androidx.compose.runtime.getValue\n', 'import androidx.compose.runtime.getValue\nimport androidx.compose.runtime.mutableStateOf\nimport androidx.compose.runtime.remember\nimport androidx.compose.runtime.rememberCoroutineScope\nimport androidx.compose.runtime.setValue\n'),
+              ('import androidx.compose.ui.Alignment\n', 'import androidx.compose.ui.Alignment\nimport androidx.compose.ui.platform.LocalContext\n'),
+              ('import com.sanskar.sudokunova.engine.SudokuBoard\n', 'import com.sanskar.sudokunova.engine.SudokuBoard\nimport com.sanskar.sudokunova.data.history.HistoryRepository\nimport com.sanskar.sudokunova.engine.Difficulty\nimport kotlinx.coroutines.launch\n'),
+          ]
+          for old, new in imports:
+              if new.split('\n')[1] not in text and old in text:
+                  text = text.replace(old, new, 1)
+
+          old_route = '''    val state by viewModel.uiState.collectAsStateWithLifecycle()
+              CustomPuzzleScreen(
+                  state = state,
+          '''
+          new_route = '''    val state by viewModel.uiState.collectAsStateWithLifecycle()
+              val context = LocalContext.current
+              val repository = remember(context) { HistoryRepository(context.applicationContext) }
+              val scope = rememberCoroutineScope()
+              var saveStatus by remember { mutableStateOf<String?>(null) }
+              val savedText = stringResource(R.string.v05_saved_success)
+              val duplicateText = stringResource(R.string.v05_saved_duplicate)
+
+              CustomPuzzleScreen(
+                  state = state,
+                  saveStatus = saveStatus,
+          '''
+          if old_route not in text:
+              raise SystemExit('CustomPuzzleRoute state block not found')
+          text = text.replace(old_route, new_route, 1)
+
+          old_play = '''        onSolve = viewModel::showSolution,
+                  onPlay = { onPlay(state.board.toPuzzleString()) },
+              )
+          '''
+          new_play = '''        onSolve = viewModel::showSolution,
+                  onSave = {
+                      val puzzle = state.board.toPuzzleString()
+                      scope.launch {
+                          val existing = repository.findSavedPuzzle(puzzle)
+                          if (existing != null) {
+                              saveStatus = duplicateText
+                          } else {
+                              val id = repository.savePuzzle(
+                                  puzzle = puzzle,
+                                  solution = null,
+                                  title = null,
+                                  difficulty = Difficulty.MEDIUM,
+                                  source = "custom",
+                              )
+                              saveStatus = if (id > 0) savedText else duplicateText
+                          }
+                      }
+                  },
+                  onPlay = { onPlay(state.board.toPuzzleString()) },
+              )
+          '''
+          if old_play not in text:
+              raise SystemExit('CustomPuzzleRoute callback block not found')
+          text = text.replace(old_play, new_play, 1)
+
+          text = text.replace(
+              '''private fun CustomPuzzleScreen(
+              state: CustomPuzzleUiState,
+          ''',
+              '''private fun CustomPuzzleScreen(
+              state: CustomPuzzleUiState,
+              saveStatus: String?,
+          ''',
+              1,
+          )
+          text = text.replace(
+              '    onSolve: () -> Unit,\n    onPlay: () -> Unit,\n',
+              '    onSolve: () -> Unit,\n    onSave: () -> Unit,\n    onPlay: () -> Unit,\n',
+              1,
+          )
+
+          old_actions = '''                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }
+                  Button(
+                      onClick = onPlay,
+                      enabled = state.isUnique,
+                      modifier = Modifier.weight(1f),
+                  ) { Text(stringResource(R.string.v04_play_puzzle)) }
+              }
+              Spacer(Modifier.height(24.dp))
+          '''
+          new_actions = '''                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }
+                  OutlinedButton(
+                      onClick = onSave,
+                      enabled = state.isUnique,
+                      modifier = Modifier.weight(1f),
+                  ) { Text(stringResource(R.string.v05_save_puzzle)) }
+                  Button(
+                      onClick = onPlay,
+                      enabled = state.isUnique,
+                      modifier = Modifier.weight(1f),
+                  ) { Text(stringResource(R.string.v04_play_puzzle)) }
+              }
+              if (saveStatus != null) {
+                  Text(
+                      saveStatus,
+                      modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                      color = MaterialTheme.colorScheme.primary,
+                  )
+              }
+              Spacer(Modifier.height(24.dp))
+          '''
+          if old_actions not in text:
+              raise SystemExit('Custom puzzle Solve/Play action block not found')
+          text = text.replace(old_actions, new_actions, 1)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-custom-save.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/custom/CustomPuzzleScreen.kt
+          git commit -m 'feat: save validated custom puzzles locally'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
