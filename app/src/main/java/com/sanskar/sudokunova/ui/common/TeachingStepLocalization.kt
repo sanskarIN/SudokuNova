@@ -49,6 +49,13 @@ internal fun teachingExplanation(
             step.candidateValues.sorted().joinToString(", "),
             resources.cellNames(affectedCells),
         )
+        LogicalTechnique.NAKED_TRIPLE -> resources.getString(
+            R.string.v08_explain_naked_triple,
+            resources.unitName(requireNotNull(step.sourceUnit)),
+            resources.cellNames(step.sourceCells),
+            step.candidateValues.sorted().joinToString(", "),
+            resources.cellNames(affectedCells),
+        )
         LogicalTechnique.POINTING_PAIR_OR_TRIPLE -> resources.getString(
             R.string.v08_explain_pointing,
             resources.unitName(requireNotNull(step.sourceUnit)),
@@ -70,6 +77,7 @@ private fun LogicalTechnique.titleResource(): Int = when (this) {
     LogicalTechnique.NAKED_SINGLE -> R.string.v08_technique_naked_single
     LogicalTechnique.HIDDEN_SINGLE -> R.string.v08_technique_hidden_single
     LogicalTechnique.NAKED_PAIR -> R.string.v08_technique_naked_pair
+    LogicalTechnique.NAKED_TRIPLE -> R.string.v08_technique_naked_triple
     LogicalTechnique.POINTING_PAIR_OR_TRIPLE -> R.string.v08_technique_pointing_pair_triple
     LogicalTechnique.BOX_LINE_REDUCTION -> R.string.v08_technique_box_line_reduction
 }
