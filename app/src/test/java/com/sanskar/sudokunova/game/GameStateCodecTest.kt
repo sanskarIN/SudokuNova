@@ -99,9 +99,13 @@ class GameStateCodecTest {
     @Test
     fun malformedStateIsRejected() {
         assertNull(GameStateCodec.decode("not-a-valid-save"))
-        assertNull(GameStateCodec.decode(GameStateCodec.encode(
-            GameState(puzzle(), solution(), puzzle()),
-        ).replace("|0|false|", "|-5|false|")))
+
+        val corrupt = GameStateCodec.encode(GameState(puzzle(), solution(), puzzle()))
+            .split('|')
+            .toMutableList()
+            .also { it[5] = "-5" }
+            .joinToString("|")
+        assertNull(GameStateCodec.decode(corrupt))
     }
 
     private fun puzzle() = SudokuBoard.parse(
