@@ -13,7 +13,11 @@ data class CustomPuzzleUiState(
     val message: String = "Enter the given clues, then validate the puzzle.",
     val solution: SudokuBoard? = null,
     val isUnique: Boolean = false,
-)
+    val showSolution: Boolean = false,
+) {
+    val displayedBoard: SudokuBoard
+        get() = if (showSolution) solution ?: board else board
+}
 
 class CustomPuzzleViewModel : ViewModel() {
     private val solver = SudokuSolver()
@@ -31,6 +35,7 @@ class CustomPuzzleViewModel : ViewModel() {
             board = state.board.withValue(state.selectedIndex, value),
             solution = null,
             isUnique = false,
+            showSolution = false,
             message = "Puzzle changed. Validate again before playing.",
         )
     }
@@ -41,6 +46,7 @@ class CustomPuzzleViewModel : ViewModel() {
             board = state.board.withValue(state.selectedIndex, SudokuBoard.EMPTY),
             solution = null,
             isUnique = false,
+            showSolution = false,
             message = "Puzzle changed. Validate again before playing.",
         )
     }
@@ -50,7 +56,7 @@ class CustomPuzzleViewModel : ViewModel() {
     }
 
     fun validate() {
-        val state = _uiState.value
+        val state = _uiState.value.copy(showSolution = false)
         if (!state.board.isValid()) {
             _uiState.value = state.copy(
                 solution = null,
@@ -80,9 +86,13 @@ class CustomPuzzleViewModel : ViewModel() {
         val state = _uiState.value
         val solution = state.solution ?: solver.solve(state.board).solution
         _uiState.value = if (solution == null) {
-            state.copy(message = "No solution is available for this puzzle.")
+            state.copy(showSolution = false, message = "No solution is available for this puzzle.")
         } else {
-            state.copy(board = solution, solution = solution, message = "Solved grid shown. Clear or edit to create another puzzle.")
+            state.copy(
+                solution = solution,
+                showSolution = true,
+                message = "Solved-grid preview. The original puzzle is preserved for Play puzzle.",
+            )
         }
     }
 }
