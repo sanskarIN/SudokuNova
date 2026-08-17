@@ -24,6 +24,7 @@ class GameStateCodecTest {
             board = puzzle.withValue(0, 2, 4),
             notes = notes,
             selectedIndex = 2,
+            selectedNumber = 7,
             notesMode = true,
             elapsedSeconds = 93,
             mistakes = 1,
@@ -35,6 +36,33 @@ class GameStateCodecTest {
         )
 
         assertEquals(state, GameStateCodec.decode(GameStateCodec.encode(state)))
+    }
+
+    @Test
+    fun versionOneSaveMigratesWithoutSelectedNumber() {
+        val notes = List(SudokuBoard.CELL_COUNT) { "" }.joinToString("/")
+        val encoded = listOf(
+            "1",
+            "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+            "534678912672195348198342567859761423426853791713924856961537284287419635345286179",
+            "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+            notes,
+            "2",
+            "false",
+            "12",
+            "0",
+            "0",
+            Difficulty.EASY.name,
+            "9",
+            "false",
+            GameStatus.PLAYING.name,
+            "false",
+        ).joinToString("|")
+
+        val state = GameStateCodec.decode(encoded)
+
+        assertEquals(2, state?.selectedIndex)
+        assertNull(state?.selectedNumber)
     }
 
     @Test

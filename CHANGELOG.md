@@ -5,6 +5,11 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 ## [Unreleased]
 
 ### Added
+- v0.2 development: persistent Cell First and Number First input modes.
+- v0.2 development: hardware keyboard shortcuts for number input, erase, notes, hint, pause, undo, and redo.
+- v0.2 development: actual haptic and click-sound feedback behind existing user settings.
+- v0.2 development: saved-game structural integrity validation and codec-v1 migration coverage.
+- v0.2 development: Compose instrumentation smoke tests plus a pull-request emulator workflow.
 - Android application foundation using Kotlin, Jetpack Compose, and Material 3.
 - Platform-independent Sudoku engine module.
 - Immutable 9×9 board model with validation, conflicts, candidates, and serialization.
@@ -22,6 +27,9 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 - Open-source repository policies, support documentation, and contributor guidance.
 
 ### Fixed
+- v0.2 development: corrupted saved-game payloads with invalid cell selection, changed original clues, or impossible completed state are rejected instead of resumed.
+- v0.2 development: number-first selection is persisted immediately for reliable process restoration.
+- v0.2 development: Compose smoke-test targets are scroll-safe on small phone viewports.
 - Replaced the invalid Kotlin source namespace beginning with the reserved `in` keyword by `com.sanskar.sudokunova`, while preserving Android application ID `in.sanskar.sudokunova`.
 - Corrected statistics-reset handling for heterogeneous DataStore preference keys.
 - Corrected custom-puzzle solution preview so it does not overwrite the original playable clues.

@@ -26,6 +26,9 @@ class AppPreferencesRepository(
                 ?.let { value -> runCatching { AppTheme.valueOf(value) }.getOrNull() }
                 ?: AppTheme.SYSTEM,
             dynamicColor = preferences[Keys.DYNAMIC_COLOR] ?: true,
+            inputMode = preferences[Keys.INPUT_MODE]
+                ?.let { value -> runCatching { InputMode.valueOf(value) }.getOrNull() }
+                ?: InputMode.CELL_FIRST,
             highlightPeers = preferences[Keys.HIGHLIGHT_PEERS] ?: true,
             highlightSameNumbers = preferences[Keys.HIGHLIGHT_SAME] ?: true,
             autoCheckMistakes = preferences[Keys.AUTO_CHECK] ?: true,
@@ -59,6 +62,7 @@ class AppPreferencesRepository(
 
     suspend fun setTheme(value: AppTheme) = update(Keys.THEME, value.name)
     suspend fun setDynamicColor(value: Boolean) = update(Keys.DYNAMIC_COLOR, value)
+    suspend fun setInputMode(value: InputMode) = update(Keys.INPUT_MODE, value.name)
     suspend fun setHighlightPeers(value: Boolean) = update(Keys.HIGHLIGHT_PEERS, value)
     suspend fun setHighlightSameNumbers(value: Boolean) = update(Keys.HIGHLIGHT_SAME, value)
     suspend fun setAutoCheck(value: Boolean) = update(Keys.AUTO_CHECK, value)
@@ -160,6 +164,7 @@ class AppPreferencesRepository(
     private object Keys {
         val THEME = stringPreferencesKey("theme")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+        val INPUT_MODE = stringPreferencesKey("input_mode")
         val HIGHLIGHT_PEERS = booleanPreferencesKey("highlight_peers")
         val HIGHLIGHT_SAME = booleanPreferencesKey("highlight_same_numbers")
         val AUTO_CHECK = booleanPreferencesKey("auto_check_mistakes")

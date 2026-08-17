@@ -1,0 +1,39 @@
+name: Apply v0.2 Keyboard Import Fix
+
+on:
+  push:
+    branches:
+      - feature/v0.2-gameplay-hardening
+    paths:
+      - .github/workflows/v02-fix-keyboard-import.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.2-gameplay-hardening
+          fetch-depth: 0
+      - name: Correct focusable import and remove this one-time workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/import androidx\.compose\.ui\.focus\.focusable/import androidx.compose.foundation.focusable/' app/src/main/java/com/sanskar/sudokunova/ui/game/HardwareKeyboard.kt
+          git rm .github/workflows/v02-fix-keyboard-import.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/game/HardwareKeyboard.kt
+          git commit -m 'fix: use foundation focusable import for keyboard support'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin feature/v0.2-gameplay-hardening
+            git rebase origin/feature/v0.2-gameplay-hardening
+            if git push origin HEAD:feature/v0.2-gameplay-hardening; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
