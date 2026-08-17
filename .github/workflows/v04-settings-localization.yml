@@ -1,0 +1,87 @@
+name: Apply v0.4 Settings Localization
+
+on:
+  push:
+    branches:
+      - feature/v0.4-accessibility-localization
+    paths:
+      - .github/workflows/v04-settings-localization.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.4-accessibility-localization
+          fetch-depth: 0
+
+      - name: Migrate settings strings to resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/settings/SettingsScreen.kt')
+          text = path.read_text()
+
+          if 'import androidx.compose.ui.res.stringResource' not in text:
+              text = text.replace('import androidx.compose.ui.Modifier\n', 'import androidx.compose.ui.Modifier\nimport androidx.compose.ui.res.stringResource\n', 1)
+          if 'import com.sanskar.sudokunova.R' not in text:
+              text = text.replace('import com.sanskar.sudokunova.data.InputMode\n', 'import com.sanskar.sudokunova.R\nimport com.sanskar.sudokunova.data.InputMode\n', 1)
+          if 'import com.sanskar.sudokunova.ui.common.localizedThemeLabel' not in text:
+              text = text.replace('import com.sanskar.sudokunova.ui.theme.AppTheme\n', 'import com.sanskar.sudokunova.ui.common.localizedThemeLabel\nimport com.sanskar.sudokunova.ui.theme.AppTheme\n', 1)
+
+          replacements = {
+              'title = { Text("Settings") }': 'title = { Text(stringResource(R.string.v04_settings)) }',
+              'contentDescription = "Back"': 'contentDescription = stringResource(R.string.v04_back)',
+              'SectionTitle("Appearance")': 'SectionTitle(stringResource(R.string.v04_appearance))',
+              'headlineContent = { Text("Theme") }': 'headlineContent = { Text(stringResource(R.string.v04_theme)) }',
+              'Text(theme.name.lowercase().replaceFirstChar { it.uppercase() })': 'Text(localizedThemeLabel(theme))',
+              'ToggleSetting("Dynamic color", "Use Material You colors when available.", settings.dynamicColor, onDynamicColor)': 'ToggleSetting(stringResource(R.string.v04_dynamic_color), stringResource(R.string.v04_dynamic_color_desc), settings.dynamicColor, onDynamicColor)',
+              'ToggleSetting("High contrast", "Increase visual distinction for important states.", settings.highContrast, onHighContrast)': 'ToggleSetting(stringResource(R.string.v04_high_contrast), stringResource(R.string.v04_high_contrast_desc), settings.highContrast, onHighContrast)',
+              'ToggleSetting("Reduced motion", "Prefer fewer non-essential animations.", settings.reducedMotion, onReducedMotion)': 'ToggleSetting(stringResource(R.string.v04_reduced_motion), stringResource(R.string.v04_reduced_motion_desc), settings.reducedMotion, onReducedMotion)',
+              'SectionTitle("Gameplay")': 'SectionTitle(stringResource(R.string.v04_gameplay))',
+              'headlineContent = { Text("Input mode") }': 'headlineContent = { Text(stringResource(R.string.v04_input_mode)) }',
+              'label = { Text("Cell first") }': 'label = { Text(stringResource(R.string.v04_cell_first)) }',
+              'label = { Text("Number first") }': 'label = { Text(stringResource(R.string.v04_number_first)) }',
+              'ToggleSetting("Highlight peers", "Highlight the selected row, column and box.", settings.highlightPeers, onHighlightPeers)': 'ToggleSetting(stringResource(R.string.v04_highlight_peers), stringResource(R.string.v04_highlight_peers_desc), settings.highlightPeers, onHighlightPeers)',
+              'ToggleSetting("Highlight same numbers", "Highlight matching placed values.", settings.highlightSameNumbers, onHighlightSame)': 'ToggleSetting(stringResource(R.string.v04_highlight_same), stringResource(R.string.v04_highlight_same_desc), settings.highlightSameNumbers, onHighlightSame)',
+              'ToggleSetting("Auto-check mistakes", "Mark entries that disagree with the solution.", settings.autoCheckMistakes, onAutoCheck)': 'ToggleSetting(stringResource(R.string.v04_auto_check), stringResource(R.string.v04_auto_check_desc), settings.autoCheckMistakes, onAutoCheck)',
+              'ToggleSetting("Auto-remove notes", "Remove a correct value from peer candidates.", settings.autoRemoveNotes, onAutoRemoveNotes)': 'ToggleSetting(stringResource(R.string.v04_auto_remove_notes), stringResource(R.string.v04_auto_remove_notes_desc), settings.autoRemoveNotes, onAutoRemoveNotes)',
+              'ToggleSetting("Show timer", "Display elapsed solving time.", settings.showTimer, onShowTimer)': 'ToggleSetting(stringResource(R.string.v04_show_timer), stringResource(R.string.v04_show_timer_desc), settings.showTimer, onShowTimer)',
+              'headlineContent = { Text("Mistake limit") }': 'headlineContent = { Text(stringResource(R.string.v04_mistake_limit)) }',
+              'listOf(0 to "Unlimited", 3 to "3", 5 to "5")': 'listOf(0 to stringResource(R.string.v04_unlimited), 3 to "3", 5 to "5")',
+              'SectionTitle("Feedback")': 'SectionTitle(stringResource(R.string.v04_feedback))',
+              'ToggleSetting("Haptics", "Allow subtle touch feedback.", settings.haptics, onHaptics)': 'ToggleSetting(stringResource(R.string.v04_haptics), stringResource(R.string.v04_haptics_desc), settings.haptics, onHaptics)',
+              'ToggleSetting("Sounds", "Allow optional game sounds.", settings.sounds, onSounds)': 'ToggleSetting(stringResource(R.string.v04_sounds), stringResource(R.string.v04_sounds_desc), settings.sounds, onSounds)',
+              'SectionTitle("Data")': 'SectionTitle(stringResource(R.string.v04_data))',
+              'headlineContent = { Text("Reset statistics") }': 'headlineContent = { Text(stringResource(R.string.v04_reset_statistics)) }',
+              'supportingContent = { Text("Delete local statistics and streak data.") }': 'supportingContent = { Text(stringResource(R.string.v04_reset_statistics_desc)) }',
+              'TextButton(onClick = { showResetDialog = true }) { Text("Reset") }': 'TextButton(onClick = { showResetDialog = true }) { Text(stringResource(R.string.v04_reset)) }',
+              'title = { Text("Reset statistics?") }': 'title = { Text(stringResource(R.string.v04_reset_statistics_question)) }',
+              'text = { Text("This permanently clears your local statistics. Your settings and active game are not changed.") }': 'text = { Text(stringResource(R.string.v04_reset_statistics_body)) }',
+              ') { Text("Reset") }': ') { Text(stringResource(R.string.v04_reset)) }',
+              'TextButton(onClick = { showResetDialog = false }) { Text("Cancel") }': 'TextButton(onClick = { showResetDialog = false }) { Text(stringResource(R.string.v04_cancel)) }',
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v04-settings-localization.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/settings/SettingsScreen.kt
+          git commit -m 'feat: localize settings screen strings'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.4-accessibility-localization
+            git rebase origin/feature/v0.4-accessibility-localization
+            if git push origin HEAD:feature/v0.4-accessibility-localization; then exit 0; fi
+            sleep 2
+          done
+          exit 1
