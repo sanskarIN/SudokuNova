@@ -34,7 +34,6 @@ import com.sanskar.sudokunova.data.challenge.ChallengeType
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
 
 @Composable
 fun ChallengesRoute(
@@ -132,7 +131,7 @@ private fun ChallengeEntryCard(
     entry: ChallengeEntry,
     onPlay: () -> Unit,
 ) {
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = LocalConfiguration.current.locales[0]
     val dateLabel = entry.displayDate.format(
         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale),
     )
