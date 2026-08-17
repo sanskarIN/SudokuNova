@@ -1,0 +1,33 @@
+name: Apply v0.8 Gameplay Teaching Wiring Once
+
+on:
+  push:
+    branches:
+      - feature/v0.8-learning-hints
+    paths:
+      - '.github/workflows/v08-wire-game-teaching-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v6
+        with:
+          ref: feature/v0.8-learning-hints
+          fetch-depth: 0
+
+      - name: Apply gameplay teaching integration
+        run: python3 scripts/v08_wire_game_teaching.py
+
+      - name: Commit gameplay teaching integration
+        run: |
+          git config user.name "Sanskar"
+          git config user.email "sanskarin@outlook.in"
+          git add app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt
+          git add app/src/main/java/com/sanskar/sudokunova/ui/game/GameScreen.kt
+          git commit -m "feat: integrate structured teaching hints into gameplay"
+          git push origin HEAD:feature/v0.8-learning-hints
