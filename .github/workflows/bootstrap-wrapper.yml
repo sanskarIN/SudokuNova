@@ -45,6 +45,7 @@ jobs:
       - name: Commit generated wrapper
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'Sanskar'
           git config user.email 'sanskarin@outlook.in'
           git add gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat
@@ -52,5 +53,7 @@ jobs:
             echo 'Wrapper already current.'
           else
             git commit -m 'build: generate official Gradle 9.5 wrapper'
+            git fetch origin feature/bootstrap-v0.1
+            git rebase origin/feature/bootstrap-v0.1
             git push origin HEAD:feature/bootstrap-v0.1
           fi
