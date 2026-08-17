@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v07_backup_transfer">Backup &amp; Transfer</string>
+    <string name="v07_backup_transfer_desc">Safely copy, share, restore, or import supported local SudokuNova data.</string>
+    <string name="v07_puzzle_codes">Puzzle codes</string>
+    <string name="v07_puzzle_code_hint">Paste a SudokuNova puzzle code</string>
+    <string name="v07_validate_code">Validate code</string>
+    <string name="v07_code_valid">Valid unique puzzle · %1$s</string>
+    <string name="v07_code_invalid">Invalid, unsupported, modified, or non-unique puzzle code.</string>
+    <string name="v07_play_imported">Play imported puzzle</string>
+    <string name="v07_backup">Local backup</string>
+    <string name="v07_backup_info">Backups contain supported settings, completed-game history, saved puzzles, and challenge results. Active games and secrets are not exported.</string>
+    <string name="v07_copy_backup">Copy backup</string>
+    <string name="v07_share_backup">Share backup</string>
+    <string name="v07_restore_clipboard">Restore from clipboard</string>
+    <string name="v07_backup_copied">Backup copied to clipboard.</string>
+    <string name="v07_backup_ready">Backup is ready to share.</string>
+    <string name="v07_backup_failed">Could not create a valid backup.</string>
+    <string name="v07_restore_question">Restore SudokuNova backup?</string>
+    <string name="v07_restore_warning">The backup is fully validated before persistence. Existing history is deduplicated, duplicate saved puzzles/challenges are skipped, and backed-up settings replace current settings.</string>
+    <string name="v07_restore">Restore</string>
+    <string name="v07_restore_invalid">Clipboard does not contain a valid supported SudokuNova backup.</string>
+    <string name="v07_restore_success">Restore complete: %1$d history, %2$d saved puzzles, %3$d challenges imported.</string>
+    <string name="v07_restore_skipped">Skipped duplicates: %1$d history, %2$d saved puzzles, %3$d challenges.</string>
+    <string name="v07_copy_puzzle_code">Copy puzzle code</string>
+    <string name="v07_share_puzzle_code">Share puzzle code</string>
+    <string name="v07_puzzle_code_copied">Puzzle code copied.</string>
+    <string name="v07_share_title">Share with SudokuNova</string>
+    <string name="v07_clipboard_empty">Clipboard is empty.</string>
+    <string name="v07_safe_format">Versioned, checksum-protected formats reject unsupported or modified data and impose strict size/count limits.</string>
+</resources>
