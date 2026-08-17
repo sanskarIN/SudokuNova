@@ -1,0 +1,84 @@
+name: Verify v0.5 Room History and Export Schema
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-verify-schema.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Verify translation parity
+        run: python scripts/verify_translations.py
+
+      - name: Verify v0.5 source wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'const val HISTORY = "history"' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'const val SAVED = "saved"' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'HistoryRoute' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'SavedPuzzlesRoute' app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt
+          grep -q 'onHistory' app/src/main/java/com/sanskar/sudokunova/ui/home/HomeScreen.kt
+          grep -q 'onSavedPuzzles' app/src/main/java/com/sanskar/sudokunova/ui/home/HomeScreen.kt
+          grep -q 'historyRepository.recordCompletedGame' app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt
+          grep -q 'onSave' app/src/main/java/com/sanskar/sudokunova/ui/custom/CustomPuzzleScreen.kt
+
+      - name: Verify engine tests
+        run: ./gradlew :sudoku-engine:test --stacktrace
+
+      - name: Verify Android unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Generate Room schema and compile instrumentation tests
+        run: ./gradlew :app:kaptDebugKotlin :app:assembleDebugAndroidTest --stacktrace
+
+      - name: Run Android lint
+        run: ./gradlew :app:lintDebug --stacktrace
+
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Verify exported Room schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f app/schemas/com.sanskar.sudokunova.data.history.SudokuNovaDatabase/1.json
+          grep -q 'game_history' app/schemas/com.sanskar.sudokunova.data.history.SudokuNovaDatabase/1.json
+          grep -q 'saved_puzzles' app/schemas/com.sanskar.sudokunova.data.history.SudokuNovaDatabase/1.json
+
+      - name: Commit verified schema and remove one-time workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git rm .github/workflows/v05-verify-schema.yml
+          git add app/schemas
+          git commit -m 'test: commit verified Room schema v1'
+          for attempt in 1 2 3 4 5 6 7 8; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
