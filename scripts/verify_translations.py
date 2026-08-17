@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify that SudokuNova core localized string keys exist in English and Hindi."""
+"""Verify that SudokuNova localized string keys exist in English and Hindi."""
 
 from pathlib import Path
 import sys
@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 VALUES = ROOT / "app" / "src" / "main" / "res" / "values"
 VALUES_HI = ROOT / "app" / "src" / "main" / "res" / "values-hi"
+PREFIXES = ("v04_", "v05_", "v06_", "difficulty_", "theme_")
 
 
 def collect(directory: Path) -> dict[str, Path]:
@@ -16,12 +17,11 @@ def collect(directory: Path) -> dict[str, Path]:
         root = ET.parse(file).getroot()
         for element in root.findall("string"):
             name = element.attrib.get("name")
-            if not name:
+            if not name or not name.startswith(PREFIXES):
                 continue
-            if name.startswith("v04_") or name.startswith("difficulty_") or name.startswith("theme_"):
-                if name in strings:
-                    raise SystemExit(f"Duplicate localized string key {name!r} in {directory}")
-                strings[name] = file
+            if name in strings:
+                raise SystemExit(f"Duplicate localized string key {name!r} in {directory}")
+            strings[name] = file
     return strings
 
 
@@ -45,10 +45,10 @@ def main() -> int:
         return 1
 
     if not english:
-        print("No core localization keys were found.", file=sys.stderr)
+        print("No localization keys were found.", file=sys.stderr)
         return 1
 
-    print(f"Translation parity verified for {len(english)} core string keys.")
+    print(f"Translation parity verified for {len(english)} localized string keys.")
     return 0
 
 
