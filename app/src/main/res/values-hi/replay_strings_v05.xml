@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v05_replay">फिर खेलें</string>
+    <string name="v05_replay_badge">रीप्ले</string>
+    <string name="v05_replay_history">इस पूरी हुई पहेली को फिर से खेलें</string>
+</resources>
