@@ -6,14 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.sanskar.sudokunova.data.AppPreferencesRepository
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.data.learning.LearningProgressRepository
-import com.sanskar.sudokunova.engine.Difficulty
-import com.sanskar.sudokunova.engine.HintEngine
-import com.sanskar.sudokunova.engine.LogicalTechnique
 import com.sanskar.sudokunova.engine.PracticeAction
 import com.sanskar.sudokunova.engine.PracticeSubmissionResult
-import com.sanskar.sudokunova.engine.SudokuGenerator
-import com.sanskar.sudokunova.engine.SudokuSolver
 import com.sanskar.sudokunova.engine.TeachingHintSequence
+import com.sanskar.sudokunova.engine.TeachingLessonGenerator
 import com.sanskar.sudokunova.engine.TeachingPracticeState
 import com.sanskar.sudokunova.game.GameState
 import kotlinx.coroutines.Dispatchers
@@ -42,9 +38,7 @@ class GuidedPracticeViewModel(
 ) : AndroidViewModel(application) {
     private val preferences = AppPreferencesRepository(application.applicationContext)
     private val progressRepository = LearningProgressRepository(application.applicationContext)
-    private val solver = SudokuSolver()
-    private val generator = SudokuGenerator(solver)
-    private val hintEngine = HintEngine(solver)
+    private val lessonGenerator = TeachingLessonGenerator()
 
     private val _uiState = MutableStateFlow<GuidedPracticeUiState>(GuidedPracticeUiState.Loading)
     val uiState: StateFlow<GuidedPracticeUiState> = _uiState.asStateFlow()
@@ -112,38 +106,31 @@ class GuidedPracticeViewModel(
     private fun loadLesson() {
         viewModelScope.launch {
             _uiState.value = GuidedPracticeUiState.Loading
-            val lesson = withContext(Dispatchers.Default) { createLesson(lessonIndex) }
-            _uiState.value = lesson ?: GuidedPracticeUiState.Error("No suitable deterministic practice puzzle found.")
-        }
-    }
+            val lesson = withContext(Dispatchers.Default) {
+                lessonGenerator.findPlacementLesson(
+                    seedStart = BASE_SEED + lessonIndex * SEED_STRIDE,
+                    maxAttempts = MAX_SEED_ATTEMPTS,
+                )
+            }
+            if (lesson == null) {
+                _uiState.value = GuidedPracticeUiState.Error("No suitable deterministic practice puzzle found.")
+                return@launch
+            }
 
-    private fun createLesson(index: Int): GuidedPracticeUiState.Ready? {
-        repeat(MAX_SEED_ATTEMPTS) { offset ->
-            val seed = BASE_SEED + index * SEED_STRIDE + offset
-            val difficulty = if ((index + offset) % 2 == 0) Difficulty.MEDIUM else Difficulty.HARD
-            val generated = generator.generate(difficulty, seed.toLong())
-            val sequence = hintEngine.nextTeachingHint(generated.puzzle) ?: return@repeat
-            val placementStep = sequence.steps.last()
-            if (placementStep.technique !in PLACEMENT_TECHNIQUES) return@repeat
-            val initialSelection = generated.puzzle.emptyIndices().firstOrNull()
-                ?: sequence.placement.cellIndex
-
-            return GuidedPracticeUiState.Ready(
-                game = GameState.fromGenerated(generated).copy(selectedIndex = initialSelection),
-                sequence = sequence,
+            val placementStep = lesson.sequence.steps.last()
+            val initialSelection = lesson.puzzle.puzzle.emptyIndices().firstOrNull()
+                ?: lesson.sequence.placement.cellIndex
+            _uiState.value = GuidedPracticeUiState.Ready(
+                game = GameState.fromGenerated(lesson.puzzle).copy(selectedIndex = initialSelection),
+                sequence = lesson.sequence,
                 practice = TeachingPracticeState.start(listOf(placementStep)),
             )
         }
-        return null
     }
 
     private companion object {
-        const val BASE_SEED = 80_800
-        const val SEED_STRIDE = 101
+        const val BASE_SEED = 80_800L
+        const val SEED_STRIDE = 101L
         const val MAX_SEED_ATTEMPTS = 12
-        val PLACEMENT_TECHNIQUES = setOf(
-            LogicalTechnique.NAKED_SINGLE,
-            LogicalTechnique.HIDDEN_SINGLE,
-        )
     }
 }
