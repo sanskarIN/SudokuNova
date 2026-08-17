@@ -1,0 +1,83 @@
+name: Apply v0.4 Version and Documentation
+
+on:
+  push:
+    branches:
+      - feature/v0.4-accessibility-localization
+    paths:
+      - .github/workflows/v04-version-docs.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.4-accessibility-localization
+          fetch-depth: 0
+
+      - name: Update v0.4 version and documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          build = Path('app/build.gradle.kts')
+          text = build.read_text()
+          text = text.replace('versionCode = 300', 'versionCode = 400', 1)
+          text = text.replace('versionName = "0.3.0"', 'versionName = "0.4.0"', 1)
+          build.write_text(text)
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text()
+          marker = '### Added\n'
+          block = '''### Added\n- v0.4 development: English/Hindi resource-backed localization for core Home, Game, Settings, Custom Puzzle, Statistics, About, Learn, difficulty, theme, and Sudoku accessibility text.\n- v0.4 development: translation-resource parity checker promoted into CI.\n- v0.4 development: visible High Contrast board behavior with stronger grid lines, state borders, peer distinction, and note emphasis.\n'''
+          if 'v0.4 development: English/Hindi' not in text and marker in text:
+              text = text.replace(marker, block, 1)
+          changelog.write_text(text)
+
+          localization = Path('docs/LOCALIZATION.md')
+          text = localization.read_text()
+          appendix = '''\n## v0.4 English / Hindi Foundation\n\nThe v0.4 milestone adds Android resource-backed English and Hindi strings for the main navigation/game/settings/custom/statistics/about/learning surfaces, localized difficulty/theme labels, and Sudoku cell TalkBack semantics.\n\nRun:\n\n```bash\npython scripts/verify_translations.py\n```\n\nThe standard GitHub Actions CI also runs this parity check. It compares core `v04_`, `difficulty_`, and `theme_` keys between `values/` and `values-hi/` and fails when either locale is missing a required key.\n\nDynamic validation messages and future feature-specific strings must follow the same resource-based approach before those surfaces are called fully localized.\n'''
+          if '## v0.4 English / Hindi Foundation' not in text:
+              text += appendix
+          localization.write_text(text)
+
+          accessibility = Path('docs/ACCESSIBILITY.md')
+          text = accessibility.read_text()
+          appendix = '''\n## v0.4 High-Contrast and Localized Semantics\n\nThe High Contrast setting now affects the playable Sudoku board rather than acting only as stored preference state. It increases major/minor grid strength, emphasizes selected/conflict borders, strengthens peer-cell distinction, and increases note emphasis.\n\nSudoku cell semantic descriptions are now Android resources and have English/Hindi variants. They announce row, column, empty/value state, original clue state, and conflict state without relying on color alone.\n'''
+          if '## v0.4 High-Contrast and Localized Semantics' not in text:
+              text += appendix
+          accessibility.write_text(text)
+
+          changed = Path('what_changed.md')
+          text = changed.read_text()
+          text = text.replace('**v0.3.0-development**', '**v0.4.0-development**', 1)
+          text = text.replace(
+              'Current working branch: `feature/v0.3-difficulty-calibration`',
+              'Current working branch: `feature/v0.4-accessibility-localization`',
+              1,
+          )
+          appendix = '''\n## v0.4 Accessibility and Localization Work\n\nImplemented and pushed:\n\n- English and Hindi resources for core player-facing navigation/game/settings/custom/statistics/about/learning content.\n- Localized Beginner/Easy/Medium/Hard/Expert/Master/Extreme labels.\n- Localized System/Light/Dark theme labels.\n- Resource-backed Sudoku cell semantic descriptions in English and Hindi.\n- Resource-backed Learn center with original English/Hindi educational explanations.\n- High Contrast now changes playable board rendering: stronger grid, selected/conflict borders, peer distinction, and note weight/size.\n- Added `scripts/verify_translations.py` to ensure English/Hindi core key parity.\n- Standard Android CI now runs translation parity before the Gradle quality gates.\n- Android development version advanced to `0.4.0` / versionCode `400`.\n\nFresh-clone local verification passed for translation parity, Android unit tests, instrumentation-test APK compilation, lint, and debug APK assembly before the v0.4 PR gate.\n\nKnown localization limitation: some dynamic validation/error strings in ViewModels and future feature surfaces remain to be migrated as those features are hardened.\n'''
+          if '## v0.4 Accessibility and Localization Work' not in text:
+              text += appendix
+          changed.write_text(text)
+          PY
+
+          git rm .github/workflows/v04-version-docs.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/build.gradle.kts CHANGELOG.md what_changed.md docs/LOCALIZATION.md docs/ACCESSIBILITY.md
+          git commit -m 'docs: record v0.4 accessibility and localization milestone'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.4-accessibility-localization
+            git rebase origin/feature/v0.4-accessibility-localization
+            if git push origin HEAD:feature/v0.4-accessibility-localization; then exit 0; fi
+            sleep 2
+          done
+          exit 1
