@@ -1,0 +1,305 @@
+name: Apply v0.5 Replay-Safe History Integration
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-replay-integration.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Track replay provenance without inflating aggregate statistics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          # GameState: carry replay provenance through process restoration.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/game/GameState.kt')
+          text = path.read_text()
+          if 'val replayOfHistoryId: Long? = null,' not in text:
+              anchor = '    val isDailyChallenge: Boolean = false,\n'
+              if anchor not in text:
+                  raise SystemExit('GameState daily flag anchor missing')
+              text = text.replace(anchor, anchor + '    val replayOfHistoryId: Long? = null,\n', 1)
+          path.write_text(text)
+
+          # Codec v3: preserve replay provenance and remain backward compatible with v1/v2 saves.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/game/GameStateCodec.kt')
+          text = path.read_text()
+          if 'private const val VERSION_3 = "3"' not in text:
+              text = text.replace('    private const val VERSION_2 = "2"\n', '    private const val VERSION_2 = "2"\n    private const val VERSION_3 = "3"\n', 1)
+          text = text.replace('            VERSION_2,\n', '            VERSION_3,\n', 1)
+          if 'state.replayOfHistoryId?.toString().orEmpty(),' not in text:
+              anchor = '            state.isDailyChallenge.toString(),\n'
+              if anchor not in text:
+                  raise SystemExit('codec daily field anchor missing')
+              text = text.replace(anchor, anchor + '            state.replayOfHistoryId?.toString().orEmpty(),\n', 1)
+          if 'VERSION_3 -> decodeV3(parts)' not in text:
+              anchor = '                VERSION_2 -> decodeV2(parts)\n'
+              if anchor not in text:
+                  raise SystemExit('codec v2 switch anchor missing')
+              text = text.replace(anchor, anchor + '                VERSION_3 -> decodeV3(parts)\n', 1)
+          if 'private fun decodeV3(parts: List<String>): GameState' not in text:
+              insert_before = '    private fun decodeNotes(encodedNotes: String): List<Set<Int>> {'
+              if insert_before not in text:
+                  raise SystemExit('decodeNotes anchor missing')
+              decode_v3 = '''    private fun decodeV3(parts: List<String>): GameState {
+                  require(parts.size == 17)
+                  val selectedNumber = parts[6].takeIf(String::isNotBlank)?.toInt()
+                  require(selectedNumber == null || selectedNumber in 1..9)
+                  val replayOfHistoryId = parts[16].takeIf(String::isNotBlank)?.toLong()
+                  require(replayOfHistoryId == null || replayOfHistoryId > 0)
+                  return GameState(
+                      puzzle = SudokuBoard.parse(parts[1]),
+                      solution = SudokuBoard.parse(parts[2]),
+                      board = SudokuBoard.parse(parts[3]),
+                      notes = decodeNotes(parts[4]),
+                      selectedIndex = parts[5].toInt(),
+                      selectedNumber = selectedNumber,
+                      notesMode = parts[7].toBooleanStrict(),
+                      elapsedSeconds = parts[8].toLong().coerceAtLeast(0),
+                      mistakes = parts[9].toInt().coerceAtLeast(0),
+                      hintsUsed = parts[10].toInt().coerceAtLeast(0),
+                      difficulty = Difficulty.valueOf(parts[11]),
+                      seed = parts[12].toLong(),
+                      isPaused = parts[13].toBooleanStrict(),
+                      status = GameStatus.valueOf(parts[14]),
+                      isDailyChallenge = parts[15].toBooleanStrict(),
+                      replayOfHistoryId = replayOfHistoryId,
+                  )
+              }
+
+          '''
+              text = text.replace(insert_before, decode_v3 + insert_before, 1)
+          path.write_text(text)
+
+          # History repository uses GameState replay provenance when caller does not override it.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/data/history/HistoryRepository.kt')
+          text = path.read_text()
+          text = text.replace(
+              '                replayOfHistoryId = replayOfHistoryId,\n',
+              '                replayOfHistoryId = replayOfHistoryId ?: state.replayOfHistoryId,\n',
+              1,
+          )
+          path.write_text(text)
+
+          # Difficulty summary excludes replay attempts from normal aggregate history statistics.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/data/history/GameHistoryDao.kt')
+          text = path.read_text()
+          if 'AND replayOfHistoryId IS NULL' not in text:
+              anchor = '        WHERE completed = 1\n        GROUP BY difficulty\n'
+              if anchor not in text:
+                  raise SystemExit('history summary WHERE anchor missing')
+              text = text.replace(anchor, '        WHERE completed = 1\n          AND replayOfHistoryId IS NULL\n        GROUP BY difficulty\n', 1)
+          path.write_text(text)
+
+          # GameViewModel: read replay route arg, stamp custom game, and skip aggregate DataStore stats on replay.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt')
+          text = path.read_text()
+          if 'private val replayOfHistoryId' not in text:
+              anchor = '''    private val customPuzzle = savedStateHandle.get<String>("custom")
+                  ?.takeIf { it.length == SudokuBoard.CELL_COUNT }
+          '''
+              if anchor not in text:
+                  raise SystemExit('customPuzzle field anchor missing')
+              text = text.replace(anchor, anchor + '    private val replayOfHistoryId = savedStateHandle.get<Long>("replayOf")?.takeIf { it > 0L }\n', 1)
+          old_custom = '''            seed = 0L,
+              )
+          }
+          '''
+          new_custom = '''            seed = 0L,
+                  replayOfHistoryId = replayOfHistoryId,
+              )
+          }
+          '''
+          if 'replayOfHistoryId = replayOfHistoryId' not in text:
+              if old_custom not in text:
+                  raise SystemExit('custom GameState constructor anchor missing')
+              text = text.replace(old_custom, new_custom, 1)
+
+          old_completion = '''        viewModelScope.launch {
+              historyRepository.recordCompletedGame(state)
+              repository.recordGameCompleted(
+                  elapsedSeconds = state.elapsedSeconds,
+                  mistakes = state.mistakes,
+                  hintsUsed = state.hintsUsed,
+                  completedEpochDay = LocalDate.now().toEpochDay(),
+              )
+              repository.clearActiveGame()
+          }
+          '''
+          new_completion = '''        viewModelScope.launch {
+              historyRepository.recordCompletedGame(state)
+          }
+              viewModelScope.launch {
+                  if (state.replayOfHistoryId == null) {
+                      repository.recordGameCompleted(
+                          elapsedSeconds = state.elapsedSeconds,
+                          mistakes = state.mistakes,
+                          hintsUsed = state.hintsUsed,
+                          completedEpochDay = LocalDate.now().toEpochDay(),
+                      )
+                  }
+                  repository.clearActiveGame()
+              }
+          '''
+          if old_completion in text:
+              text = text.replace(old_completion, new_completion, 1)
+          elif 'if (state.replayOfHistoryId == null)' not in text:
+              raise SystemExit('recordCompletion block did not match expected v0.5 state')
+          path.write_text(text)
+
+          # App route: optional replayOf query argument and History replay navigation.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt')
+          text = path.read_text()
+          text = text.replace(
+              'const val GAME = "game/{difficulty}?daily={daily}&resume={resume}&custom={custom}"',
+              'const val GAME = "game/{difficulty}?daily={daily}&resume={resume}&custom={custom}&replayOf={replayOf}"',
+              1,
+          )
+          if 'navArgument("replayOf")' not in text:
+              anchor = '''                    navArgument("custom") {
+                          type = NavType.StringType
+                          defaultValue = ""
+                      },
+          '''
+              if anchor not in text:
+                  raise SystemExit('custom navArgument anchor missing')
+              text = text.replace(anchor, anchor + '''                    navArgument("replayOf") {
+                          type = NavType.LongType
+                          defaultValue = -1L
+                      },
+          ''', 1)
+          old_history = '''            composable(Routes.HISTORY) {
+                  HistoryRoute(onBack = { navController.popBackStack() })
+              }
+          '''
+          new_history = '''            composable(Routes.HISTORY) {
+                  HistoryRoute(
+                      onBack = { navController.popBackStack() },
+                      onReplay = { item ->
+                          navController.navigate(
+                              "game/${item.difficulty}?daily=false&resume=false&custom=${item.puzzle}&replayOf=${item.id}",
+                          )
+                      },
+                  )
+              }
+          '''
+          if old_history in text:
+              text = text.replace(old_history, new_history, 1)
+          elif 'onReplay = { item ->' not in text:
+              raise SystemExit('HistoryRoute app block not found')
+          path.write_text(text)
+
+          # History UI: expose Replay callback and badge.
+          path = Path('app/src/main/java/com/sanskar/sudokunova/ui/history/HistoryScreen.kt')
+          text = path.read_text()
+          if 'import androidx.compose.material3.Button\n' not in text:
+              text = text.replace('import androidx.compose.material3.AlertDialog\n', 'import androidx.compose.material3.AlertDialog\nimport androidx.compose.material3.Button\n', 1)
+          text = text.replace(
+              '''fun HistoryRoute(
+              onBack: () -> Unit,
+          ''',
+              '''fun HistoryRoute(
+              onBack: () -> Unit,
+              onReplay: (GameHistoryEntity) -> Unit,
+          ''',
+              1,
+          )
+          if 'onReplay = onReplay,' not in text:
+              text = text.replace('        onDelete = viewModel::delete,\n', '        onDelete = viewModel::delete,\n        onReplay = onReplay,\n', 1)
+          text = text.replace(
+              '    onDelete: (GameHistoryEntity) -> Unit,\n) {',
+              '    onDelete: (GameHistoryEntity) -> Unit,\n    onReplay: (GameHistoryEntity) -> Unit,\n) {',
+              1,
+          )
+          if 'onReplay = { onReplay(item) }' not in text:
+              text = text.replace(
+                  '''                        onFavorite = { onFavorite(item) },
+                          onDelete = { pendingDelete = item },
+                      )
+          ''',
+                  '''                        onFavorite = { onFavorite(item) },
+                          onDelete = { pendingDelete = item },
+                          onReplay = { onReplay(item) },
+                      )
+          ''',
+                  1,
+              )
+          text = text.replace(
+              '''    onFavorite: () -> Unit,
+              onDelete: () -> Unit,
+          ) {
+          ''',
+              '''    onFavorite: () -> Unit,
+              onDelete: () -> Unit,
+              onReplay: () -> Unit,
+          ) {
+          ''',
+              1,
+          )
+          if 'R.string.v05_replay_badge' not in text:
+              badge_anchor = '''                if (item.isPerfect) {
+                      Text(stringResource(R.string.v05_perfect_badge), color = MaterialTheme.colorScheme.tertiary)
+                  }
+          '''
+              if badge_anchor not in text:
+                  raise SystemExit('perfect badge anchor missing')
+              text = text.replace(badge_anchor, badge_anchor + '''                if (item.replayOfHistoryId != null) {
+                      Text(stringResource(R.string.v05_replay_badge), color = MaterialTheme.colorScheme.secondary)
+                  }
+          ''', 1)
+          if 'contentDescription = stringResource(R.string.v05_replay_history)' not in text:
+              card_end = '''            Row(
+                  modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                  horizontalArrangement = Arrangement.spacedBy(8.dp),
+              ) {
+          '''
+              # Add replay action before badge row.
+              if card_end not in text:
+                  raise SystemExit('History badge row anchor missing')
+              replay_button = '''            Button(
+                  onClick = onReplay,
+                  modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+              ) {
+                  Text(stringResource(R.string.v05_replay))
+              }
+
+          '''
+              text = text.replace(card_end, replay_button + card_end, 1)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-replay-integration.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add \
+            app/src/main/java/com/sanskar/sudokunova/game/GameState.kt \
+            app/src/main/java/com/sanskar/sudokunova/game/GameStateCodec.kt \
+            app/src/main/java/com/sanskar/sudokunova/data/history/HistoryRepository.kt \
+            app/src/main/java/com/sanskar/sudokunova/data/history/GameHistoryDao.kt \
+            app/src/main/java/com/sanskar/sudokunova/ui/game/GameViewModel.kt \
+            app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt \
+            app/src/main/java/com/sanskar/sudokunova/ui/history/HistoryScreen.kt
+          git commit -m 'feat: track replay attempts without inflating statistics'
+
+          for attempt in 1 2 3 4 5 6 7 8; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
