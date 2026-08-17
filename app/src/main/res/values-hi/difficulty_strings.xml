@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="difficulty_beginner">शुरुआती</string>
+    <string name="difficulty_easy">आसान</string>
+    <string name="difficulty_medium">मध्यम</string>
+    <string name="difficulty_hard">कठिन</string>
+    <string name="difficulty_expert">विशेषज्ञ</string>
+    <string name="difficulty_master">मास्टर</string>
+    <string name="difficulty_extreme">अत्यंत कठिन</string>
+</resources>
