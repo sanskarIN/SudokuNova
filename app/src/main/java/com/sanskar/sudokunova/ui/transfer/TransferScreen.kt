@@ -4,6 +4,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sanskar.sudokunova.R
+import com.sanskar.sudokunova.data.transfer.BackupFileIo
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
 
@@ -82,6 +85,27 @@ private fun TransferScreen(
     val copiedMessage = stringResource(R.string.v07_backup_copied)
     val shareTitle = stringResource(R.string.v07_share_title)
     val emptyClipboardMessage = stringResource(R.string.v07_clipboard_empty)
+    val exportSuccess = stringResource(R.string.v07_export_file_success)
+    val exportFailed = stringResource(R.string.v07_export_file_failed)
+    val importFailed = stringResource(R.string.v07_import_file_failed)
+    var pendingExportText by remember { mutableStateOf<String?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument(BackupFileIo.MIME_TYPE),
+    ) { uri ->
+        val textToWrite = pendingExportText
+        pendingExportText = null
+        if (uri != null && textToWrite != null) {
+            transientMessage = if (BackupFileIo.write(context, uri, textToWrite)) exportSuccess else exportFailed
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            val imported = BackupFileIo.read(context, uri)
+            if (imported == null) transientMessage = importFailed else pendingRestore = imported
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -191,6 +215,31 @@ private fun TransferScreen(
                     ) {
                         Text(stringResource(R.string.v07_restore_clipboard))
                     }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                onCreateBackup { text ->
+                                    pendingExportText = text
+                                    exportLauncher.launch(BackupFileIo.DEFAULT_FILE_NAME)
+                                }
+                            },
+                            enabled = !state.busy,
+                            modifier = Modifier.weight(1f),
+                        ) { Text(stringResource(R.string.v07_export_backup_file)) }
+                        OutlinedButton(
+                            onClick = { importLauncher.launch(arrayOf(BackupFileIo.MIME_TYPE, "application/octet-stream")) },
+                            enabled = !state.busy,
+                            modifier = Modifier.weight(1f),
+                        ) { Text(stringResource(R.string.v07_import_backup_file)) }
+                    }
+                    Text(
+                        stringResource(R.string.v07_file_backup_info),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Text(
                         stringResource(R.string.v07_safe_format),
                         style = MaterialTheme.typography.bodySmall,
