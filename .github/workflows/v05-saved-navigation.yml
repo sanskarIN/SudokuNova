@@ -1,0 +1,119 @@
+name: Apply v0.5 Saved Puzzles Navigation
+
+on:
+  push:
+    branches:
+      - feature/v0.5-player-history
+    paths:
+      - .github/workflows/v05-saved-navigation.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.5-player-history
+          fetch-depth: 0
+
+      - name: Wire Saved Puzzles through app and Home
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          app = Path('app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt')
+          text = app.read_text()
+          saved_import = 'import com.sanskar.sudokunova.ui.saved.SavedPuzzlesRoute\n'
+          if saved_import not in text:
+              anchor = 'import com.sanskar.sudokunova.ui.settings.SettingsScreen\n'
+              if anchor not in text:
+                  raise SystemExit('SettingsScreen import anchor missing')
+              text = text.replace(anchor, anchor + saved_import, 1)
+          if 'const val SAVED = "saved"' not in text:
+              anchor = '    const val SETTINGS = "settings"\n'
+              if anchor not in text:
+                  raise SystemExit('SETTINGS route anchor missing')
+              text = text.replace(anchor, '    const val SAVED = "saved"\n' + anchor, 1)
+          if 'onSavedPuzzles = { navController.navigate(Routes.SAVED) }' not in text:
+              anchor = '                    onCustomPuzzle = { navController.navigate(Routes.CUSTOM) },\n'
+              if anchor not in text:
+                  raise SystemExit('Custom callback anchor missing')
+              text = text.replace(anchor, anchor + '                    onSavedPuzzles = { navController.navigate(Routes.SAVED) },\n', 1)
+          if 'composable(Routes.SAVED)' not in text:
+              anchor = '''            composable(Routes.CUSTOM) {
+                  CustomPuzzleRoute(
+                      onBack = { navController.popBackStack() },
+                      onPlay = { puzzle ->
+                          navController.navigate("game/${Difficulty.MEDIUM.name}?daily=false&resume=false&custom=$puzzle")
+                      },
+                  )
+              }
+
+          '''
+              if anchor not in text:
+                  raise SystemExit('Custom composable anchor missing')
+              block = anchor + '''            composable(Routes.SAVED) {
+                  SavedPuzzlesRoute(
+                      onBack = { navController.popBackStack() },
+                      onPlay = { puzzle, difficulty ->
+                          navController.navigate("game/${difficulty.name}?daily=false&resume=false&custom=$puzzle")
+                      },
+                  )
+              }
+
+          '''
+              text = text.replace(anchor, block, 1)
+          app.write_text(text)
+
+          home = Path('app/src/main/java/com/sanskar/sudokunova/ui/home/HomeScreen.kt')
+          text = home.read_text()
+          if 'onSavedPuzzles: () -> Unit,' not in text:
+              text = text.replace(
+                  '    onCustomPuzzle: () -> Unit,\n',
+                  '    onCustomPuzzle: () -> Unit,\n    onSavedPuzzles: () -> Unit,\n',
+              )
+          if 'onSavedPuzzles = onSavedPuzzles,' not in text:
+              text = text.replace(
+                  '        onCustomPuzzle = onCustomPuzzle,\n',
+                  '        onCustomPuzzle = onCustomPuzzle,\n        onSavedPuzzles = onSavedPuzzles,\n',
+              )
+
+          if 'R.string.v05_saved_puzzles' not in text:
+              import re
+              # Try duplicating a compact HomeAction that opens Custom.
+              patterns = [
+                  re.compile(r'(?P<block>\s*HomeAction\(\s*\n\s*title\s*=\s*stringResource\(R\.string\.v04_custom\),\s*\n\s*onClick\s*=\s*onCustomPuzzle,\s*\n\s*\)\s*\n)', re.MULTILINE),
+                  re.compile(r'(?P<block>[^\n]*onClick\s*=\s*onCustomPuzzle[^\n]*\n(?:.*\n){0,5}?.*v04_custom.*\n)', re.MULTILINE),
+              ]
+              inserted = False
+              for pattern in patterns:
+                  match = pattern.search(text)
+                  if match:
+                      block = match.group('block')
+                      saved_block = block.replace('v04_custom', 'v05_saved_puzzles').replace('onCustomPuzzle', 'onSavedPuzzles')
+                      text = text[:match.end()] + saved_block + text[match.end():]
+                      inserted = True
+                      break
+              if not inserted:
+                  raise SystemExit('Unable to locate Custom action to add Saved Puzzles entry')
+          home.write_text(text)
+          PY
+
+          git rm .github/workflows/v05-saved-navigation.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/ui/SudokuNovaApp.kt app/src/main/java/com/sanskar/sudokunova/ui/home/HomeScreen.kt
+          git commit -m 'ui: add Saved Puzzles destination to Home navigation'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.5-player-history
+            git rebase origin/feature/v0.5-player-history
+            if git push origin HEAD:feature/v0.5-player-history; then exit 0; fi
+            sleep 2
+          done
+          exit 1
