@@ -17,6 +17,7 @@ import com.sanskar.sudokunova.engine.SudokuBoard
 import com.sanskar.sudokunova.engine.SudokuGenerator
 import com.sanskar.sudokunova.engine.SudokuHint
 import com.sanskar.sudokunova.engine.SudokuSolver
+import com.sanskar.sudokunova.engine.TeachingHintSequence
 import com.sanskar.sudokunova.game.GameState
 import com.sanskar.sudokunova.game.GameStateCodec
 import com.sanskar.sudokunova.game.GameStatus
@@ -73,6 +74,9 @@ class GameViewModel(
 
     private val _pendingHint = MutableStateFlow<SudokuHint?>(null)
     val pendingHint: StateFlow<SudokuHint?> = _pendingHint.asStateFlow()
+
+    private val _pendingTeachingHint = MutableStateFlow<TeachingHintSequence?>(null)
+    val pendingTeachingHint: StateFlow<TeachingHintSequence?> = _pendingTeachingHint.asStateFlow()
 
     val settings = repository.settings.stateIn(
         scope = viewModelScope,
@@ -157,8 +161,18 @@ class GameViewModel(
     fun requestHint() {
         val state = currentGame() ?: return
         if (state.isPaused || state.status != GameStatus.PLAYING) return
+
+        val teachingHint = hintEngine.nextTeachingHint(state.board)
+        if (teachingHint != null) {
+            _pendingTeachingHint.value = teachingHint
+            _pendingHint.value = null
+            mutateGame { it.copy(selectedIndex = teachingHint.placement.cellIndex) }
+            return
+        }
+
         val hint = hintEngine.nextHint(state.board)
         _pendingHint.value = hint
+        _pendingTeachingHint.value = null
         if (hint != null) {
             mutateGame { it.copy(selectedIndex = hint.cellIndex) }
         }
@@ -166,18 +180,24 @@ class GameViewModel(
 
     fun dismissHint() {
         _pendingHint.value = null
+        _pendingTeachingHint.value = null
     }
 
     fun applyHint() {
-        val hint = _pendingHint.value ?: return
         val state = currentGame() ?: return
-        if (state.isOriginal(hint.cellIndex) || state.status != GameStatus.PLAYING) return
+        val teachingPlacement = _pendingTeachingHint.value?.placement
+        val legacyHint = _pendingHint.value
+        val index = teachingPlacement?.cellIndex ?: legacyHint?.cellIndex ?: return
+        val value = teachingPlacement?.value ?: legacyHint?.value ?: return
+
+        if (state.isOriginal(index) || state.status != GameStatus.PLAYING) return
         pushUndo(state)
         _pendingHint.value = null
+        _pendingTeachingHint.value = null
         placeValue(
             state = state.copy(hintsUsed = state.hintsUsed + 1),
-            index = hint.cellIndex,
-            value = hint.value,
+            index = index,
+            value = value,
             countMistake = false,
             alreadyAddedToUndo = true,
         )
@@ -193,6 +213,8 @@ class GameViewModel(
         val state = currentGame() ?: return
         pushUndo(state)
         completionRecorded = false
+        _pendingHint.value = null
+        _pendingTeachingHint.value = null
         setGame(
             state.copy(
                 board = state.puzzle,
@@ -218,6 +240,7 @@ class GameViewModel(
         undoStack.clear()
         redoStack.clear()
         _pendingHint.value = null
+        _pendingTeachingHint.value = null
         if (state.status == GameStatus.COMPLETED) completionRecorded = true
     }
 

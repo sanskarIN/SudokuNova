@@ -64,6 +64,8 @@ import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.game.GameState
 import com.sanskar.sudokunova.game.GameStatus
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
+import com.sanskar.sudokunova.ui.common.localizedTeachingExplanation
+import com.sanskar.sudokunova.ui.common.localizedTeachingTechnique
 
 @Composable
 fun GameRoute(
@@ -74,6 +76,7 @@ fun GameRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val hint by viewModel.pendingHint.collectAsStateWithLifecycle()
+    val teachingHint by viewModel.pendingTeachingHint.collectAsStateWithLifecycle()
     val hapticFeedback = LocalHapticFeedback.current
     val view = LocalView.current
 
@@ -137,11 +140,57 @@ fun GameRoute(
         },
     )
 
-    if (hint != null) {
+    if (teachingHint != null) {
+        val sequence = teachingHint!!
         AlertDialog(
             onDismissRequest = viewModel::dismissHint,
-            title = { Text(hint!!.technique.displayName) },
-            text = { Text(hint!!.explanation) },
+            title = { Text(stringResource(R.string.v08_teaching_hint)) },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    sequence.steps.forEach { step ->
+                        Text(
+                            localizedTeachingTechnique(step.technique),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            localizedTeachingExplanation(step),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.applyHint()
+                        playFeedback()
+                    },
+                ) { Text(stringResource(R.string.v04_apply_hint)) }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissHint) { Text(stringResource(R.string.v04_not_now)) }
+            },
+        )
+    } else if (hint != null) {
+        val reveal = hint!!
+        val revealRow = reveal.cellIndex / 9 + 1
+        val revealColumn = reveal.cellIndex % 9 + 1
+        AlertDialog(
+            onDismissRequest = viewModel::dismissHint,
+            title = { Text(stringResource(R.string.v08_technique_reveal)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.v08_explain_reveal,
+                        revealRow,
+                        revealColumn,
+                        reveal.value,
+                    ),
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
