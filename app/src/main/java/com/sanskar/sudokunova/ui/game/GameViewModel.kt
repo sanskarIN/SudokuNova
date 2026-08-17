@@ -92,12 +92,12 @@ class GameViewModel(
 
     fun selectCell(index: Int) {
         if (index !in 0 until SudokuBoard.CELL_COUNT) return
-        mutateGame(save = false) { state -> state.copy(selectedIndex = index) }
+        mutateGame { state -> state.copy(selectedIndex = index) }
     }
 
     fun selectNumber(value: Int?) {
         if (value != null && value !in 1..9) return
-        mutateGame(save = false) { state -> state.copy(selectedNumber = value) }
+        mutateGame { state -> state.copy(selectedNumber = value) }
     }
 
     fun toggleNotesMode() {
@@ -160,7 +160,7 @@ class GameViewModel(
         val hint = hintEngine.nextHint(state.board)
         _pendingHint.value = hint
         if (hint != null) {
-            mutateGame(save = false) { it.copy(selectedIndex = hint.cellIndex) }
+            mutateGame { it.copy(selectedIndex = hint.cellIndex) }
         }
     }
 
