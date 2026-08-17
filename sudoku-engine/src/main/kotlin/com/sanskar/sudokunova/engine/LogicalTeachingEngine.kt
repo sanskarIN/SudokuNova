@@ -42,7 +42,9 @@ class LogicalTeachingEngine {
             findNakedSingle()
                 ?: findHiddenSingle()
                 ?: findNakedPair()
+                ?: findHiddenPair()
                 ?: findNakedTriple()
+                ?: findHiddenTriple()
                 ?: findPointingPairOrTriple()
                 ?: findBoxLineReduction()
 
@@ -107,8 +109,14 @@ class LogicalTeachingEngine {
         private fun findNakedPair(): TeachingStep? =
             findNakedSubsetStep(subsetSize = 2, technique = LogicalTechnique.NAKED_PAIR)
 
+        private fun findHiddenPair(): TeachingStep? =
+            findHiddenSubsetStep(subsetSize = 2, technique = LogicalTechnique.HIDDEN_PAIR)
+
         private fun findNakedTriple(): TeachingStep? =
             findNakedSubsetStep(subsetSize = 3, technique = LogicalTechnique.NAKED_TRIPLE)
+
+        private fun findHiddenTriple(): TeachingStep? =
+            findHiddenSubsetStep(subsetSize = 3, technique = LogicalTechnique.HIDDEN_TRIPLE)
 
         private fun findNakedSubsetStep(
             subsetSize: Int,
@@ -117,6 +125,30 @@ class LogicalTeachingEngine {
             for (descriptor in allUnitDescriptors()) {
                 val snapshot = descriptor.indices.associateWith { candidates[it].toSet() }
                 val match = findNakedSubset(
+                    unitIndices = descriptor.indices,
+                    candidates = snapshot,
+                    subsetSize = subsetSize,
+                ) ?: continue
+
+                return TeachingStep(
+                    technique = technique,
+                    sourceCells = match.sourceCells.toSet(),
+                    sourceUnit = descriptor.unit,
+                    affectedUnit = descriptor.unit,
+                    candidateValues = match.values,
+                    eliminations = match.eliminations,
+                )
+            }
+            return null
+        }
+
+        private fun findHiddenSubsetStep(
+            subsetSize: Int,
+            technique: LogicalTechnique,
+        ): TeachingStep? {
+            for (descriptor in allUnitDescriptors()) {
+                val snapshot = descriptor.indices.associateWith { candidates[it].toSet() }
+                val match = findHiddenSubset(
                     unitIndices = descriptor.indices,
                     candidates = snapshot,
                     subsetSize = subsetSize,
