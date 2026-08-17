@@ -468,3 +468,21 @@ Development history is intentionally preserved through many focused commits inst
 - Support: `supportramsandesh@gmail.com`
 - Credit: **Made by the Sanskar**
 - License: **MIT**
+
+## v0.4 Accessibility and Localization Work
+
+Implemented and pushed:
+
+- English and Hindi resources for core player-facing navigation/game/settings/custom/statistics/about/learning content.
+- Localized Beginner/Easy/Medium/Hard/Expert/Master/Extreme labels.
+- Localized System/Light/Dark theme labels.
+- Resource-backed Sudoku cell semantic descriptions in English and Hindi.
+- Resource-backed Learn center with original English/Hindi educational explanations.
+- High Contrast now changes playable board rendering: stronger grid, selected/conflict borders, peer distinction, and note weight/size.
+- Added `scripts/verify_translations.py` to ensure English/Hindi core key parity.
+- Standard Android CI now runs translation parity before the Gradle quality gates.
+- Android development version advanced to `0.4.0` / versionCode `400`.
+
+Fresh-clone local verification passed for translation parity, Android unit tests, instrumentation-test APK compilation, lint, and debug APK assembly before the v0.4 PR gate.
+
+Known localization limitation: some dynamic validation/error strings in ViewModels and future feature surfaces remain to be migrated as those features are hardened.

@@ -5,6 +5,9 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 ## [Unreleased]
 
 ### Added
+- v0.4 development: English/Hindi resource-backed localization for core Home, Game, Settings, Custom Puzzle, Statistics, About, Learn, difficulty, theme, and Sudoku accessibility text.
+- v0.4 development: translation-resource parity checker promoted into CI.
+- v0.4 development: visible High Contrast board behavior with stronger grid lines, state borders, peer distinction, and note emphasis.
 - Android application foundation using Kotlin, Jetpack Compose, and Material 3.
 - Platform-independent Sudoku engine module.
 - Immutable 9×9 board model with validation, conflicts, candidates, and serialization.

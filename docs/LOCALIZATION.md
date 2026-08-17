@@ -40,3 +40,17 @@ New production UI should prefer string resources rather than hard-coded display 
 ## Sudoku Terminology
 
 Technique names may include a standard English term followed by a localized explanation if the localized Sudoku community commonly uses the English name. Consistency matters more than inventing unique terminology.
+
+## v0.4 English / Hindi Foundation
+
+The v0.4 milestone adds Android resource-backed English and Hindi strings for the main navigation/game/settings/custom/statistics/about/learning surfaces, localized difficulty/theme labels, and Sudoku cell TalkBack semantics.
+
+Run:
+
+```bash
+python scripts/verify_translations.py
+```
+
+The standard GitHub Actions CI also runs this parity check. It compares core `v04_`, `difficulty_`, and `theme_` keys between `values/` and `values-hi/` and fails when either locale is missing a required key.
+
+Dynamic validation messages and future feature-specific strings must follow the same resource-based approach before those surfaces are called fully localized.
