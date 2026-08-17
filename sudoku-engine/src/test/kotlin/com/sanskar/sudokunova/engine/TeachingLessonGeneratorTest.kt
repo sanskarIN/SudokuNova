@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.engine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TeachingLessonGeneratorTest {
@@ -27,16 +28,14 @@ class TeachingLessonGeneratorTest {
     }
 
     @Test
-    fun boundedSearchReturnsNullWhenNoTechniqueIsAllowed() {
+    fun boundedSearchRejectsNonPlacementTechniqueFilter() {
         val result = lessonGenerator.findPlacementLesson(
             seedStart = 80_800L,
             allowedTechniques = setOf(LogicalTechnique.NAKED_PAIR),
             maxAttempts = 1,
         )
 
-        if (result != null) {
-            assertEquals(LogicalTechnique.NAKED_PAIR, result.sequence.steps.last().technique)
-        }
+        assertNull(result)
     }
 
     @Test
