@@ -14,15 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Redo
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -111,7 +111,7 @@ private fun GameScreen(
                 title = { Text("SudokuNova") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
             )
@@ -303,9 +303,9 @@ private fun ControlsPanel(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            ActionButton("Undo", Icons.Default.Undo, onUndo)
-            ActionButton("Redo", Icons.Default.Redo, onRedo)
-            ActionButton("Erase", Icons.Default.Backspace, onErase)
+            ActionButton("Undo", Icons.AutoMirrored.Filled.Undo, onUndo)
+            ActionButton("Redo", Icons.AutoMirrored.Filled.Redo, onRedo)
+            ActionButton("Erase", Icons.AutoMirrored.Filled.Backspace, onErase)
             ActionButton(
                 if (game.notesMode) "Notes on" else "Notes",
                 Icons.Default.Edit,
