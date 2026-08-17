@@ -84,6 +84,21 @@ class BackupRepositoryTest {
     }
 
     @Test
+    fun restorePreservesReplayProvenanceAndExcludesReplayFromSummaries() = runBlocking {
+        val replayBackup = sampleBackup().copy(
+            history = sampleBackup().history.map { it.copy(isReplay = true) },
+            savedPuzzles = emptyList(),
+            challengeResults = emptyList(),
+        )
+
+        repository.importBackup(replayBackup)
+
+        val restored = database.gameHistoryDao().observeAll().first().single()
+        assertEquals(true, restored.replayOfHistoryId != null)
+        assertEquals(true, database.gameHistoryDao().observeDifficultySummaries().first().isEmpty())
+    }
+
+    @Test
     fun restoreAppliesValidatedSettings() = runBlocking {
         repository.importBackup(sampleBackup())
         val settings = AppPreferencesRepository(context).settings.first()

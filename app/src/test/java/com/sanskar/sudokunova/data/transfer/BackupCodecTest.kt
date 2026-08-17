@@ -75,6 +75,7 @@ class BackupCodecTest {
                 isDailyChallenge = false,
                 isPerfect = false,
                 isFavorite = true,
+                isReplay = true,
             ),
         ),
         savedPuzzles = listOf(

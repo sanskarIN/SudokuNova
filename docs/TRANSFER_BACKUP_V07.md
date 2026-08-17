@@ -28,7 +28,7 @@ The following are intentionally excluded:
 
 - active/in-progress game state,
 - local Room IDs,
-- replay source IDs,
+- replay source IDs (only a replay/non-replay provenance flag is preserved),
 - secrets,
 - signing material,
 - credentials,
@@ -55,8 +55,9 @@ The complete text backup is decoded and validated before persistence begins.
 
 Room-backed data is restored inside a database transaction. Existing data is not silently overwritten:
 
-- exact/natural duplicate history records are skipped,
-- duplicate saved puzzles are skipped by the existing unique-puzzle constraint,
+- exact/natural duplicate history records are skipped while backed-up Favorite state can promote an existing record,
+- replay/non-replay provenance is preserved without trusting or restoring exported source IDs,
+- duplicate saved puzzles are skipped by the existing unique-puzzle constraint while backed-up Favorite state can promote an existing puzzle,
 - duplicate challenge results are skipped by the unique `(challengeType, challengeKey)` constraint,
 - new local database IDs are generated instead of trusting exported IDs.
 

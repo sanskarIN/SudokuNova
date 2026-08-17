@@ -10,6 +10,8 @@ import com.sanskar.sudokunova.data.history.SudokuNovaDatabase
 import com.sanskar.sudokunova.data.restoreSettings
 import kotlinx.coroutines.flow.first
 
+private const val IMPORTED_REPLAY_SENTINEL = 0L
+
 class BackupRepository(context: Context) {
     private val appContext = context.applicationContext
     private val preferences = AppPreferencesRepository(appContext)
@@ -34,6 +36,7 @@ class BackupRepository(context: Context) {
                 isDailyChallenge = entity.isDailyChallenge,
                 isPerfect = entity.isPerfect,
                 isFavorite = entity.isFavorite,
+                isReplay = entity.replayOfHistoryId != null,
             )
         },
         savedPuzzles = savedDao.observeAll().first().map { entity ->
@@ -98,7 +101,7 @@ class BackupRepository(context: Context) {
                     isDailyChallenge = record.isDailyChallenge,
                     isPerfect = record.isPerfect,
                     isFavorite = record.isFavorite,
-                    replayOfHistoryId = null,
+                    replayOfHistoryId = if (record.isReplay) IMPORTED_REPLAY_SENTINEL else null,
                 )
                 val signature = historySignature(entity)
                 if (!historySignatures.add(signature)) {
@@ -191,5 +194,6 @@ class BackupRepository(context: Context) {
         entity.completedAtEpochMillis,
         entity.isDailyChallenge,
         entity.isPerfect,
+        entity.replayOfHistoryId != null,
     ).joinToString("|")
 }

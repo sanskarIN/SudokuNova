@@ -15,6 +15,7 @@ data class BackupHistoryRecord(
     val isDailyChallenge: Boolean,
     val isPerfect: Boolean,
     val isFavorite: Boolean,
+    val isReplay: Boolean = false,
 )
 
 data class BackupSavedPuzzleRecord(

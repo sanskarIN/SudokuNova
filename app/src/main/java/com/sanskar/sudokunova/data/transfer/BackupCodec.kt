@@ -150,11 +150,12 @@ object BackupCodec {
             record.isDailyChallenge.toString(),
             record.isPerfect.toString(),
             record.isFavorite.toString(),
+            record.isReplay.toString(),
         ).joinToString("|")
     }
 
     private fun decodeHistory(fields: List<String>): BackupHistoryRecord {
-        require(fields.size == 13)
+        require(fields.size == 14)
         validatePuzzleAndSolution(fields[1], fields[2])
         Difficulty.valueOf(fields[3])
         val elapsed = fields[5].toLong()
@@ -178,6 +179,7 @@ object BackupCodec {
             isDailyChallenge = fields[10].toBooleanStrict(),
             isPerfect = perfect,
             isFavorite = fields[12].toBooleanStrict(),
+            isReplay = fields[13].toBooleanStrict(),
         )
     }
 
