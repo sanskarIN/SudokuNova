@@ -1,5 +1,6 @@
 package com.sanskar.sudokunova.ui.game
 
+import android.view.SoundEffectConstants
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,12 +40,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sanskar.sudokunova.R
+import com.sanskar.sudokunova.data.InputMode
 import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.game.GameState
 import com.sanskar.sudokunova.game.GameStatus
@@ -59,21 +64,66 @@ fun GameRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val hint by viewModel.pendingHint.collectAsStateWithLifecycle()
+    val hapticFeedback = LocalHapticFeedback.current
+    val view = LocalView.current
+
+    fun playFeedback() {
+        if (settings.haptics) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+        if (settings.sounds) {
+            view.playSoundEffect(SoundEffectConstants.CLICK)
+        }
+    }
 
     GameScreen(
         uiState = uiState,
         settings = settings,
         onBack = onBack,
         onNewGame = onNewGame,
-        onCellSelected = viewModel::selectCell,
-        onNumber = viewModel::enterNumber,
-        onErase = viewModel::erase,
-        onToggleNotes = viewModel::toggleNotesMode,
-        onUndo = viewModel::undo,
-        onRedo = viewModel::redo,
-        onHint = viewModel::requestHint,
-        onPause = viewModel::togglePause,
-        onRestart = viewModel::restart,
+        onCellSelected = { index ->
+            val selectedNumber = (uiState as? GameScreenState.Ready)?.game?.selectedNumber
+            viewModel.selectCell(index)
+            if (settings.inputMode == InputMode.NUMBER_FIRST && selectedNumber != null) {
+                viewModel.enterNumber(selectedNumber)
+            }
+            playFeedback()
+        },
+        onNumber = { number ->
+            viewModel.selectNumber(number)
+            if (settings.inputMode == InputMode.CELL_FIRST) {
+                viewModel.enterNumber(number)
+            }
+            playFeedback()
+        },
+        onErase = {
+            viewModel.erase()
+            playFeedback()
+        },
+        onToggleNotes = {
+            viewModel.toggleNotesMode()
+            playFeedback()
+        },
+        onUndo = {
+            viewModel.undo()
+            playFeedback()
+        },
+        onRedo = {
+            viewModel.redo()
+            playFeedback()
+        },
+        onHint = {
+            viewModel.requestHint()
+            playFeedback()
+        },
+        onPause = {
+            viewModel.togglePause()
+            playFeedback()
+        },
+        onRestart = {
+            viewModel.restart()
+            playFeedback()
+        },
     )
 
     if (hint != null) {
@@ -82,7 +132,12 @@ fun GameRoute(
             title = { Text(hint!!.technique.displayName) },
             text = { Text(hint!!.explanation) },
             confirmButton = {
-                TextButton(onClick = viewModel::applyHint) { Text(stringResource(R.string.v04_apply_hint)) }
+                TextButton(
+                    onClick = {
+                        viewModel.applyHint()
+                        playFeedback()
+                    },
+                ) { Text(stringResource(R.string.v04_apply_hint)) }
             },
             dismissButton = {
                 TextButton(onClick = viewModel::dismissHint) { Text(stringResource(R.string.v04_not_now)) }
@@ -166,8 +221,8 @@ private fun GameScreen(
                         title = { Text(stringResource(R.string.v04_puzzle_complete)) },
                         text = {
                             Text(
-                                "${game.difficulty.displayName} solved in ${formatTime(game.elapsedSeconds)} " +
-                                    "with ${game.mistakes} mistake(s) and ${game.hintsUsed} hint(s).",
+                                "${localizedDifficultyLabel(game.difficulty)} · ${formatTime(game.elapsedSeconds)} · " +
+                                    "${game.mistakes} mistake(s) · ${game.hintsUsed} hint(s)",
                             )
                         },
                         confirmButton = {
@@ -228,6 +283,7 @@ private fun GameContent(
                 }
                 ControlsPanel(
                     game = game,
+                    settings = settings,
                     modifier = Modifier.weight(0.8f).verticalScroll(rememberScrollState()),
                     onNumber = onNumber,
                     onErase = onErase,
@@ -253,6 +309,7 @@ private fun GameContent(
                 Spacer(Modifier.height(12.dp))
                 ControlsPanel(
                     game = game,
+                    settings = settings,
                     onNumber = onNumber,
                     onErase = onErase,
                     onToggleNotes = onToggleNotes,
@@ -278,6 +335,15 @@ private fun GameMeta(game: GameState, settings: UserSettings) {
         Column {
             Text(localizedDifficultyLabel(game.difficulty), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.v04_percent_complete, game.progressPercent), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                if (settings.inputMode == InputMode.CELL_FIRST) {
+                    stringResource(R.string.v06_cell_first)
+                } else {
+                    stringResource(R.string.v06_number_first)
+                },
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         Column(horizontalAlignment = Alignment.End) {
             if (settings.showTimer) Text(formatTime(game.elapsedSeconds))
@@ -295,6 +361,7 @@ private fun GameMeta(game: GameState, settings: UserSettings) {
 @Composable
 private fun ControlsPanel(
     game: GameState,
+    settings: UserSettings,
     modifier: Modifier = Modifier,
     onNumber: (Int) -> Unit,
     onErase: () -> Unit,
@@ -306,7 +373,11 @@ private fun ControlsPanel(
     onRestart: () -> Unit,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        NumberPad(onNumber)
+        NumberPad(
+            selectedNumber = game.selectedNumber,
+            persistentSelection = settings.inputMode == InputMode.NUMBER_FIRST,
+            onNumber = onNumber,
+        )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -339,20 +410,33 @@ private fun ControlsPanel(
 }
 
 @Composable
-private fun NumberPad(onNumber: (Int) -> Unit) {
+private fun NumberPad(
+    selectedNumber: Int?,
+    persistentSelection: Boolean,
+    onNumber: (Int) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         (1..9).forEach { number ->
+            val selected = persistentSelection && selectedNumber == number
             Surface(
                 modifier = Modifier
                     .weight(1f)
                     .height(52.dp)
                     .clickable(role = Role.Button) { onNumber(number) },
                 shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                },
+                contentColor = if (selected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                },
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(number.toString(), style = MaterialTheme.typography.titleLarge)
