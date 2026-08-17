@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="v08_teaching_step">सीखने का चरण</string>
+    <string name="v08_teaching_hint">तार्किक संकेत</string>
+    <string name="v08_reasoning_steps">तर्क के चरण</string>
     <string name="v08_technique_naked_single">नेकेड सिंगल</string>
     <string name="v08_technique_hidden_single">हिडन सिंगल</string>
     <string name="v08_technique_naked_pair">नेकेड पेयर</string>
     <string name="v08_technique_pointing_pair_triple">पॉइंटिंग पेयर / ट्रिपल</string>
     <string name="v08_technique_box_line_reduction">बॉक्स-लाइन रिडक्शन</string>
+    <string name="v08_technique_reveal">खाना दिखाएँ</string>
 
     <string name="v08_unit_row">पंक्ति %1$d</string>
     <string name="v08_unit_column">स्तंभ %1$d</string>
@@ -17,5 +20,6 @@
     <string name="v08_explain_naked_pair">%1$s में %2$s के संभावित अंक केवल %3$s हैं। %4$s से %3$s हटाएँ।</string>
     <string name="v08_explain_pointing">%1$s में संभावित अंक %2$d केवल %3$s तक सीमित है। %4$s से %2$d हटाएँ।</string>
     <string name="v08_explain_box_line">%1$s में संभावित अंक %2$d केवल %3$s तक सीमित है। %4$s से %2$d हटाएँ।</string>
+    <string name="v08_explain_reveal">कोई समर्थित तार्किक प्लेसमेंट नहीं मिला। अधिक मजबूत संकेत चाहिए तो पंक्ति %1$d, स्तंभ %2$d में %3$d दिखाएँ।</string>
     <string name="v08_affected_cells">प्रभावित खाने: %1$s</string>
 </resources>
