@@ -44,7 +44,7 @@ class HistoryRepository(context: Context) {
                 completedAtEpochMillis = completedAtEpochMillis,
                 isDailyChallenge = state.isDailyChallenge,
                 isPerfect = state.mistakes == 0 && state.hintsUsed == 0,
-                replayOfHistoryId = replayOfHistoryId,
+                replayOfHistoryId = replayOfHistoryId ?: state.replayOfHistoryId,
             ),
         )
     }
