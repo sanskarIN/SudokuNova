@@ -33,6 +33,7 @@ This directory contains implementation-aligned documentation for SudokuNova. A f
 ## Quality and Contribution
 
 - [Testing](TESTING.md)
+- [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md)
 - [QA Matrix](QA_MATRIX.md)
 - [Contributing Guide](CONTRIBUTING_GUIDE.md)
 - [Changelog Guide](CHANGELOG_GUIDE.md)

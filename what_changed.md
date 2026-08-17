@@ -468,3 +468,28 @@ Development history is intentionally preserved through many focused commits inst
 - Support: `supportramsandesh@gmail.com`
 - Credit: **Made by the Sanskar**
 - License: **MIT**
+
+## v0.2 Hardening Verification Update
+
+Additional v0.2 work now implemented and pushed:
+
+- Saved-game structural integrity validation through `GameStateIntegrity`.
+- Codec rejects corrupted original clues, invalid selected-cell indexes, and inconsistent completed states.
+- Regression tests cover structural integrity and corrupted codec payloads.
+- Hardware keyboard shortcuts for 1–9/numpad, erase, Notes, Hint, Pause, Ctrl+Z, and Ctrl+Y.
+- Number-first selection is persisted immediately and codec v1 saves migrate to v2 safely.
+- Haptics and sound settings now affect actual game interactions.
+- Compose smoke tests are scroll-safe on smaller devices.
+- Standard CI compiles the instrumentation APK.
+- Pull requests to `main` run connected Compose tests on an Android API 35 emulator through `.github/workflows/instrumentation.yml`.
+- `docs/KEYBOARD_SHORTCUTS.md` documents hardware-keyboard behavior.
+
+Fresh-clone local verification on the pushed v0.2 branch passed the current non-device quality gate:
+
+- `:sudoku-engine:test`
+- `:app:testDebugUnitTest`
+- `:app:assembleDebugAndroidTest`
+- `:app:lintDebug`
+- `:app:assembleDebug`
+
+The pull-request emulator run is the next merge gate.

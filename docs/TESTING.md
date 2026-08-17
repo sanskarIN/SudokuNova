@@ -98,3 +98,9 @@ Before a release candidate, complete `QA_MATRIX.md` on representative devices/em
 ## CI
 
 `.github/workflows/ci.yml` runs the current engine tests, app JVM tests, lint, and debug assembly. A red CI run blocks merge until the failure is understood and corrected.
+
+## Pull-Request Emulator Gate
+
+`.github/workflows/instrumentation.yml` runs `:app:connectedDebugAndroidTest` on an Android API 35 x86_64 emulator for pull requests targeting `main` (and manual workflow dispatch). The standard CI workflow also compiles the instrumentation APK on every source change so test-source compilation failures are caught earlier.
+
+The current Compose smoke suite covers Home entry points, Settings/input-mode navigation, and Custom Puzzle navigation. Expand connected tests as gameplay state injection/test fixtures mature.

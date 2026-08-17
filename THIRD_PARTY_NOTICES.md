@@ -28,6 +28,10 @@ Repository automation references reusable GitHub Actions such as `actions/checko
 
 The SudokuNova launcher/splash vector artwork and in-app Sudoku educational explanations committed to this repository are original project content unless a source is explicitly credited in the relevant file.
 
+## Android Emulator Runner GitHub Action
+
+Pull-request instrumentation automation uses `ReactiveCircus/android-emulator-runner@v2` to provision an Android emulator in GitHub Actions. That action remains subject to the license and notices in its own repository.
+
 ## Maintaining This File
 
 When adding a dependency, asset, font, sound, icon set, animation, code sample, or other third-party material:
