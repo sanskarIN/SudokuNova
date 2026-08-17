@@ -1,0 +1,83 @@
+name: Apply v0.6 Room Schema v2
+
+on:
+  push:
+    branches:
+      - feature/v0.6-challenge-archive
+    paths:
+      - .github/workflows/v06-database-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.6-challenge-archive
+          fetch-depth: 0
+
+      - name: Add challenge table and migration to database
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/sanskar/sudokunova/data/history/SudokuNovaDatabase.kt')
+          text = path.read_text()
+
+          if 'import com.sanskar.sudokunova.data.challenge.ChallengeResultDao' not in text:
+              anchor = 'import androidx.room.RoomDatabase\n'
+              text = text.replace(
+                  anchor,
+                  anchor + 'import com.sanskar.sudokunova.data.challenge.ChallengeResultDao\nimport com.sanskar.sudokunova.data.challenge.ChallengeResultEntity\n',
+                  1,
+              )
+          if 'ChallengeResultEntity::class,' not in text:
+              anchor = '        SavedPuzzleEntity::class,\n'
+              if anchor not in text:
+                  raise SystemExit('SavedPuzzleEntity database anchor missing')
+              text = text.replace(anchor, anchor + '        ChallengeResultEntity::class,\n', 1)
+          text = text.replace('    version = 1,\n', '    version = 2,\n', 1)
+          if 'abstract fun challengeResultDao()' not in text:
+              anchor = '    abstract fun savedPuzzleDao(): SavedPuzzleDao\n'
+              if anchor not in text:
+                  raise SystemExit('savedPuzzleDao anchor missing')
+              text = text.replace(anchor, anchor + '    abstract fun challengeResultDao(): ChallengeResultDao\n', 1)
+          if '.addMigrations(MIGRATION_1_2)' not in text:
+              old = '''            Room.databaseBuilder(
+                  context.applicationContext,
+                  SudokuNovaDatabase::class.java,
+                  DATABASE_NAME,
+              ).build().also { instance = it }
+          '''
+              new = '''            Room.databaseBuilder(
+                  context.applicationContext,
+                  SudokuNovaDatabase::class.java,
+                  DATABASE_NAME,
+              )
+                  .addMigrations(MIGRATION_1_2)
+                  .build()
+                  .also { instance = it }
+          '''
+              if old not in text:
+                  raise SystemExit('databaseBuilder block missing')
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+          PY
+
+          git rm .github/workflows/v06-database-v2.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/src/main/java/com/sanskar/sudokunova/data/history/SudokuNovaDatabase.kt
+          git commit -m 'build: upgrade Room database to schema v2'
+
+          for attempt in 1 2 3 4 5 6 7 8; do
+            git fetch origin feature/v0.6-challenge-archive
+            git rebase origin/feature/v0.6-challenge-archive
+            if git push origin HEAD:feature/v0.6-challenge-archive; then exit 0; fi
+            sleep 2
+          done
+          exit 1
