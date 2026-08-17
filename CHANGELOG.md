@@ -5,6 +5,10 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 ## [Unreleased]
 
 ### Added
+- v0.3 development: logic-only solver using Naked Single, Hidden Single, Naked Pair, Pointing Pair/Triple, and Box-Line Reduction without consulting the solved grid.
+- v0.3 development: logical difficulty evidence analyzer and combined calibration model.
+- v0.3 development: calibrated difficulty metadata attached to generated puzzles for deterministic corpus analysis.
+- v0.3 development: all-difficulty deterministic generation and logical-solver safety regression coverage.
 - Android application foundation using Kotlin, Jetpack Compose, and Material 3.
 - Platform-independent Sudoku engine module.
 - Immutable 9×9 board model with validation, conflicts, candidates, and serialization.

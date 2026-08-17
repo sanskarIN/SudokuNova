@@ -17,6 +17,7 @@ This directory contains implementation-aligned documentation for SudokuNova. A f
 - [Sudoku Engine](SUDOKU_ENGINE.md)
 - [Puzzle Generation](PUZZLE_GENERATION.md)
 - [Difficulty System](DIFFICULTY_SYSTEM.md)
+- [Difficulty Calibration](DIFFICULTY_CALIBRATION.md)
 - [Game Rules](GAME_RULES.md)
 - [Data Storage](DATA_STORAGE.md)
 

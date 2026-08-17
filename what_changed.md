@@ -468,3 +468,43 @@ Development history is intentionally preserved through many focused commits inst
 - Support: `supportramsandesh@gmail.com`
 - Credit: **Made by the Sanskar**
 - License: **MIT**
+
+## v0.3 Difficulty Calibration Work
+
+The v0.3 branch adds human-logic evidence without weakening the existing validity/uniqueness gate.
+
+### Logic-only solver
+
+Implemented `LogicalSolver`, which never reads the completed solution and supports:
+
+- Naked Single
+- Hidden Single
+- Naked Pair candidate elimination
+- Pointing Pair / Pointing Triple candidate elimination
+- Box-Line Reduction candidate elimination
+
+It stops with a valid partial board when supported logic cannot progress instead of guessing. Results record technique counts, candidate eliminations, hardest supported technique, and unresolved cells.
+
+### Logical difficulty evidence
+
+Implemented `LogicalDifficultyAnalyzer` with deterministic evidence for singles, pair/pointing/box-line signals, unresolved cells, a logical band, and a calibration-only score.
+
+Implemented `DifficultyCalibrator`, which combines legacy solver-search scoring with logic-only evidence while keeping the established generator acceptance rule unchanged during calibration.
+
+Every generated puzzle now carries `calibratedAssessment` metadata for tests/debug analysis.
+
+### Tests added
+
+- Logical analyzer solved/common/empty/invalid-board tests.
+- Logic-only solver known-puzzle, empty-board, generated-hard safety, and deterministic tests.
+- Deterministic generation/uniqueness across every difficulty.
+- Calibration determinism and non-decreasing legacy-score coverage.
+- Generated puzzle calibrated-metadata coverage.
+
+### Documentation
+
+Added `docs/DIFFICULTY_CALIBRATION.md`, documenting current techniques, score inputs, deterministic regression strategy, limitations, and requirements before calibration can become a user-facing release gate.
+
+### Version
+
+Android development version advanced to `0.3.0` / versionCode `300`.
