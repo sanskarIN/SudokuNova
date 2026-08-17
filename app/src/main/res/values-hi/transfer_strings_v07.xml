@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v07_backup_transfer">बैकअप और ट्रांसफर</string>
+    <string name="v07_backup_transfer_desc">समर्थित स्थानीय SudokuNova डेटा को सुरक्षित रूप से कॉपी, साझा, पुनर्स्थापित या आयात करें।</string>
+    <string name="v07_puzzle_codes">पहेली कोड</string>
+    <string name="v07_puzzle_code_hint">SudokuNova पहेली कोड चिपकाएँ</string>
+    <string name="v07_validate_code">कोड जाँचें</string>
+    <string name="v07_code_valid">मान्य एकमात्र-समाधान पहेली · %1$s</string>
+    <string name="v07_code_invalid">अमान्य, असमर्थित, बदला हुआ या गैर-एकमात्र पहेली कोड।</string>
+    <string name="v07_play_imported">आयातित पहेली खेलें</string>
+    <string name="v07_backup">स्थानीय बैकअप</string>
+    <string name="v07_backup_info">बैकअप में समर्थित सेटिंग्स, पूरे खेलों का इतिहास, सहेजी पहेलियाँ और चुनौती परिणाम शामिल हैं। सक्रिय खेल और रहस्य निर्यात नहीं होते।</string>
+    <string name="v07_copy_backup">बैकअप कॉपी करें</string>
+    <string name="v07_share_backup">बैकअप साझा करें</string>
+    <string name="v07_restore_clipboard">क्लिपबोर्ड से पुनर्स्थापित करें</string>
+    <string name="v07_backup_copied">बैकअप क्लिपबोर्ड पर कॉपी हुआ।</string>
+    <string name="v07_backup_ready">बैकअप साझा करने के लिए तैयार है।</string>
+    <string name="v07_backup_failed">मान्य बैकअप नहीं बनाया जा सका।</string>
+    <string name="v07_restore_question">SudokuNova बैकअप पुनर्स्थापित करें?</string>
+    <string name="v07_restore_warning">सहेजने से पहले बैकअप पूरी तरह जाँचा जाता है। मौजूदा इतिहास में डुप्लिकेट नहीं जोड़े जाते, डुप्लिकेट पहेलियाँ/चुनौतियाँ छोड़ी जाती हैं और बैकअप की सेटिंग्स वर्तमान सेटिंग्स को बदलती हैं।</string>
+    <string name="v07_restore">पुनर्स्थापित करें</string>
+    <string name="v07_restore_invalid">क्लिपबोर्ड में मान्य समर्थित SudokuNova बैकअप नहीं है।</string>
+    <string name="v07_restore_success">पुनर्स्थापन पूरा: %1$d इतिहास, %2$d सहेजी पहेलियाँ, %3$d चुनौतियाँ आयात हुईं।</string>
+    <string name="v07_restore_skipped">डुप्लिकेट छोड़े गए: %1$d इतिहास, %2$d सहेजी पहेलियाँ, %3$d चुनौतियाँ।</string>
+    <string name="v07_copy_puzzle_code">पहेली कोड कॉपी करें</string>
+    <string name="v07_share_puzzle_code">पहेली कोड साझा करें</string>
+    <string name="v07_puzzle_code_copied">पहेली कोड कॉपी हुआ।</string>
+    <string name="v07_share_title">SudokuNova से साझा करें</string>
+    <string name="v07_clipboard_empty">क्लिपबोर्ड खाली है।</string>
+    <string name="v07_safe_format">संस्करणयुक्त और चेकसम-सुरक्षित प्रारूप असमर्थित या बदले डेटा को अस्वीकार करते हैं और सख्त आकार/गणना सीमाएँ लागू करते हैं।</string>
+</resources>
