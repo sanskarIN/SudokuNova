@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v05_saved_puzzles">सहेजी गई पहेलियाँ</string>
+    <string name="v05_save_puzzle">पहेली सहेजें</string>
+    <string name="v05_saved">सहेजा गया</string>
+    <string name="v05_saved_success">पहेली स्थानीय रूप से सहेजी गई।</string>
+    <string name="v05_saved_duplicate">यह पहेली पहले से सहेजी गई है।</string>
+    <string name="v05_no_saved_puzzles">अभी तक कोई सहेजी गई पहेली नहीं है।</string>
+    <string name="v05_saved_hint">जाँची गई कस्टम पहेलियों को बाद में खेलने के लिए यहाँ सहेजा जा सकता है।</string>
+    <string name="v05_play_saved">सहेजी गई पहेली खेलें</string>
+    <string name="v05_delete_saved">सहेजी गई पहेली हटाएँ</string>
+    <string name="v05_source_custom">कस्टम</string>
+    <string name="v05_source_history">इतिहास</string>
+</resources>
