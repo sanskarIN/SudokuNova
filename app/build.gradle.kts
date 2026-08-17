@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "in.sanskar.sudokunova"
+    namespace = "com.sanskar.sudokunova"
     compileSdk = 37
 
     defaultConfig {

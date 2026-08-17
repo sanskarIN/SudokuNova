@@ -1,0 +1,45 @@
+name: Accessibility issue
+description: Report barriers involving TalkBack, contrast, touch, text scaling, focus, keyboard, or motion
+title: "[A11y]: "
+labels:
+  - accessibility
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Accessibility area
+      options:
+        - TalkBack / screen reader
+        - Focus order
+        - Keyboard navigation
+        - Contrast / color
+        - Text scaling
+        - Touch target
+        - Reduced motion
+        - Orientation / large screen
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device, Android version, and assistive technology
+    validations:
+      required: true
+  - type: textarea
+    id: barrier
+    attributes:
+      label: Barrier encountered
+      description: Explain what task becomes difficult or impossible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected accessible behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps

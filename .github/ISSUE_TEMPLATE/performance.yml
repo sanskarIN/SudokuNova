@@ -1,0 +1,45 @@
+name: Performance issue
+description: Report measurable slowness, jank, memory, battery, or generation-performance problems
+title: "[Performance]: "
+labels:
+  - performance
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - App startup
+        - Sudoku generation
+        - Sudoku solving / hints
+        - Board rendering / input
+        - Scrolling / navigation
+        - Memory usage
+        - Battery / background work
+        - Build performance
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device / emulator and Android version
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Performance evidence
+      description: Include timings, profiler observations, repeatability, or benchmark data when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
