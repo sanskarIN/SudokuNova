@@ -1,6 +1,7 @@
 package com.sanskar.sudokunova.data.learning
 
 import android.content.Context
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
@@ -153,7 +154,7 @@ class LearningProgressRepository(
         fun lastPracticedKey(technique: LogicalTechnique) =
             longPreferencesKey("${technique.name.lowercase()}_last_practiced")
 
-        fun Preferences.MutablePreferences.increment(key: Preferences.Key<Int>) {
+        fun MutablePreferences.increment(key: Preferences.Key<Int>) {
             this[key] = ((this[key] ?: 0).toLong() + 1L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
         }
     }
