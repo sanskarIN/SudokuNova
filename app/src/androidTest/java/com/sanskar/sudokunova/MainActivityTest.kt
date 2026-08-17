@@ -22,6 +22,15 @@ class MainActivityTest {
     }
 
     @Test
+    fun challengeArchiveIsReachable() {
+        composeRule.onNodeWithText("Daily Challenge").performClick()
+        composeRule.onNodeWithText("Challenges").assertIsDisplayed()
+        composeRule.onNodeWithText("Daily Challenge archive").assertIsDisplayed()
+        composeRule.onNodeWithText("Weekly").assertIsDisplayed()
+        composeRule.onNodeWithText("Play challenge").assertIsDisplayed()
+    }
+
+    @Test
     fun settingsShowsInputAndFeedbackControls() {
         composeRule.onNodeWithText("Settings").performScrollTo().performClick()
         composeRule.onNodeWithText("Input mode").assertIsDisplayed()
