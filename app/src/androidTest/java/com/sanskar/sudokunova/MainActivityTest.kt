@@ -71,4 +71,16 @@ class MainActivityTest {
         composeRule.onNodeWithText("Naked Single").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Hint views: 0").performScrollTo().assertIsDisplayed()
     }
+
+    @Test
+    fun guidedPracticeIsReachableFromLearn() {
+        composeRule.onNodeWithText("Learn").performScrollTo().performClick()
+        composeRule.onNodeWithText("Start guided practice").performScrollTo().performClick()
+        composeRule.onNodeWithText("Guided Practice").assertIsDisplayed()
+        composeRule.waitUntil(timeoutMillis = 30_000) {
+            composeRule.onAllNodesWithText("Study the reasoning").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Study the reasoning").assertIsDisplayed()
+        composeRule.onNodeWithText("Select a cell, then choose a value.").performScrollTo().assertIsDisplayed()
+    }
 }
