@@ -41,12 +41,17 @@ jobs:
             fi
             while IFS= read -r path; do
               [ -z "$path" ] && continue
-              git checkout --ours -- "$path"
-              git add "$path"
+              if git show HEAD:"$path" >/dev/null 2>&1; then
+                git checkout --ours -- "$path"
+                git add "$path"
+              else
+                git rm -f --ignore-unmatch -- "$path"
+              fi
             done <<< "$unresolved"
-            if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
-              echo "Unresolved conflicts remain."
-              git diff --name-only --diff-filter=U
+            remaining="$(git diff --name-only --diff-filter=U)"
+            if [ -n "$remaining" ]; then
+              echo "Unresolved conflicts remain:"
+              printf '%s\n' "$remaining"
               exit 1
             fi
           fi
