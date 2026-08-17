@@ -17,6 +17,7 @@ import com.sanskar.sudokunova.ui.custom.CustomPuzzleRoute
 import com.sanskar.sudokunova.ui.game.GameRoute
 import com.sanskar.sudokunova.ui.history.HistoryRoute
 import com.sanskar.sudokunova.ui.home.HomeRoute
+import com.sanskar.sudokunova.ui.learn.GuidedPracticeRoute
 import com.sanskar.sudokunova.ui.learn.LearnScreen
 import com.sanskar.sudokunova.ui.learn.LearningProgressRoute
 import com.sanskar.sudokunova.ui.saved.SavedPuzzlesRoute
@@ -37,6 +38,7 @@ private object Routes {
     const val TRANSFER = "transfer"
     const val LEARN = "learn"
     const val LEARNING_PROGRESS = "learning-progress"
+    const val GUIDED_PRACTICE = "guided-practice"
     const val STATISTICS = "statistics"
     const val SETTINGS = "settings"
     const val ABOUT = "about"
@@ -177,11 +179,16 @@ fun SudokuNovaApp(
                 LearnScreen(
                     onBack = { navController.popBackStack() },
                     onLearningProgress = { navController.navigate(Routes.LEARNING_PROGRESS) },
+                    onGuidedPractice = { navController.navigate(Routes.GUIDED_PRACTICE) },
                 )
             }
 
             composable(Routes.LEARNING_PROGRESS) {
                 LearningProgressRoute(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.GUIDED_PRACTICE) {
+                GuidedPracticeRoute(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.STATISTICS) {
