@@ -1,0 +1,79 @@
+name: Apply v0.3 Version and Documentation
+
+on:
+  push:
+    branches:
+      - feature/v0.3-difficulty-calibration
+    paths:
+      - .github/workflows/v03-version-docs.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v0.3-difficulty-calibration
+          fetch-depth: 0
+
+      - name: Update version and implementation records
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          build = Path('app/build.gradle.kts')
+          text = build.read_text()
+          text = text.replace('versionCode = 200', 'versionCode = 300', 1)
+          text = text.replace('versionName = "0.2.0"', 'versionName = "0.3.0"', 1)
+          build.write_text(text)
+
+          docs_index = Path('docs/README.md')
+          text = docs_index.read_text()
+          marker = '- [Difficulty System](DIFFICULTY_SYSTEM.md)\n'
+          link = '- [Difficulty Calibration](DIFFICULTY_CALIBRATION.md)\n'
+          if link not in text and marker in text:
+              text = text.replace(marker, marker + link, 1)
+          docs_index.write_text(text)
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text()
+          marker = '### Added\n'
+          additions = '''### Added\n- v0.3 development: logic-only solver using Naked Single, Hidden Single, Naked Pair, Pointing Pair/Triple, and Box-Line Reduction without consulting the solved grid.\n- v0.3 development: logical difficulty evidence analyzer and combined calibration model.\n- v0.3 development: calibrated difficulty metadata attached to generated puzzles for deterministic corpus analysis.\n- v0.3 development: all-difficulty deterministic generation and logical-solver safety regression coverage.\n'''
+          if marker in text and 'v0.3 development: logic-only solver' not in text:
+              text = text.replace(marker, additions, 1)
+          changelog.write_text(text)
+
+          changed = Path('what_changed.md')
+          text = changed.read_text()
+          text = text.replace('**v0.2.0-development**', '**v0.3.0-development**', 1)
+          text = text.replace(
+              'Current working branch: `feature/v0.2-gameplay-hardening`',
+              'Current working branch: `feature/v0.3-difficulty-calibration`',
+              1,
+          )
+          appendix = '''\n## v0.3 Difficulty Calibration Work\n\nThe v0.3 branch adds human-logic evidence without weakening the existing validity/uniqueness gate.\n\n### Logic-only solver\n\nImplemented `LogicalSolver`, which never reads the completed solution and supports:\n\n- Naked Single\n- Hidden Single\n- Naked Pair candidate elimination\n- Pointing Pair / Pointing Triple candidate elimination\n- Box-Line Reduction candidate elimination\n\nIt stops with a valid partial board when supported logic cannot progress instead of guessing. Results record technique counts, candidate eliminations, hardest supported technique, and unresolved cells.\n\n### Logical difficulty evidence\n\nImplemented `LogicalDifficultyAnalyzer` with deterministic evidence for singles, pair/pointing/box-line signals, unresolved cells, a logical band, and a calibration-only score.\n\nImplemented `DifficultyCalibrator`, which combines legacy solver-search scoring with logic-only evidence while keeping the established generator acceptance rule unchanged during calibration.\n\nEvery generated puzzle now carries `calibratedAssessment` metadata for tests/debug analysis.\n\n### Tests added\n\n- Logical analyzer solved/common/empty/invalid-board tests.\n- Logic-only solver known-puzzle, empty-board, generated-hard safety, and deterministic tests.\n- Deterministic generation/uniqueness across every difficulty.\n- Calibration determinism and non-decreasing legacy-score coverage.\n- Generated puzzle calibrated-metadata coverage.\n\n### Documentation\n\nAdded `docs/DIFFICULTY_CALIBRATION.md`, documenting current techniques, score inputs, deterministic regression strategy, limitations, and requirements before calibration can become a user-facing release gate.\n\n### Version\n\nAndroid development version advanced to `0.3.0` / versionCode `300`.\n'''
+          if '## v0.3 Difficulty Calibration Work' not in text:
+              text += appendix
+          changed.write_text(text)
+          PY
+
+          git rm .github/workflows/v03-version-docs.yml
+          git config user.name 'Sanskar'
+          git config user.email 'sanskarin@outlook.in'
+          git add app/build.gradle.kts docs/README.md CHANGELOG.md what_changed.md
+          git commit -m 'docs: record v0.3 logical difficulty calibration'
+
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin feature/v0.3-difficulty-calibration
+            git rebase origin/feature/v0.3-difficulty-calibration
+            if git push origin HEAD:feature/v0.3-difficulty-calibration; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
