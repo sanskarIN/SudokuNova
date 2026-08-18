@@ -1028,7 +1028,7 @@ Paired v0.9 resources were added for all validation/solve states:
 - `1142351450229b13eeaa768330f8baad3cdee9c8` — `docs(audit): record v0.9 hardening findings` adds `docs/V09_HARDENING_AUDIT.md` with findings, fixes, and explicit manual-evidence exclusions;
 - `f187f8b68811cca7af396170e927d918a5fb94f9` — `docs(index): link v0.9 hardening audit`.
 
-Manual TalkBack traversal/focus-order, representative 200% font/device layout checks, high-contrast/reduced-motion device QA, measured memory/frame/ANR traces, signed-production artifact checks, and store-readiness checks remain unclaimed. Final exact-head Android CI/API-35 evidence is also still pending after this log commit.
+Manual TalkBack traversal/focus-order, representative 200% font/device layout checks, high-contrast/reduced-motion device QA, measured memory/frame/ANR traces, signed-production artifact checks, and store-readiness checks remain unclaimed. Final exact-head Android CI/API-35 evidence is also still pending for the final verification candidate after this implementation-log correction.
 
 ## Commit Policy
 
