@@ -76,7 +76,7 @@ Recommended operational rules:
 - never regenerate/replace the production key casually after public distribution;
 - use Play App Signing where appropriate, while protecting the upload key separately.
 
-## Verifying signed APKs
+## Verifying signed APK/AAB artifacts
 
 Use Android SDK Build Tools `apksigner` on the actual signed APK:
 
@@ -86,7 +86,29 @@ apksigner verify --verbose --print-certs app-release.apk
 
 Record the certificate digest/fingerprint in private release evidence and confirm it matches the expected production/upload certificate.
 
-For AABs, use the signing/verification tooling required by the distribution workflow and verify the bundle before upload. A successful Gradle build alone is not evidence that the intended production key was used.
+For AABs, verify JAR-signature integrity with the JDK tooling and complete the distribution platform's own bundle validation before upload. A successful Gradle build alone is not evidence that the intended production key was used.
+
+The v1.0 release verifier can require both signature checks while retaining the stricter structure/version/mapping/hash checks:
+
+```bash
+python scripts/verify_release_outputs.py \
+  --apk path/to/signed-release.apk \
+  --aab path/to/signed-release.aab \
+  --mapping path/to/mapping.txt \
+  --metadata path/to/output-metadata.json \
+  --expected-version-code <final-version-code> \
+  --expected-version-name 1.0.0 \
+  --output path/to/sha256.txt \
+  --require-signatures
+```
+
+With `--require-signatures`:
+
+- APK verification requires `apksigner` on `PATH` and fails if its verification fails;
+- AAB verification requires `jarsigner` on `PATH`, requires explicit `jar verified` output, and rejects unsigned output;
+- missing verifier tools fail the command rather than silently skipping signature checks.
+
+This confirms signature integrity, but the maintainer must still compare the APK certificate digest/fingerprint with the expected production/upload certificate. A cryptographically valid signature from the wrong key is not acceptable release evidence.
 
 ## Version-code rule
 
@@ -105,11 +127,13 @@ Repository CI can prove:
 - mapping output exists;
 - SHA-256 evidence is generated.
 
+A protected signed-release validation run can additionally prove that the APK/AAB signatures pass the selected verification tools.
+
 Repository CI without production secrets cannot prove:
 
-- production certificate identity;
+- intended production certificate identity;
 - installability of the signed production artifact on representative devices;
 - Play Console acceptance;
 - production rollout safety.
 
-Those checks remain mandatory before the stable v1.0 publication claim.
+Those checks remain mandatory before the stable v1.0 publication claim and must be recorded in `V1_RELEASE_CANDIDATE.md` / `V1_RELEASE_EVIDENCE.md`.
