@@ -83,6 +83,7 @@ class GameViewModel(
     private val undoStack = ArrayDeque<GameState>()
     private val redoStack = ArrayDeque<GameState>()
     private var timerJob: Job? = null
+    private var hintJob: Job? = null
     private var completionRecorded = false
 
     init {
@@ -155,20 +156,39 @@ class GameViewModel(
     }
 
     fun requestHint() {
-        val state = currentGame() ?: return
-        if (state.isPaused || state.status != GameStatus.PLAYING) return
-        val hint = hintEngine.nextHint(state.board)
-        _pendingHint.value = hint
-        if (hint != null) {
-            mutateGame { it.copy(selectedIndex = hint.cellIndex) }
+        val requestedState = currentGame() ?: return
+        if (requestedState.isPaused || requestedState.status != GameStatus.PLAYING) return
+
+        hintJob?.cancel()
+        hintJob = viewModelScope.launch {
+            val hint = withContext(Dispatchers.Default) {
+                hintEngine.nextHint(requestedState.board)
+            }
+            val current = currentGame() ?: return@launch
+            if (
+                current.board != requestedState.board ||
+                current.status != GameStatus.PLAYING ||
+                current.isPaused
+            ) {
+                return@launch
+            }
+
+            _pendingHint.value = hint
+            if (hint != null) {
+                mutateGame { it.copy(selectedIndex = hint.cellIndex) }
+            }
         }
     }
 
     fun dismissHint() {
+        hintJob?.cancel()
+        hintJob = null
         _pendingHint.value = null
     }
 
     fun applyHint() {
+        hintJob?.cancel()
+        hintJob = null
         val hint = _pendingHint.value ?: return
         val state = currentGame() ?: return
         if (state.isOriginal(hint.cellIndex) || state.status != GameStatus.PLAYING) return
@@ -190,6 +210,9 @@ class GameViewModel(
     }
 
     fun restart() {
+        hintJob?.cancel()
+        hintJob = null
+        _pendingHint.value = null
         val state = currentGame() ?: return
         pushUndo(state)
         completionRecorded = false
@@ -209,6 +232,8 @@ class GameViewModel(
     }
 
     fun abandon() {
+        hintJob?.cancel()
+        hintJob = null
         val state = currentGame() ?: return
         viewModelScope.launch {
             if (state.replayOfHistoryId == null) repository.recordGameAbandoned()
