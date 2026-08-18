@@ -136,7 +136,7 @@ private fun CustomPuzzleScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(state.message, modifier = Modifier.fillMaxWidth())
+            Text(localizedCustomPuzzleMessage(state.message), modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(12.dp))
             EditorBoard(
                 board = state.displayedBoard,
@@ -199,6 +199,21 @@ private fun CustomPuzzleScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+@Composable
+private fun localizedCustomPuzzleMessage(message: CustomPuzzleMessage): String = when (message) {
+    CustomPuzzleMessage.ENTER_CLUES -> stringResource(R.string.v09_custom_enter_clues)
+    CustomPuzzleMessage.CHANGED -> stringResource(R.string.v09_custom_changed)
+    CustomPuzzleMessage.CONTRADICTION -> stringResource(R.string.v09_custom_contradiction)
+    CustomPuzzleMessage.NEED_MORE_CLUES -> stringResource(R.string.v09_custom_need_more_clues)
+    CustomPuzzleMessage.VALIDATING -> stringResource(R.string.v09_custom_validating)
+    CustomPuzzleMessage.NO_SOLUTION -> stringResource(R.string.v09_custom_no_solution)
+    CustomPuzzleMessage.UNIQUE_READY -> stringResource(R.string.v09_custom_unique_ready)
+    CustomPuzzleMessage.MULTIPLE_SOLUTIONS -> stringResource(R.string.v09_custom_multiple_solutions)
+    CustomPuzzleMessage.SOLVING -> stringResource(R.string.v09_custom_solving)
+    CustomPuzzleMessage.NO_SOLUTION_AVAILABLE -> stringResource(R.string.v09_custom_no_solution_available)
+    CustomPuzzleMessage.SOLVED_PREVIEW -> stringResource(R.string.v09_custom_solved_preview)
 }
 
 @Composable
