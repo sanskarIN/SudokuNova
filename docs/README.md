@@ -63,17 +63,18 @@ Read:
 1. [Releasing](RELEASING.md)
 2. [Release Checklist](RELEASE_CHECKLIST.md)
 3. [Release QA](RELEASE_QA.md)
-4. [QA Matrix](QA_MATRIX.md)
-5. [CI/CD](CI_CD.md)
-6. [Testing](TESTING.md)
-7. [Building](BUILDING.md)
-8. [Performance](PERFORMANCE.md)
-9. [Accessibility](ACCESSIBILITY.md)
-10. [Privacy](PRIVACY.md)
-11. [`../SECURITY.md`](../SECURITY.md)
-12. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-13. [`../CHANGELOG.md`](../CHANGELOG.md)
-14. [`../what_changed.md`](../what_changed.md)
+4. [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md)
+5. [QA Matrix](QA_MATRIX.md)
+6. [CI/CD](CI_CD.md)
+7. [Testing](TESTING.md)
+8. [Building](BUILDING.md)
+9. [Performance](PERFORMANCE.md)
+10. [Accessibility](ACCESSIBILITY.md)
+11. [Privacy](PRIVACY.md)
+12. [`../SECURITY.md`](../SECURITY.md)
+13. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+14. [`../CHANGELOG.md`](../CHANGELOG.md)
+15. [`../what_changed.md`](../what_changed.md)
 
 ## Product and User Documentation
 
@@ -252,6 +253,10 @@ General QA matrix.
 ### [Release QA](RELEASE_QA.md)
 
 v0.9 evidence-oriented release-hardening matrix. Manual rows must not be marked complete without real checks.
+
+### [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md)
+
+Concrete source-audit findings and fixes for main-thread work, stale async results, accessibility, localization, Room, transfer/backup, security, and release gates. Manual/device evidence remains explicitly separate.
 
 ### [Accessibility](ACCESSIBILITY.md)
 
