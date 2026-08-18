@@ -1,6 +1,6 @@
 # SudokuNova CI/CD and Automated Quality Gates
 
-SudokuNova uses GitHub Actions as a verification system. The current repository automates build/test/release-artifact evidence, but it does **not** automatically publish a production release or store submission.
+SudokuNova uses GitHub Actions as a verification system. The repository automates build/test/release-artifact evidence, but it does **not** automatically publish a production release or store submission.
 
 ## Workflow Overview
 
@@ -16,214 +16,171 @@ Current stages include:
 2. Java 17 setup;
 3. Gradle wrapper/cache validation;
 4. repository secret/signing-material guard;
-5. English/Hindi translation parity;
-6. `:sudoku-engine:test`;
-7. `:app:testDebugUnitTest`;
-8. `:app:assembleDebugAndroidTest`;
-9. debug and release Android lint;
-10. debug APK assembly;
-11. release APK assembly with minification/resource shrinking;
-12. release Android App Bundle assembly;
-13. report/test-result artifact upload;
-14. successful release APK/AAB/R8 mapping artifact upload for short-lived verification evidence.
+5. Python release-helper unit tests;
+6. English/Hindi translation parity;
+7. `:sudoku-engine:test`;
+8. `:app:testDebugUnitTest`;
+9. `:app:assembleDebugAndroidTest`;
+10. debug and release Android lint;
+11. debug APK assembly;
+12. release APK assembly with minification/resource shrinking;
+13. release Android App Bundle assembly;
+14. release APK/AAB ZIP-integrity verification and SHA-256 checksum generation;
+15. report/test-result artifact upload;
+16. successful release APK/AAB/R8 mapping/`SHA256SUMS` upload for short-lived verification evidence.
 
 ### Android Instrumentation — `instrumentation.yml`
 
 The connected gate runs Android Compose/Room tests on an API-35 emulator target. The workflow configures Java/Gradle, KVM access where supported, disables animations, runs connected tests, and uploads instrumentation reports.
 
-This gate is particularly important for:
-
-- Compose navigation and semantics;
-- Room database behavior/migrations;
-- history/saved-puzzle behavior;
-- challenge flows;
-- transfer/backup flows;
-- Learn/practice UI behavior;
-- accessibility semantic regressions that can be asserted reliably.
+This gate is particularly important for Compose navigation/semantics, Room migrations, History/Saved Puzzles, challenges, transfer/backup, Learn/practice, and accessibility semantic regressions that can be asserted reliably.
 
 ## Pull-Request Gate Policy
 
-A pull request intended for merge should not be treated as verified until the required workflows are green on the **exact final head commit**.
-
-If a code/documentation commit that triggers CI is added after a successful run, the new head must be verified again.
-
-Do not cite a workflow run from an older head as evidence for a newer head.
+A pull request intended for merge is not verified until the required workflows are green on the **exact final head commit**. If a later commit changes that head, prior runs become historical evidence only.
 
 ## Repository Security Guard
 
-`scripts/verify_no_secrets.py` is executed by standard CI.
-
-It is designed to reject committed material such as:
-
-- Android keystores;
-- private-key files;
-- obvious credential assignments/patterns.
-
-This is a defense-in-depth repository guard, not a substitute for GitHub secret scanning or careful review.
+`scripts/verify_no_secrets.py` runs in standard CI. It rejects common committed signing/private-key/credential material. This is defense-in-depth, not a substitute for provider-side secret scanning or careful review.
 
 Production signing material must remain outside version control.
 
+## Release Helper Tests
+
+The release-candidate line adds pure-Python tests for repository release helpers:
+
+```bash
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+```
+
+These tests currently cover release-artifact verification behavior, including valid ZIP-based APK/AAB containers, checksums, missing files, unsupported extensions, corrupted artifacts, and mandatory-signature-tool failure behavior.
+
 ## Translation Parity Gate
 
-`scripts/verify_translations.py` verifies the maintained English/Hindi resource contract.
+```bash
+python scripts/verify_translations.py
+```
 
-When adding player-facing strings:
-
-1. add the default/English resource;
-2. add the Hindi counterpart;
-3. preserve compatible formatting placeholders;
-4. run the verifier locally;
-5. do not bypass parity to land an untranslated feature.
+Default/English and Hindi maintained resources must stay in parity, including compatible placeholders and accessibility strings.
 
 ## Engine Gate
-
-Run:
 
 ```bash
 ./gradlew :sudoku-engine:test --stacktrace
 ```
 
-This is the fastest correctness gate for domain changes and covers board, solver, generator, difficulty, teaching evidence, hint logic and practice behavior.
-
-Because `sudoku-engine` has no Android dependency, engine failures should normally be diagnosed before investigating Android build issues.
+This covers board, solver, generator, difficulty, teaching evidence, hint logic, practice, determinism, and correctness-sensitive domain behavior.
 
 ## Android JVM Gate
-
-Run:
 
 ```bash
 ./gradlew :app:testDebugUnitTest --stacktrace
 ```
 
-This covers pure/local Android-module behavior that does not require an emulator, including state codecs, persistence models, transfer parsing and learning/statistics behavior.
-
-The app module uses JUnit4 for these tests unless the build configuration is intentionally changed.
+This covers Android-module behavior that does not require an emulator, including state codecs, persistence models, transfer/backup logic, and learning/statistics behavior.
 
 ## Instrumentation Compilation Gate
-
-Run:
 
 ```bash
 ./gradlew :app:assembleDebugAndroidTest --stacktrace
 ```
 
-This verifies that Android test sources and the test APK compile even before an emulator run.
-
-Compilation success is not equivalent to connected-test success.
+Compilation success is required but is not equivalent to connected-test success.
 
 ## Lint Gates
-
-Current release hardening runs both:
 
 ```bash
 ./gradlew :app:lintDebug :app:lintRelease --stacktrace
 ```
 
-Release lint matters because release-only resource shrinking/minification/configuration can differ from debug.
-
-A lint failure should be fixed or, if a suppression is genuinely necessary, narrowly justified at the relevant code/configuration point.
+Release lint is retained because release resource/minification/configuration paths differ from debug.
 
 ## Build Gates
 
-### Debug APK
-
 ```bash
 ./gradlew :app:assembleDebug --stacktrace
-```
-
-### Release APK
-
-```bash
 ./gradlew :app:assembleRelease --stacktrace
-```
-
-The release build has minification and resource shrinking enabled. A successful unsigned/unconfigured release assembly proves release compilation/R8 processing but is not by itself a distributable production-signing claim.
-
-### Release AAB
-
-```bash
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-The AAB is the expected store-oriented Android bundle format. Final production distribution still requires proper secure signing and store-side validation.
+The release build has minification/resource shrinking enabled. CI release outputs are verification artifacts unless production signing and manual release evidence are explicitly completed.
+
+## Artifact Integrity / Checksum Gate
+
+After release APK/AAB assembly, CI runs:
+
+```bash
+python scripts/verify_release_artifacts.py \
+  app/build/outputs/apk/release/*.apk \
+  app/build/outputs/bundle/release/*.aab \
+  --checksums-out app/build/outputs/SHA256SUMS
+```
+
+This gate validates that each artifact:
+
+- exists and is non-empty;
+- has a supported `.apk`/`.aab` extension;
+- is a valid ZIP-based Android artifact without a corrupt entry;
+- receives a SHA-256 digest.
+
+The generated checksum manifest is uploaded with the release verification artifacts.
+
+This **does not** claim a CI artifact is production-signed. For final signed artifacts use `--require-signature` in the controlled signing environment. APK verification uses `apksigner`; AAB verification uses `jarsigner`.
 
 ## Connected API-35 Gate
 
-The repository workflow runs connected tests on API 35. To reproduce locally, use an API-compatible emulator/device and the relevant connected task, for example:
+To reproduce locally on a suitable device/emulator:
 
 ```bash
 ./gradlew :app:connectedDebugAndroidTest --stacktrace
 ```
 
-Local device/emulator names and hardware acceleration vary by environment.
+The repository workflow uses API 35 as its connected regression target. Manual minimum/latest/device-class QA remains separate release evidence.
 
 ## Artifact Policy
 
-CI may upload:
-
-- test reports;
-- lint/build reports;
-- release APK output;
-- release AAB output;
-- R8 mapping output.
-
-These artifacts are verification evidence and have limited retention. They should not automatically be described as production releases.
-
-Do not publish a CI-built artifact as production unless signing, provenance, QA, legal/store metadata and the final exact artifact have been validated.
+CI may upload test/lint reports, release APK, release AAB, R8 mapping, and `SHA256SUMS`. These are short-lived verification evidence and must not automatically be described as a stable production release.
 
 ## No Automatic Production Deployment
 
-The current repository does not treat a green CI run as permission to:
-
-- create a Play Store release;
-- publish an APK/AAB publicly;
-- create a signed production tag automatically;
-- expose signing secrets;
-- claim physical-device QA.
-
-Release/publishing remains a controlled maintainer action documented in `RELEASING.md`, `RELEASE_CHECKLIST.md`, and `RELEASE_QA.md`.
+A green CI run does not authorize or prove Play Store publication, signed production distribution, manual accessibility/device QA, or production signing. Those remain controlled maintainer actions documented in `RELEASING.md`, `RELEASE_CHECKLIST.md`, `RELEASE_QA.md`, and `V1_RELEASE_EVIDENCE.md`.
 
 ## Failure Triage
 
 When CI fails:
 
 1. identify the first failing stage;
-2. inspect its report/log rather than only the final Gradle error;
-3. reproduce the narrow task locally when possible;
-4. add/fix regression coverage for code defects;
-5. avoid broad cache deletion or suppression as a first response;
+2. inspect its report/log;
+3. reproduce the narrow task locally when practical;
+4. add or repair regression coverage for code defects;
+5. avoid broad suppression/cache deletion as a first response;
 6. push a focused fix;
 7. verify the new exact head.
 
-Typical ordering is:
+Typical ordering:
 
-- security/translation script failure → repository/resource issue;
-- engine test failure → domain logic/test issue;
-- app unit-test failure → Android-module pure logic issue;
-- instrumentation compilation failure → Android test/API/Compose compile issue;
-- lint failure → API/resource/static-analysis issue;
-- release build failure → R8/resource/shrinking/build config issue;
+- security/helper/translation failure → repository/tool/resource issue;
+- engine failure → domain correctness issue;
+- app JVM failure → Android-module pure logic issue;
+- AndroidTest compilation failure → test/API/Compose issue;
+- lint failure → static-analysis/resource/API issue;
+- release build/artifact verification failure → R8/build/artifact issue;
 - connected failure → emulator/runtime/Room/Compose/state issue.
 
 ## Evidence Recording
 
-`what_changed.md` may record exact workflow run IDs only after results exist. Do not write `GREEN`, `verified`, `device-tested`, or `release-ready` in advance.
+For v1.0, record exact automated results in `V1_RELEASE_EVIDENCE.md`. `what_changed.md` carries the cumulative project history.
 
-The repository roadmap/checklists should distinguish:
-
-- implemented;
-- automatically verified;
-- manually verified;
-- still pending.
+Do not write `GREEN`, `verified`, `device-tested`, `signed`, `published`, or `release-ready` before the corresponding evidence exists.
 
 ## Recommended Local Pre-Push Check
 
-For a broad change:
-
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test :app:testDebugUnitTest :app:assembleDebugAndroidTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease :app:bundleRelease --stacktrace
+python scripts/verify_release_artifacts.py app/build/outputs/apk/release/*.apk app/build/outputs/bundle/release/*.aab --checksums-out app/build/outputs/SHA256SUMS
 ```
 
-Run connected instrumentation separately on a suitable emulator/device.
+Run connected instrumentation and required manual release QA separately on suitable targets.
