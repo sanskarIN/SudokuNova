@@ -133,30 +133,38 @@ Status: **Completed**
 
 ## v0.9 — Release Hardening
 
-Status: **In progress — issue #23**
+Status: **In progress — issue #23 / draft PR #25**
 
 Focused issue: `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`.
 
-Planned release-hardening work:
+Release-hardening work:
 
-- [ ] Full automated regression-suite audit
-- [ ] Accessibility semantics and focus-order audit
-- [ ] Large-font and adaptive-layout QA
-- [ ] High-contrast and reduced-motion audit
-- [ ] Performance and memory audit
-- [ ] Solver/generator/teaching performance regression coverage
-- [ ] Main-thread I/O/CPU audit
-- [ ] Room/DataStore integrity and migration audit
-- [ ] Import/export/backup security and privacy audit
-- [ ] Dependency and license audit
-- [ ] Release R8/shrinking verification
-- [ ] Debug APK, release APK, and release AAB verification
-- [ ] Device QA matrix and manual release checklist
-- [ ] Crash/ANR and lifecycle restoration hardening
-- [ ] UI/store screenshot readiness
-- [ ] Documentation accuracy audit
+- [x] Begin automated regression-suite audit and add bounded-backup edge coverage
+- [ ] Complete accessibility semantics and focus-order audit across every major screen
+- [ ] Complete large-font and adaptive-layout manual QA
+- [ ] Complete high-contrast and reduced-motion manual QA
+- [ ] Complete performance and memory audit
+- [x] Preserve existing solver/generator/teaching deterministic regression coverage
+- [x] Re-audit backup file I/O boundary and preserve bounded off-main-thread architecture
+- [x] Audit Room schema/index/migration configuration without adding a speculative migration
+- [x] Audit import/export/backup security and privacy boundaries
+- [x] Audit manifest runtime permission/export surface
+- [x] Add repository secret/signing-material CI guard
+- [x] Audit direct dependency/license notice coverage
+- [x] Add release R8/shrinking verification to CI
+- [x] Add debug APK, release APK, and release AAB verification tasks to CI
+- [x] Add release-signing guidance that keeps production credentials outside Git
+- [x] Add device QA matrix and manual release checklist without fabricating device results
+- [ ] Complete crash/ANR and lifecycle restoration audit
+- [x] Add UI/store screenshot-readiness checklist
+- [ ] Complete documentation accuracy audit after final implementation
+- [x] Expose selected Sudoku-cell state through accessibility semantics
+- [x] Add stable Sudoku-cell semantic tags
+- [x] Add connected regression coverage for selected-cell semantics
 - [ ] Final standard CI green on exact clean head
 - [ ] Final API-35 connected gate green on exact clean head
+- [ ] Mark PR #25 ready only after release-blocking audits and exact-head gates are complete
+- [ ] Merge PR #25 and close issue #23 only after verified evidence exists
 
 ## v1.0 — Stable Classic Sudoku Release
 
@@ -179,37 +187,4 @@ Target scope:
 
 ## v1.x — Carefully Selected Extensions
 
-Potential additions after Classic 9×9 quality is stable:
-
-- Mini 4×4 / 6×6
-- Diagonal Sudoku
-- Hyper/Windoku
-- Killer Sudoku
-- Jigsaw/Irregular Sudoku
-- Additional board sizes where UX remains practical
-- Home-screen Daily Challenge widget
-- Optional reminders, default off
-
-## v2.0+ — Longer-Term Possibilities
-
-Only if they can be implemented without compromising privacy or Android quality:
-
-- Larger/advanced variants including Samurai
-- Optional cloud backup/sync
-- Cross-device progress
-- Community puzzle sharing with moderation/safety design
-- Web/desktop/iOS clients reusing platform-independent Sudoku logic
-- Tournament/time-challenge concepts
-
-## Project Principles
-
-- No ads by default in the open-source base.
-- No account required for core play or learning progress.
-- No unnecessary sensitive permissions.
-- No feature is marked complete unless its implementation exists.
-- Advanced solving techniques require deterministic evidence and correctness tests.
-- Advanced variants do not block a high-quality Classic release.
-
-☕ Support continued open-source development: https://buymeacoffee.com/sanskarIN
-
-**Made by the Sanskar**
+Possible post-1.0 work should be selected for quality and maintainability rather than feature count. Candidates may include additional Sudoku variants, expanded learning techniques, richer statistics, optional sync/export integrations, or additional platform clients only after Classic Sudoku remains stable and the privacy/security model is explicit.
