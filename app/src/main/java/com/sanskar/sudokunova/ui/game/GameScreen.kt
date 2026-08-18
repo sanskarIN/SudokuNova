@@ -248,8 +248,13 @@ private fun GameScreen(
                         title = { Text(stringResource(R.string.v04_puzzle_complete)) },
                         text = {
                             Text(
-                                "${localizedDifficultyLabel(game.difficulty)} · ${formatTime(game.elapsedSeconds)} · " +
-                                    "${game.mistakes} mistake(s) · ${game.hintsUsed} hint(s)",
+                                stringResource(
+                                    R.string.v04_completion_summary,
+                                    localizedDifficultyLabel(game.difficulty),
+                                    formatTime(game.elapsedSeconds),
+                                    game.mistakes,
+                                    game.hintsUsed,
+                                ),
                             )
                         },
                         confirmButton = {
