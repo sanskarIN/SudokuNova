@@ -6,7 +6,33 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ### v0.9 — Release Hardening
 
-Focused development is tracked in issue #23. Planned work is limited to release hardening: regression gaps, accessibility, performance, security/privacy, dependency/license review, release APK/AAB verification, device QA, lifecycle/crash hardening, and documentation accuracy.
+Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to release hardening: regression gaps, accessibility, performance, security/privacy, dependency/license review, release APK/AAB verification, device QA, lifecycle/crash hardening, and documentation accuracy.
+
+#### Added
+- CI repository-security guard that rejects committed Android signing/private-key file types, known credential-config filenames, PEM private-key material, and obvious GitHub token patterns.
+- Direct JVM regression coverage for bounded backup-file reads, including UTF-8 decoding, empty/oversized rejection, exact-limit acceptance, and invalid-limit rejection.
+- Release QA matrix in `docs/RELEASE_QA.md` covering automated gates, lifecycle, every major app area, accessibility, font/window sizes, performance smoke checks, security/privacy, artifacts, and store-screenshot readiness.
+- Stable semantic test tags for individual Sudoku cells.
+- Connected Compose coverage for selected Sudoku-cell accessibility semantics.
+
+#### Changed
+- Android development metadata advanced to `versionCode 900` / `versionName 0.9.0` on the v0.9 branch.
+- Standard Android CI now verifies both debug and release lint.
+- Standard Android CI now assembles the minified/resource-shrunk release APK and release AAB.
+- Successful CI release verification retains short-lived APK/AAB/R8 mapping outputs as build evidence.
+- Sudoku cells now expose selected state through Compose accessibility semantics in addition to the existing localized content description.
+- `docs/BUILDING.md` now documents debug/release APK, AAB, R8 mapping, Windows/Unix verification commands, release signing boundaries, reproducibility evidence, and release-quality claim rules.
+- `SECURITY.md` now documents Android permission/export rules, bounded/fail-closed backup expectations, signing/secret rules, privacy expectations, dependency/supply-chain review, and v0.9 security gates.
+- `THIRD_PARTY_NOTICES.md` now maps the direct AndroidX/Compose/Room/KSP/build/test tooling families and identifies the version catalog as the dependency source of truth.
+
+#### Audited
+- Current Android manifest declares no runtime permissions; the launcher activity is exported only for its launcher intent filter.
+- Room uses explicit schema versioning and `MIGRATION_1_2`; destructive migration fallback is not enabled.
+- Current history/saved-puzzle entities already define indexes for their principal filtering/identity fields, so no speculative schema migration was added merely for hardening.
+
+#### Verification in progress
+- Final exact-head standard Android CI and API-35 connected instrumentation evidence will be recorded only after both workflows complete successfully.
+- Manual TalkBack/device/font-scale/store-readiness items remain evidence checklists rather than claimed results until actually performed.
 
 No v0.9 item should be moved into the completed release history until its implementation and required verification evidence exist.
 
@@ -78,48 +104,3 @@ No v0.9 item should be moved into the completed release history until its implem
 
 ### v0.2 — Gameplay Hardening
 - Expanded gameplay regression tests, input modes, lifecycle restoration, hardware-keyboard controls, and settings-backed interaction behavior.
-
-### v0.1 — Foundation
-- Android application foundation using Kotlin, Jetpack Compose, and Material 3.
-- Platform-independent Sudoku engine module.
-- Immutable 9×9 board model with validation, conflicts, candidates, and serialization.
-- Sudoku solver with solution counting and uniqueness checks.
-- Seeded puzzle generator with seven difficulty targets.
-- Responsive game board, number pad, notes, eraser, undo, redo, hint, pause, timer, restart, mistake handling, and progress display.
-- DataStore-backed preferences, active-game persistence, resume, and local statistics.
-- Daily Challenge deterministic seed flow.
-- Custom puzzle editor with contradiction, solvability, and uniqueness validation.
-- Basic achievements and Sudoku learning center.
-- Light, dark, system, and dynamic Material You theme support.
-- Original launcher, monochrome, and splash vector assets.
-- GitHub Actions build/test/lint automation.
-- Open-source repository policies, support documentation, and contributor guidance.
-
-## Fixed over the development line
-
-- Replaced the invalid Kotlin source namespace beginning with the reserved `in` keyword by `com.sanskar.sudokunova`, while preserving Android application ID `in.sanskar.sudokunova`.
-- Corrected statistics-reset handling for heterogeneous DataStore preference keys.
-- Corrected custom-puzzle solution preview so it does not overwrite the original playable clues.
-- Corrected theme-label string transformation for Kotlin compilation.
-- Hardened transfer/import/restore behavior against malformed or duplicate input.
-- Corrected v0.8 Android learning test framework imports.
-- Corrected v0.8 LazyColumn connected-test navigation.
-- Corrected v0.8 multi-step hint technique identity.
-
-## Security and privacy
-
-- Minimal-permission Android manifest and responsible vulnerability disclosure policy.
-- Android backup/data extraction policy and secret exclusions in `.gitignore`.
-- No account required for core gameplay or learning progress.
-- No cloud dependency for teaching, hints, practice, or local learning progress.
-
-## Accessibility
-
-- Semantic Sudoku cell descriptions and adaptive board/layout foundations.
-- High-contrast and reduced-motion preference foundations.
-- v0.8 teaching-evidence semantics for source, target, candidate elimination, and placement roles.
-- v0.9 tracks the complete release accessibility audit.
-
-## Documentation
-
-- README, contributing guide, code of conduct, security policy, support guide, authorship information, third-party notices, build/release docs, transfer docs, accessibility docs, data-storage docs, and v0.8 learning/hint documentation.
