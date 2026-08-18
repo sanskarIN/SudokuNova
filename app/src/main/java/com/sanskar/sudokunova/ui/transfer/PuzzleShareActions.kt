@@ -1,7 +1,7 @@
 package com.sanskar.sudokunova.ui.transfer
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -31,19 +31,19 @@ fun PuzzleShareActions(
     if (code == null) return
 
     val chooserTitle = stringResource(R.string.v07_share_title)
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         OutlinedButton(
             onClick = { copyPlainText(context, "SudokuNova puzzle", code) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.v07_copy_puzzle_code))
         }
         OutlinedButton(
             onClick = { sharePlainText(context, code, chooserTitle) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.v07_share_puzzle_code))
         }
