@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v08_hint_naked_single">Naked Single</string>
+    <string name="v08_hint_hidden_single">Hidden Single</string>
+    <string name="v08_hint_naked_pair">Naked Pair</string>
+    <string name="v08_hint_pointing">Pointing Pair / Triple</string>
+    <string name="v08_hint_box_line">Box-Line Reduction</string>
+    <string name="v08_hint_hidden_pair">Hidden Pair</string>
+    <string name="v08_hint_naked_triple">Naked Triple</string>
+    <string name="v08_hint_hidden_triple">Hidden Triple</string>
+    <string name="v08_hint_x_wing">X-Wing</string>
+    <string name="v08_hint_reveal">Reveal</string>
+
+    <string name="v08_unit_row">पंक्ति %1$d</string>
+    <string name="v08_unit_column">कॉलम %1$d</string>
+    <string name="v08_unit_box">3×3 बॉक्स %1$d</string>
+    <string name="v08_cell_label">पंक्ति %1$d, कॉलम %2$d</string>
+
+    <string name="v08_hint_naked_single_body">इस सेल में केवल एक उम्मीदवार है। %2$s में %1$d रखें।</string>
+    <string name="v08_hint_hidden_single_body">%1$s में %2$d केवल एक ही सेल में आ सकता है। इसे %3$s में रखें।</string>
+    <string name="v08_hint_elimination_body">%1$s, %3$d लक्ष्य सेल से %2$d उम्मीदवार हटाता है। हाइलाइट किए गए तर्क को देखें, फिर %5$s में %4$d रखें।</string>
+    <string name="v08_hint_reveal_body">वर्तमान स्थिति से कोई समर्थित शिक्षण क्रम सीधे अंक रखने तक नहीं पहुँचता। यदि आप अधिक मजबूत संकेत चाहते हैं, तभी %2$s में %1$d दिखाएँ।</string>
+    <string name="v08_hint_chain_steps">शिक्षण क्रम: %1$d तार्किक चरण</string>
+    <string name="v08_hint_chain_advanced">अंतिम अंक रखने से पहले उम्मीदवार हटाने का चरण शामिल है।</string>
+
+    <string name="v08_hint_source_semantics">शिक्षण स्रोत: %1$s</string>
+    <string name="v08_hint_target_semantics">शिक्षण लक्ष्य: %1$s</string>
+    <string name="v08_hint_placement_semantics">संकेत का लक्ष्य: %1$s, मान %2$d</string>
+    <string name="v08_hint_elimination_semantics">उम्मीदवार हटाने का लक्ष्य: %1$s; %2$s हटाएँ</string>
+
+    <string name="v08_learn_progress_title">सीखने की प्रगति</string>
+    <string name="v08_learn_progress_overall">कुल महारत: %1$d%%</string>
+    <string name="v08_learn_progress_mastered">महारत प्राप्त तकनीकें: %1$d / %2$d</string>
+    <string name="v08_learn_progress_practice">अभ्यास: %2$d प्रयासों में %1$d सही</string>
+    <string name="v08_learn_mastery_percent">महारत %1$d%%</string>
+    <string name="v08_learn_view_lesson">तकनीक पढ़ें</string>
+    <string name="v08_learn_practice">अभ्यास</string>
+    <string name="v08_learn_practice_title">तकनीक अभ्यास</string>
+    <string name="v08_learn_practice_prompt">इस सत्यापित तार्किक चरण को कौन-सी तकनीक समझाती है?</string>
+    <string name="v08_learn_practice_evidence">स्रोत सेल: %1$d · लक्ष्य सेल: %2$d · हटाए गए उम्मीदवार: %3$d</string>
+    <string name="v08_learn_practice_correct">सही। यह तर्क %1$s से मेल खाता है।</string>
+    <string name="v08_learn_practice_incorrect">इस बार नहीं। यह तर्क %1$s से मेल खाता है। पाठ दोबारा देखें और दूसरा चरण आज़माएँ।</string>
+    <string name="v08_learn_practice_next">अगला अभ्यास</string>
+    <string name="v08_learn_practice_close">अभ्यास बंद करें</string>
+    <string name="v08_learn_practice_unavailable">स्थानीय अभ्यास संग्रह में इस तकनीक के लिए अभी कोई सत्यापित अभ्यास चरण उपलब्ध नहीं है।</string>
+    <string name="v08_learn_reset_progress">सीखने की प्रगति रीसेट करें</string>
+    <string name="v08_learn_reset_title">सीखने की प्रगति रीसेट करें?</string>
+    <string name="v08_learn_reset_body">यह इस डिवाइस पर सहेजे गए पाठ-दर्शन और अभ्यास परिणाम मिटा देगा। गेम इतिहास और सेटिंग्स नहीं बदलेंगी।</string>
+    <string name="v08_learn_reset_confirm">रीसेट</string>
+    <string name="v08_learn_reset_cancel">रद्द करें</string>
+
+    <string name="v08_lesson_hidden_pair_title">Hidden Pair</string>
+    <string name="v08_lesson_hidden_pair_body">यदि दो अंक किसी पंक्ति, कॉलम या बॉक्स के केवल उन्हीं दो सेल में आ सकते हैं, तो वे सेल उस Hidden Pair के लिए सुरक्षित हैं। उन दो सेल से बाकी सभी उम्मीदवार हटा दें।</string>
+    <string name="v08_lesson_naked_triple_title">Naked Triple</string>
+    <string name="v08_lesson_naked_triple_body">यदि एक यूनिट के तीन सेल में उम्मीदवार उसी तीन अंकों के समूह से आते हैं, तो वे अंक उन्हीं तीन सेल के लिए सुरक्षित हैं। उन अंकों को यूनिट के अन्य सेल से हटा दें।</string>
+    <string name="v08_lesson_hidden_triple_title">Hidden Triple</string>
+    <string name="v08_lesson_hidden_triple_body">यदि तीन अंक किसी यूनिट के उन्हीं तीन सेल तक सीमित हों, तो स्रोत सेल में केवल वही तीन अंक रखें और बाकी उम्मीदवार हटा दें।</string>
+    <string name="v08_lesson_x_wing_body">जब किसी अंक के उम्मीदवार दो पंक्तियों में समान दो कॉलम तक, या दो कॉलम में समान दो पंक्तियों तक सीमित हों, तो चार स्रोत सेल X-Wing बनाते हैं। संबंधित लाइनों के अन्य सेल से वह अंक हटाएँ।</string>
+</resources>
