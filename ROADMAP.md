@@ -139,15 +139,17 @@ Focused issue: `#23` — `v0.9: release hardening, accessibility, performance, s
 
 Release-hardening work:
 
-- [x] Begin automated regression-suite audit and add bounded-backup edge coverage
-- [ ] Complete accessibility semantics and focus-order audit across every major screen
+- [x] Audit automated regression suites and add bounded-backup edge coverage
+- [x] Complete source-level accessibility semantics review across the current major screens
 - [x] Complete source-level selected-state/large-text accessibility hardening across the main current screens
 - [x] Make settings toggle rows single semantic switch targets and prevent chip-group large-text overflow
 - [x] Harden Game/History/Learn/Custom/Challenges/Saved/Share/Transfer action layouts against obvious large-text collisions
 - [x] Expose Number-first digit selection and Notes mode semantically
+- [ ] Complete manual TalkBack focus-order traversal on representative device/emulator
 - [ ] Complete large-font and adaptive-layout manual QA
 - [ ] Complete high-contrast and reduced-motion manual QA
-- [ ] Complete performance and memory audit
+- [x] Complete source-level main-thread/performance review and preserve deterministic engine benchmark/corpus coverage
+- [ ] Complete measured startup/frame/memory/ANR device audit
 - [x] Move game hint computation off the main thread with stale-result protection
 - [x] Move Custom Puzzle uniqueness/solve work off the main thread with cancellation and stale-board protection
 - [x] Harden puzzle-code validation against stale asynchronous results
@@ -162,9 +164,12 @@ Release-hardening work:
 - [x] Add debug APK, release APK, and release AAB verification tasks to CI
 - [x] Add release-signing guidance that keeps production credentials outside Git
 - [x] Add device QA matrix and manual release checklist without fabricating device results
-- [ ] Complete crash/ANR and lifecycle restoration audit
+- [x] Complete source-level navigation/lifecycle/restoration and crash/ANR-sensitive path review
+- [ ] Complete manual process-death/lifecycle restoration QA
 - [x] Add UI/store screenshot-readiness checklist
-- [ ] Complete documentation accuracy audit after final implementation
+- [x] Add CODEOWNERS and GitHub funding metadata to complete public repository governance/support surfaces
+- [x] Audit final repository for TODO/FIXME/NotImplemented/debug-print placeholders
+- [x] Complete documentation accuracy audit for implemented v0.9 source/tooling changes
 - [x] Expose selected Sudoku game-cell state through accessibility semantics
 - [x] Add stable Sudoku game-cell semantic tags
 - [x] Add connected regression coverage for selected game-cell semantics
@@ -174,10 +179,14 @@ Release-hardening work:
 - [x] Move game-load/abandon error presentation to typed localized resources
 - [x] Remove hardcoded English grammar from the game completion summary
 - [x] Align the in-app English/Hindi privacy summary with current DataStore, Room, and explicit transfer/backup behavior
+- [x] Repair connected Custom Puzzle visibility coverage for the intentional adaptive full-width action layout
+- [x] Migrate connected Compose activity rule usage to the non-deprecated v2 API
 - [ ] Final standard CI green on exact clean head
 - [ ] Final API-35 connected gate green on exact clean head
 - [ ] Mark PR #25 ready only after release-blocking audits and exact-head gates are complete
 - [ ] Merge PR #25 and close issue #23 only after verified evidence exists
+
+Manual/device rows intentionally remain unchecked until those checks are actually performed; the repository must not treat source review as equivalent to physical-device or assistive-technology evidence.
 
 ## v1.0 — Stable Classic Sudoku Release
 
