@@ -4,6 +4,17 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val releaseStorePath = providers.environmentVariable("SUDOKUNOVA_KEYSTORE_PATH").orNull
+val releaseStorePassword = providers.environmentVariable("SUDOKUNOVA_KEYSTORE_PASSWORD").orNull
+val releaseKeyAlias = providers.environmentVariable("SUDOKUNOVA_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.environmentVariable("SUDOKUNOVA_KEY_PASSWORD").orNull
+val hasReleaseSigning = listOf(
+    releaseStorePath,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.sanskar.sudokunova"
     compileSdk = 37
@@ -19,6 +30,17 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseStorePath))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -27,6 +49,9 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
