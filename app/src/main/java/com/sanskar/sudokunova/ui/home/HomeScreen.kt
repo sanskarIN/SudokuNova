@@ -183,7 +183,7 @@ private fun HomeScreen(
 
         item {
             Text(
-                "Made by the Sanskar",
+                stringResource(R.string.v04_made_by),
                 modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
