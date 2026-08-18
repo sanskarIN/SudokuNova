@@ -33,7 +33,9 @@ data class SudokuHint(
 
     val technique: HintTechnique
         get() = revealPlacement?.let { HintTechnique.REVEAL }
-            ?: teachingSteps.last().technique.toHintTechnique()
+            ?: requireNotNull(teachingSteps.maxByOrNull { it.technique.rank })
+                .technique
+                .toHintTechnique()
 
     val placement: TeachingPlacement
         get() = revealPlacement ?: requireNotNull(teachingSteps.last().placement)
