@@ -144,6 +144,9 @@ Release-hardening work:
 - [ ] Complete large-font and adaptive-layout manual QA
 - [ ] Complete high-contrast and reduced-motion manual QA
 - [ ] Complete performance and memory audit
+- [x] Move game hint computation off the main thread with stale-result protection
+- [x] Move Custom Puzzle uniqueness/solve work off the main thread with cancellation and stale-board protection
+- [x] Harden puzzle-code validation against stale asynchronous results
 - [x] Preserve existing solver/generator/teaching deterministic regression coverage
 - [x] Re-audit backup file I/O boundary and preserve bounded off-main-thread architecture
 - [x] Audit Room schema/index/migration configuration without adding a speculative migration
@@ -158,9 +161,14 @@ Release-hardening work:
 - [ ] Complete crash/ANR and lifecycle restoration audit
 - [x] Add UI/store screenshot-readiness checklist
 - [ ] Complete documentation accuracy audit after final implementation
-- [x] Expose selected Sudoku-cell state through accessibility semantics
-- [x] Add stable Sudoku-cell semantic tags
-- [x] Add connected regression coverage for selected-cell semantics
+- [x] Expose selected Sudoku game-cell state through accessibility semantics
+- [x] Add stable Sudoku game-cell semantic tags
+- [x] Add connected regression coverage for selected game-cell semantics
+- [x] Expose Custom Puzzle editor cell descriptions/selected/conflict semantics
+- [x] Add stable Custom Puzzle editor cell semantic tags and connected selected-state regression
+- [x] Move Custom Puzzle status/error presentation to paired English/Hindi resources
+- [x] Move game-load/abandon error presentation to typed localized resources
+- [x] Remove hardcoded English grammar from the game completion summary
 - [ ] Final standard CI green on exact clean head
 - [ ] Final API-35 connected gate green on exact clean head
 - [ ] Mark PR #25 ready only after release-blocking audits and exact-head gates are complete
