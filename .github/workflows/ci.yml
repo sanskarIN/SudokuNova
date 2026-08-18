@@ -19,7 +19,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout sources
@@ -46,7 +46,7 @@ jobs:
       - name: Compile Android instrumentation tests
         run: ./gradlew :app:assembleDebugAndroidTest --stacktrace
 
-      - name: Run Android lint
+      - name: Run Android debug lint
         shell: bash
         run: |
           set +e
@@ -55,7 +55,7 @@ jobs:
           if [ "$status" -ne 0 ]; then
             report="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
             if [ -f "$report" ]; then
-              echo "----- FULL ANDROID LINT REPORT -----"
+              echo "----- FULL ANDROID DEBUG LINT REPORT -----"
               cat "$report"
             fi
           fi
@@ -64,7 +64,28 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
-      - name: Upload reports
+      - name: Run Android release lint
+        shell: bash
+        run: |
+          set +e
+          ./gradlew :app:lintRelease --stacktrace
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            report="app/build/intermediates/lint_intermediate_text_report/release/lintReportRelease/lint-results-release.txt"
+            if [ -f "$report" ]; then
+              echo "----- FULL ANDROID RELEASE LINT REPORT -----"
+              cat "$report"
+            fi
+          fi
+          exit "$status"
+
+      - name: Assemble release APK with R8/resource shrinking
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Build release Android App Bundle
+        run: ./gradlew :app:bundleRelease --stacktrace
+
+      - name: Upload verification reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -74,3 +95,15 @@ jobs:
             **/build/test-results/**
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload unsigned release artifacts
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unsigned-release-artifacts
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/mapping/release/**
+          if-no-files-found: error
+          retention-days: 7
