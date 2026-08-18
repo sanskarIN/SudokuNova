@@ -41,13 +41,15 @@ class TransferViewModel(application: Application) : AndroidViewModel(application
 
     fun setPuzzleCode(value: String) {
         if (value.length > PuzzleCodeCodec.MAX_CODE_LENGTH) return
+        val cancelledValidation = puzzleValidationJob?.isActive == true
         puzzleValidationJob?.cancel()
         puzzleValidationJob = null
-        _uiState.value = _uiState.value.copy(
+        val current = _uiState.value
+        _uiState.value = current.copy(
             puzzleCodeInput = value,
             validatedPuzzle = null,
             status = TransferStatus.IDLE,
-            busy = false,
+            busy = if (cancelledValidation) false else current.busy,
         )
     }
 
