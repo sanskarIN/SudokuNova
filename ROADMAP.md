@@ -100,7 +100,7 @@ Status: **Completed**
 
 ## v0.8 — Learning and Advanced Hints
 
-Status: **Implementation complete; final verification in progress on PR #22**
+Status: **Completed**
 
 - [x] Platform-independent structured `TeachingStep` evidence
 - [x] Deterministic teaching traces
@@ -126,24 +126,37 @@ Status: **Implementation complete; final verification in progress on PR #22**
 - [x] Learning-progress JVM tests
 - [x] Compose Learn/practice smoke coverage
 - [x] Complete learning/hints documentation
-- [ ] Final clean-head Android CI green
-- [ ] Final clean-head API-35 connected instrumentation green
-- [ ] Merge PR #22 and close issue #21
+- [x] Final clean-head Android CI green — run `32121249242`
+- [x] Final clean-head API-35 connected instrumentation green — run `32121249202`
+- [x] PR #22 merged as `f07e6496ff5de5bfdfb7676b527a31f71f8b912c`
+- [x] Issue #21 closed as completed
 
 ## v0.9 — Release Hardening
 
-Status: **Next milestone after v0.8 merge**
+Status: **In progress — issue #23**
 
-- Full automated regression-suite audit
-- Accessibility audit and focus-order review
-- Performance and memory audit
-- Security/privacy audit
-- Dependency and license audit
-- Device QA matrix
-- Release-build shrinking verification
-- UI polish and screenshot readiness
-- Documentation accuracy audit
-- Crash/ANR hardening and release checklist
+Focused issue: `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`.
+
+Planned release-hardening work:
+
+- [ ] Full automated regression-suite audit
+- [ ] Accessibility semantics and focus-order audit
+- [ ] Large-font and adaptive-layout QA
+- [ ] High-contrast and reduced-motion audit
+- [ ] Performance and memory audit
+- [ ] Solver/generator/teaching performance regression coverage
+- [ ] Main-thread I/O/CPU audit
+- [ ] Room/DataStore integrity and migration audit
+- [ ] Import/export/backup security and privacy audit
+- [ ] Dependency and license audit
+- [ ] Release R8/shrinking verification
+- [ ] Debug APK, release APK, and release AAB verification
+- [ ] Device QA matrix and manual release checklist
+- [ ] Crash/ANR and lifecycle restoration hardening
+- [ ] UI/store screenshot readiness
+- [ ] Documentation accuracy audit
+- [ ] Final standard CI green on exact clean head
+- [ ] Final API-35 connected gate green on exact clean head
 
 ## v1.0 — Stable Classic Sudoku Release
 
