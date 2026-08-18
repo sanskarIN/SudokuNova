@@ -39,6 +39,17 @@ Implemented so far on the v0.9 branch:
 8. `SECURITY.md` expanded with manifest/permission expectations, backup/transfer fail-closed requirements, signing/secret-management rules, dependency/supply-chain expectations, privacy expectations, and release-hardening gates.
 9. `docs/RELEASE_QA.md` added as a non-fabricated release evidence matrix covering automated gates, installation/lifecycle, every major app area, accessibility, font/window sizes, performance smoke checks, security/privacy, release artifacts, and store-screenshot readiness.
 10. Draft PR #25 opened so all later v0.9 commits remain reviewable and workflow evidence can be tied to exact branch heads.
+11. `scripts/verify_repository_security.py` added to reject committed Android signing/private-key bundles, known credential config filenames, PEM private-key material, and obvious GitHub token patterns.
+12. Standard Android CI now executes the repository security guard before build/test work.
+13. The current Android manifest was audited: it declares no runtime permissions; `MainActivity` is exported only as the launcher entry point.
+14. Direct dependency and build/test tooling notice coverage was audited and `THIRD_PARTY_NOTICES.md` was expanded accordingly.
+15. Room schema/index/migration configuration was audited: the database remains explicitly versioned, `MIGRATION_1_2` is registered, destructive fallback is not enabled, and existing principal filter/identity indexes remain present. No speculative migration was added merely to increase commit count.
+16. Sudoku cells now expose Compose `selected` accessibility semantics in addition to their existing localized content descriptions.
+17. Stable per-cell Compose test tags were added for deterministic accessibility regression coverage.
+18. API-35 connected coverage now includes selecting two Sudoku cells and asserting selected/unselected semantics transitions.
+19. `CHANGELOG.md` now distinguishes implemented v0.9 hardening from verification/manual checks that are still pending.
+20. `ROADMAP.md` now records completed audits and keeps final workflow/manual QA gates unchecked until evidence exists.
+21. Draft PR #25 description was refreshed to match the current implementation and its non-fabrication rules.
 
 Focused v0.9 commits currently include:
 
@@ -47,9 +58,18 @@ Focused v0.9 commits currently include:
 - `ffd2cd25295d6ba4c390fdbc98c85cedf84359d3` — `test(backup): expand bounded file read regression coverage`;
 - `ccc28b2863a8bff1661a805ce5920fe69980c089` — `docs(build): harden release APK AAB and signing guidance`;
 - `34a04be6b07a5d991bd9c17112769badfb5b68b6` — `docs(security): define v0.9 permission backup and signing gates`;
-- `885701e15a5d1bc07b1900c83c70256810bbaaf7` — `docs(qa): add v0.9 release validation matrix`.
+- `885701e15a5d1bc07b1900c83c70256810bbaaf7` — `docs(qa): add v0.9 release validation matrix`;
+- `573ce18801a823fc85b6bdde27ea87bf0ca88b3c` — `docs: record current v0.9 hardening progress`;
+- `ff9a2178e506746fbc7f5ffd2411df1517254b9b` — `security(ci): add deterministic repository secret guard`;
+- `ba84b3677df9db91fff114092bf465b1a49d6249` — `ci(security): enforce repository secret guard`;
+- `8d64d87c027f60d914025dab450015995b4b3199` — `docs(licenses): audit direct dependencies and build tooling`;
+- `89fc1921f87d455c6f674eabc01f2b6df48792e1` — `a11y(game): expose selected Sudoku cell semantics`;
+- `c16fb6ef78c15b6d24b1917569077dff182af9a3` — `testability(game): add stable Sudoku cell semantic tags`;
+- `0c4d4ccf00cc4fee55bc7e9853d220d34b5b3175` — `test(android): verify Sudoku selected-cell semantics`;
+- `57a607251f9910f1207a53b40391aeee2b6f852e` — `docs(changelog): record implemented v0.9 hardening work`;
+- `ee089f7db9202593e1e572cee2bfaf64e9f1b186` — `docs(roadmap): track concrete v0.9 hardening progress`.
 
-PR #25 was opened at head `885701e15a5d1bc07b1900c83c70256810bbaaf7` with six focused commits and remains draft. At the moment this section was written, no PR-associated workflow run had yet been returned for that head, so no new green v0.9 workflow claim is recorded here.
+PR #25 currently contains 15 focused commits before this `what_changed.md` refresh and remains draft. Earlier exact heads started Android CI and API-35 instrumentation runs, but subsequent commits intentionally superseded those heads. The final v0.9 workflow evidence must therefore come from the exact final head after this documentation update, not from an earlier successful/cancelled run.
 
 ## Final v0.8 Verification — GREEN
 
@@ -800,22 +820,23 @@ Room-backed:
 
 `.github/workflows/ci.yml` verifies:
 
-1. English/Hindi translation parity;
-2. engine tests;
-3. Android JVM tests;
-4. Android instrumentation-test APK compilation;
-5. debug and release Android lint;
-6. debug APK assembly;
-7. release APK assembly with R8/resource shrinking;
-8. release AAB assembly;
-9. verification report upload;
-10. successful release APK/AAB/mapping artifact upload for short-lived CI evidence.
+1. repository signing/private-key/obvious credential guard;
+2. English/Hindi translation parity;
+3. engine tests;
+4. Android JVM tests;
+5. Android instrumentation-test APK compilation;
+6. debug and release Android lint;
+7. debug APK assembly;
+8. release APK assembly with R8/resource shrinking;
+9. release AAB assembly;
+10. verification report upload;
+11. successful release APK/AAB/mapping artifact upload for short-lived CI evidence.
 
 ### API-35 Connected Instrumentation
 
 `.github/workflows/instrumentation.yml` runs connected Compose/Room tests on an Android API-35 x86_64 Pixel 6 emulator with KVM access and animations disabled.
 
-v0.9 preserves these connected gates and expands release-build/QA evidence where safe and practical.
+v0.9 preserves these connected gates and expands release-build/QA evidence where safe and practical. The connected suite now also includes selected-cell accessibility-semantics transition coverage.
 
 ## Important Historical Defects Already Fixed
 
@@ -848,32 +869,22 @@ Focused issue #23 is open:
 
 **`v0.9: release hardening, accessibility, performance, security, and production QA`**
 
-Draft PR #25 now carries the implementation.
+Draft PR #25 carries the current implementation and remains intentionally draft while release-blocking/manual/evidence work remains.
 
 v0.9 is deliberately a quality milestone rather than a new feature-family milestone.
 
-Planned scope:
+Remaining scope includes:
 
-1. audit existing v0.1–v0.8 regression suites and fill release-critical gaps;
-2. accessibility semantics/focus-order review across all major screens;
-3. large-font and adaptive-layout QA;
-4. high-contrast and reduced-motion audit;
-5. performance/memory audit;
-6. solver/generator/teaching/import/backup performance regression checks where practical;
-7. main-thread blocking work audit;
-8. Room/DataStore integrity, indexes, migrations, reset/restore audit;
-9. import/export/backup security/privacy audit;
-10. permission and manifest audit;
-11. dependency/license/third-party notice audit;
-12. release R8/shrinking verification;
-13. debug APK, release APK, and release AAB build verification;
-14. release signing guidance that uses secrets only;
-15. device QA matrix and manual checklist without fabricating device results;
-16. lifecycle/process-death/crash/ANR hardening;
-17. UI/store screenshot readiness;
-18. documentation accuracy audit;
-19. final exact-head standard CI green;
-20. final exact-head API-35 connected gate green.
+1. finish accessibility semantics/focus-order review across all major screens;
+2. large-font and adaptive-layout manual QA;
+3. high-contrast and reduced-motion manual QA;
+4. performance/memory audit and additional bounded regression checks where practical;
+5. main-thread blocking work audit outside the already hardened backup path;
+6. crash/ANR/lifecycle restoration audit;
+7. documentation accuracy audit after final code changes;
+8. final exact-head standard CI green;
+9. final exact-head API-35 connected gate green;
+10. only then decide whether PR #25 is ready to merge and issue #23 can close.
 
 ### v0.9 non-goals
 
