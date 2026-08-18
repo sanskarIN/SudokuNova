@@ -12,6 +12,7 @@ The audit covers:
 - import/export/backup boundaries;
 - Android manifest and repository-secret surface;
 - accessibility semantics and deterministic UI testability;
+- large-text source-level layout risks;
 - English/Hindi presentation boundaries;
 - debug/release build verification;
 - documentation accuracy.
@@ -56,6 +57,36 @@ Manual TalkBack, physical-device, large-font, high-contrast, reduced-motion, per
 
 **Fix:** editor cells now expose localized row/column/value descriptions, conflict text, Compose selected semantics, and stable per-cell test tags. Connected coverage verifies selected-state transitions.
 
+### Game control selected state
+
+**Finding:** Number-first's persistent selected digit and Notes-On state were visually highlighted but did not expose selected semantics.
+
+**Fix:** persistent number selection and Notes mode now expose Compose selected state. One-shot actions do not falsely expose an unselected toggle state.
+
+### Settings switch semantics
+
+**Finding:** a settings row and its trailing switch could expose separate interaction targets for the same Boolean preference.
+
+**Fix:** the complete row is one merged `Role.Switch` target. The trailing Material switch displays state but does not own a second click action.
+
+### Large-text fixed-row pressure
+
+**Finding:** several screens forced long localized labels into half-width/fixed rows, making obvious clipping/collision more likely at large font scales.
+
+**Fixes:** source-level hardening now includes:
+
+- horizontally scrollable Game action rows;
+- horizontally scrollable Settings chip groups;
+- horizontally scrollable History filters/metrics/badges;
+- full-width stacked Learn Study/Practice actions;
+- full-width stacked Custom Puzzle text actions;
+- full-width stacked puzzle-code Copy/Share actions;
+- full-width stacked Backup & Transfer Copy/Share/Export/Import actions;
+- vertically stacked Challenge title/difficulty/status information;
+- removal of empty text layout placeholders where found in History/Learn/Saved/Challenges.
+
+These source fixes reduce predictable large-text collisions but do **not** replace manual 200% font QA.
+
 ### Custom Puzzle localization boundary
 
 **Finding:** validation/solver status prose lived as raw English strings in `CustomPuzzleViewModel`.
@@ -73,6 +104,12 @@ Manual TalkBack, physical-device, large-font, high-contrast, reduced-motion, per
 **Finding:** the completion dialog concatenated English `mistake(s)` and `hint(s)` fragments even though a localized completion resource already existed.
 
 **Fix:** the dialog now uses `v04_completion_summary` and its existing Hindi counterpart.
+
+### In-app privacy summary
+
+**Finding:** the About/privacy summary still described an older DataStore-only state even though current releases also use Room and explicit transfer/backup flows.
+
+**Fix:** paired English/Hindi summaries now describe current local settings/active-game/statistics/learning/History/Saved/Challenge storage through DataStore + Room and state that sharing/import/export/backup occurs only through explicit user actions.
 
 ### Room migration warning
 
@@ -126,6 +163,17 @@ Reviewed UI/state areas include:
 The correctness-sensitive CPU paths identified in game generation, game hints, Custom Puzzle solving, and imported-puzzle uniqueness analysis are dispatched away from the main thread. Backup document I/O uses `Dispatchers.IO`; Room and DataStore are accessed through their asynchronous APIs.
 
 This is a source audit. It is not a substitute for measured Android traces on representative devices.
+
+## Navigation and restoration source review
+
+`SudokuNovaApp` and active-game serialization were re-read for obvious route/restoration corruption risks.
+
+- game/challenge route arguments remain constrained to enum/numeric/81-cell puzzle data;
+- `GameStateCodec` is versioned and decodes inside a fail-closed `runCatching` boundary;
+- selected cell/number, counters, notes, challenge provenance, and replay IDs are validated when decoding;
+- resume only adopts a decoded PLAYING state; otherwise a fresh requested game is created.
+
+This source review does not replace process-death/manual lifecycle QA.
 
 ## Still requires evidence
 
