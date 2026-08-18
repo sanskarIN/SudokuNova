@@ -8,12 +8,21 @@ val releaseStorePath = providers.environmentVariable("SUDOKUNOVA_KEYSTORE_PATH")
 val releaseStorePassword = providers.environmentVariable("SUDOKUNOVA_KEYSTORE_PASSWORD").orNull
 val releaseKeyAlias = providers.environmentVariable("SUDOKUNOVA_KEY_ALIAS").orNull
 val releaseKeyPassword = providers.environmentVariable("SUDOKUNOVA_KEY_PASSWORD").orNull
-val hasReleaseSigning = listOf(
+val releaseSigningValues = listOf(
     releaseStorePath,
     releaseStorePassword,
     releaseKeyAlias,
     releaseKeyPassword,
-).all { !it.isNullOrBlank() }
+)
+val configuredReleaseSigningValues = releaseSigningValues.count { !it.isNullOrBlank() }
+if (configuredReleaseSigningValues in 1..3) {
+    error(
+        "Release signing is partially configured. Provide all of " +
+            "SUDOKUNOVA_KEYSTORE_PATH, SUDOKUNOVA_KEYSTORE_PASSWORD, " +
+            "SUDOKUNOVA_KEY_ALIAS, and SUDOKUNOVA_KEY_PASSWORD, or provide none.",
+    )
+}
+val hasReleaseSigning = configuredReleaseSigningValues == releaseSigningValues.size
 
 android {
     namespace = "com.sanskar.sudokunova"
