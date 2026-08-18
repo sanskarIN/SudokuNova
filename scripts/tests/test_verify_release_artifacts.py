@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -67,6 +68,38 @@ class VerifyReleaseArtifactsTest(unittest.TestCase):
             with mock.patch.object(MODULE.shutil, "which", return_value=None):
                 with self.assertRaises(RuntimeError):
                     MODULE.verify_artifact(artifact, require_signature=True)
+
+    def test_unsigned_aab_is_rejected_even_when_jarsigner_returns_zero(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            artifact = self.make_zip(Path(temp), "app-release.aab")
+            completed = subprocess.CompletedProcess(
+                args=["jarsigner"],
+                returncode=0,
+                stdout="jar is unsigned.\n",
+                stderr="",
+            )
+            with (
+                mock.patch.object(MODULE.shutil, "which", return_value="/usr/bin/jarsigner"),
+                mock.patch.object(MODULE.subprocess, "run", return_value=completed),
+            ):
+                with self.assertRaises(RuntimeError):
+                    MODULE.verify_artifact(artifact, require_signature=True)
+
+    def test_verified_aab_requires_explicit_jarsigner_verified_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            artifact = self.make_zip(Path(temp), "app-release.aab")
+            completed = subprocess.CompletedProcess(
+                args=["jarsigner"],
+                returncode=0,
+                stdout="jar verified.\n",
+                stderr="",
+            )
+            with (
+                mock.patch.object(MODULE.shutil, "which", return_value="/usr/bin/jarsigner"),
+                mock.patch.object(MODULE.subprocess, "run", return_value=completed),
+            ):
+                result = MODULE.verify_artifact(artifact, require_signature=True)
+            self.assertEqual(result.signature_status, "verified with jarsigner")
 
 
 if __name__ == "__main__":
