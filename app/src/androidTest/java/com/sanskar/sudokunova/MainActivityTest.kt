@@ -3,7 +3,7 @@ package com.sanskar.sudokunova
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -87,15 +87,16 @@ class MainActivityTest {
     fun customPuzzleEditorIsReachable() {
         composeRule.onNodeWithText("Custom").performScrollTo().performClick()
         composeRule.onNodeWithText("Custom Puzzle").assertIsDisplayed()
-        composeRule.onNodeWithText("Validate").assertIsDisplayed()
-        composeRule.onNodeWithText("Save puzzle").assertIsDisplayed()
-        composeRule.onNodeWithText("Play puzzle").assertIsDisplayed()
 
         val firstCell = composeRule.onNodeWithTag(customPuzzleCellTestTag(0, 0))
         val secondCell = composeRule.onNodeWithTag(customPuzzleCellTestTag(0, 1))
         firstCell.assertIsDisplayed().assertIsSelected()
         secondCell.assertIsDisplayed().assertIsNotSelected().performClick().assertIsSelected()
         firstCell.assertIsNotSelected()
+
+        composeRule.onNodeWithText("Validate").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Save puzzle").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Play puzzle").performScrollTo().assertIsDisplayed()
     }
 
     @Test
