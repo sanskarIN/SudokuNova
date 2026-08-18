@@ -24,7 +24,20 @@ Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to
 - Standard Android CI now assembles the minified/resource-shrunk release APK and release AAB.
 - Successful CI release verification retains short-lived APK/AAB/R8 mapping outputs as build evidence.
 - Sudoku game cells now expose selected state through Compose accessibility semantics in addition to the existing localized content description.
+- Number-first digit selection and Notes mode now expose semantic selected state instead of relying only on color.
+- Game text-action rows can horizontally scroll so localized/large-font labels do not collide.
 - Custom Puzzle editor cells now expose localized row/column/value descriptions, conflict descriptions, selected semantics, and stable test tags.
+- Custom Puzzle text actions are stacked at full width for large-font/localized layouts.
+- Settings toggle rows now act as one merged switch target; trailing switches are presentation-only, preventing duplicate/ambiguous interaction semantics.
+- Settings theme/input/mistake chip groups can horizontally scroll rather than overflow at larger text sizes.
+- History filter, metric, and badge rows can horizontally scroll at larger text sizes, and empty text layout placeholders were removed.
+- Learn technique Study/Practice actions are full-width stacked controls rather than constrained half-width buttons.
+- Puzzle-code Copy/Share actions are full-width stacked controls.
+- Backup & Transfer Copy/Share/Export/Import actions are full-width stacked controls.
+- Challenge status is stacked below the challenge title/difficulty rather than competing for one row at large text sizes.
+- Saved Puzzles and Challenges no longer use empty `Text("")` nodes as layout spacers.
+- Home now uses the maintained credit resource instead of a hardcoded duplicate string.
+- The in-app English/Hindi privacy summary now matches current DataStore + Room storage, local learning/history/saved/challenge records, and explicit sharing/import/export/backup behavior.
 - Hint computation runs on `Dispatchers.Default` and discards results when the requested board is no longer current.
 - Custom Puzzle uniqueness validation and solution preview now run on `Dispatchers.Default`, cancel superseded solver work, and discard stale-board results.
 - Puzzle-code validation cancels superseded work and refuses to publish a result for input that changed while uniqueness analysis was running.
@@ -43,6 +56,7 @@ Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to
 - Room uses explicit schema versioning and `MIGRATION_1_2`; destructive migration fallback is not enabled.
 - Current history/saved-puzzle entities already define indexes for their principal filtering/identity fields, so no speculative schema migration was added merely for hardening.
 - Main-thread review covered the game, custom-puzzle, transfer, challenge, history, saved-puzzle, learning, settings, home, and statistics state layers; blocking solver work found in Game/Custom/Transfer paths is now dispatched off the UI thread where applicable.
+- Source-level large-text/accessibility review covered Game, Settings, Home/About, Custom Puzzle, History, Saved Puzzles, Challenges, Learn, sharing, and Backup & Transfer. Manual 200% font/TalkBack verification remains separate and unclaimed.
 
 #### Regression fixes found during v0.9 verification
 - API-35 run `32129482037` exposed a race in the selected-game-cell semantics test: Easy puzzle generation is asynchronous, so the test attempted to assert a board node before the generated board was composed. The test now waits for the stable first-cell semantic tag before performing the same selected/unselected assertions.
