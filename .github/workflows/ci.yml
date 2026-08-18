@@ -37,6 +37,9 @@ jobs:
       - name: Verify repository security guard
         run: python scripts/verify_no_secrets.py
 
+      - name: Verify release helper tests
+        run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
 
@@ -76,6 +79,14 @@ jobs:
       - name: Build release Android App Bundle
         run: ./gradlew :app:bundleRelease --stacktrace
 
+      - name: Verify release artifact integrity and checksums
+        shell: bash
+        run: |
+          python scripts/verify_release_artifacts.py \
+            app/build/outputs/apk/release/*.apk \
+            app/build/outputs/bundle/release/*.aab \
+            --checksums-out app/build/outputs/SHA256SUMS
+
       - name: Upload verification reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -96,5 +107,6 @@ jobs:
             app/build/outputs/apk/release/*.apk
             app/build/outputs/bundle/release/*.aab
             app/build/outputs/mapping/release/**
+            app/build/outputs/SHA256SUMS
           if-no-files-found: error
           retention-days: 14
