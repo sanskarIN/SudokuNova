@@ -12,10 +12,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+enum class CustomPuzzleMessage {
+    ENTER_CLUES,
+    CHANGED,
+    CONTRADICTION,
+    NEED_MORE_CLUES,
+    VALIDATING,
+    NO_SOLUTION,
+    UNIQUE_READY,
+    MULTIPLE_SOLUTIONS,
+    SOLVING,
+    NO_SOLUTION_AVAILABLE,
+    SOLVED_PREVIEW,
+}
+
 data class CustomPuzzleUiState(
     val board: SudokuBoard = SudokuBoard.empty(),
     val selectedIndex: Int = 0,
-    val message: String = "Enter the given clues, then validate the puzzle.",
+    val message: CustomPuzzleMessage = CustomPuzzleMessage.ENTER_CLUES,
     val solution: SudokuBoard? = null,
     val isUnique: Boolean = false,
     val showSolution: Boolean = false,
@@ -43,7 +57,7 @@ class CustomPuzzleViewModel : ViewModel() {
             solution = null,
             isUnique = false,
             showSolution = false,
-            message = "Puzzle changed. Validate again before playing.",
+            message = CustomPuzzleMessage.CHANGED,
         )
     }
 
@@ -55,7 +69,7 @@ class CustomPuzzleViewModel : ViewModel() {
             solution = null,
             isUnique = false,
             showSolution = false,
-            message = "Puzzle changed. Validate again before playing.",
+            message = CustomPuzzleMessage.CHANGED,
         )
     }
 
@@ -71,7 +85,7 @@ class CustomPuzzleViewModel : ViewModel() {
             _uiState.value = state.copy(
                 solution = null,
                 isUnique = false,
-                message = "The clues contain a row, column, or box contradiction.",
+                message = CustomPuzzleMessage.CONTRADICTION,
             )
             return
         }
@@ -80,7 +94,7 @@ class CustomPuzzleViewModel : ViewModel() {
             _uiState.value = state.copy(
                 solution = null,
                 isUnique = false,
-                message = "Add more clues before uniqueness validation. Standard 9×9 Sudoku needs at least 17 clues for a unique puzzle.",
+                message = CustomPuzzleMessage.NEED_MORE_CLUES,
             )
             return
         }
@@ -90,7 +104,7 @@ class CustomPuzzleViewModel : ViewModel() {
         _uiState.value = state.copy(
             solution = null,
             isUnique = false,
-            message = "Validating puzzle…",
+            message = CustomPuzzleMessage.VALIDATING,
         )
         solverJob = viewModelScope.launch {
             val result = withContext(Dispatchers.Default) {
@@ -104,19 +118,19 @@ class CustomPuzzleViewModel : ViewModel() {
                     solution = null,
                     isUnique = false,
                     showSolution = false,
-                    message = "This puzzle has no valid solution.",
+                    message = CustomPuzzleMessage.NO_SOLUTION,
                 )
                 1 -> current.copy(
                     solution = result.solution,
                     isUnique = true,
                     showSolution = false,
-                    message = "Valid puzzle with exactly one solution. Ready to play.",
+                    message = CustomPuzzleMessage.UNIQUE_READY,
                 )
                 else -> current.copy(
                     solution = result.solution,
                     isUnique = false,
                     showSolution = false,
-                    message = "This puzzle has multiple solutions. Add more clues for a unique Sudoku.",
+                    message = CustomPuzzleMessage.MULTIPLE_SOLUTIONS,
                 )
             }
             solverJob = null
@@ -129,7 +143,7 @@ class CustomPuzzleViewModel : ViewModel() {
             _uiState.value = state.copy(
                 solution = solution,
                 showSolution = true,
-                message = "Solved-grid preview. The original puzzle is preserved for Play puzzle.",
+                message = CustomPuzzleMessage.SOLVED_PREVIEW,
             )
             return
         }
@@ -138,7 +152,7 @@ class CustomPuzzleViewModel : ViewModel() {
         solverJob?.cancel()
         _uiState.value = state.copy(
             showSolution = false,
-            message = "Solving puzzle…",
+            message = CustomPuzzleMessage.SOLVING,
         )
         solverJob = viewModelScope.launch {
             val solution = withContext(Dispatchers.Default) {
@@ -151,13 +165,13 @@ class CustomPuzzleViewModel : ViewModel() {
                 current.copy(
                     solution = null,
                     showSolution = false,
-                    message = "No solution is available for this puzzle.",
+                    message = CustomPuzzleMessage.NO_SOLUTION_AVAILABLE,
                 )
             } else {
                 current.copy(
                     solution = solution,
                     showSolution = true,
-                    message = "Solved-grid preview. The original puzzle is preserved for Play puzzle.",
+                    message = CustomPuzzleMessage.SOLVED_PREVIEW,
                 )
             }
             solverJob = null
