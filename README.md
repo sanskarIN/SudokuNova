@@ -15,11 +15,11 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 **v0.9.0 — Release Hardening is merged and verified on `main`.** Final PR head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9` passed Android CI run `32139568718` and API-35 connected instrumentation run `32139568591` before PR #25 was merged as `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
 
-The active line is now **v1.0 RC1 — Stable Release Preparation**, tracked in issue #5 and draft PR #27 on `release/v1.0-rc1-prep`. The candidate metadata is `versionCode 1000` / `versionName 1.0.0-rc.1`.
+**v1.0 RC1 repository-side preparation is also verified and merged.** Final PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` passed Android CI run `32151771317` and API-35 connected instrumentation run `32151771297`, then merged as `2329881aff8dabaf8d040918e16b6113e3900245`. The merged candidate metadata is `versionCode 1000` / `versionName 1.0.0-rc.1`.
 
-The RC branch is completing every repository-side release task that can be verified without fabricating physical-device or production-platform evidence: artifact structure/version verification, SHA-256 evidence, secret-backed release signing configuration, CI fail-closed signing checks, Play Store preparation, generated release-note configuration, repository-settings guidance, and a real-device evidence worksheet.
+The repository now includes verified RC artifact structure/version checks, SHA-256 evidence, release-verifier tests, fail-closed partial-signing checks, optional secret-backed production signing configuration, mandatory signed-artifact verification mode for protected release environments, Play Store preparation, generated release-note configuration, repository-settings guidance, and real-device/manual evidence worksheets.
 
-Stable `v1.0.0` is **not yet claimed**. TalkBack, representative 200% font/device/window QA, measured performance/ANR evidence, process-death scenarios, actual production signing, signed artifact verification, and real store/repository publication evidence remain pending until performed on real targets.
+Stable `v1.0.0` is **not yet claimed**. Issue #5 remains open for TalkBack, representative 200% font/device/window QA, measured performance/ANR evidence, process-death scenarios, GitHub `main` protection/ruleset administration, actual production signing, signed artifact verification, real store/repository assets/declarations, final stable metadata, and publication evidence.
 
 ## Complete Documentation
 
@@ -31,6 +31,8 @@ High-value entry points:
 
 - [v1.0 RC Preparation](docs/V1_RELEASE_PREP.md)
 - [v1.0 RC Evidence Worksheet](docs/V1_RELEASE_CANDIDATE.md)
+- [v1.0 Release Evidence Ledger](docs/V1_RELEASE_EVIDENCE.md)
+- [v1.0 Release Notes Source](docs/V1_RELEASE_NOTES.md)
 - [Production Signing](docs/PRODUCTION_SIGNING.md)
 - [Play Store Release Preparation](docs/PLAY_STORE_RELEASE.md)
 - [GitHub Repository Settings](docs/GITHUB_REPOSITORY_SETTINGS.md)
@@ -160,6 +162,7 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - Release APK/AAB structural/version verification and SHA-256 evidence in the v1.0 RC line
 - Partial production-signing configuration fails closed in CI
 - Optional secret-backed production signing without committed credentials
+- Optional mandatory APK/AAB signature-verification mode for protected signed-release validation
 - Structured bug/feature/accessibility/performance/documentation issue forms
 - Pull-request template and contributor policies
 - Weekly Dependabot checks for Gradle and GitHub Actions
@@ -199,9 +202,9 @@ Exact v0.9 verification:
 
 See [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), and [docs/V09_HARDENING_AUDIT.md](docs/V09_HARDENING_AUDIT.md).
 
-## Active v1.0 RC1 Preparation
+## Verified v1.0 RC1 Repository Preparation
 
-Draft PR #27 prepares the first stable-release candidate without weakening the evidence boundary.
+PR #27 prepared the first stable-release candidate without weakening the evidence boundary and is now merged.
 
 Repository-side RC work includes:
 
@@ -209,13 +212,26 @@ Repository-side RC work includes:
 - `scripts/verify_release_outputs.py` and unit tests;
 - release APK/AAB/R8 structure/version checks;
 - SHA-256 release evidence;
+- optional mandatory APK/AAB signature verification for protected signed-release validation;
 - optional release signing through environment-backed secrets;
 - fail-closed behavior for incomplete signing configuration;
 - production signing handbook;
 - Play Store listing/privacy/release preparation;
-- real-device/manual RC evidence worksheet;
+- detailed real-device/manual RC evidence worksheet and concise evidence ledger;
+- canonical stable release-notes source;
 - generated GitHub release-note categories;
 - GitHub repository-protection/settings checklist.
+
+Exact RC1 repository verification:
+
+- final PR #27 head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`;
+- Android CI run #635 / `32151771317` — green;
+- API-35 instrumentation run #188 / `32151771297` — green;
+- unsigned release artifact ID `9330415157`, GitHub digest `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`;
+- unsigned APK SHA-256 `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7`;
+- release AAB SHA-256 `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd`;
+- R8 mapping SHA-256 `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac`;
+- PR #27 merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
 
 Still requiring actual real-world evidence before stable v1.0:
 
@@ -224,13 +240,14 @@ Still requiring actual real-world evidence before stable v1.0:
 - high-contrast and reduced-motion device review;
 - measured startup/frame/memory/ANR traces;
 - process-death/lifecycle manual scenarios;
+- GitHub `main` protection/ruleset administration;
 - secure production/upload-key signing;
-- signed production artifact installation/signature verification;
+- signed production artifact installation/signature verification and expected certificate confirmation;
 - final R8 smoke QA on signed artifacts;
 - real store/repository screenshots, listing text, privacy declarations and release assets;
-- final stable version code, tag and publication.
+- final stable version code, `versionName = 1.0.0`, fresh stable exact-head CI/API-35 verification, SHIP decision, tag and publication.
 
-See [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md) and issue #5.
+See [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md), [docs/V1_RELEASE_EVIDENCE.md](docs/V1_RELEASE_EVIDENCE.md), [docs/V1_RELEASE_CANDIDATE.md](docs/V1_RELEASE_CANDIDATE.md), and issue #5.
 
 ## Technology Stack
 
@@ -313,7 +330,7 @@ python scripts/verify_translations.py
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-The v1.0 RC CI additionally verifies the built release outputs through `scripts/verify_release_outputs.py` and records SHA-256 evidence. More build types, executable outputs, tooling requirements, signing rules, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
+The v1.0 RC CI verifies the built release outputs through `scripts/verify_release_outputs.py` and records SHA-256 evidence. Protected signed-release validation can additionally run the same verifier with `--require-signatures`. More build types, executable outputs, tooling requirements, signing rules, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
 
 ## Testing
 
@@ -338,13 +355,12 @@ Important suites include:
 
 GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the exact final head when those gates are required for the milestone.
 
-Latest fully verified merged milestone evidence:
+Latest fully verified merged repository-side release evidence:
 
-- v0.9 final head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`;
-- Android CI `32139568718`;
-- API-35 connected instrumentation `32139568591`.
-
-PR #27 must establish its own exact-final-head evidence before the RC preparation can be merged.
+- v1.0 RC1 preparation head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`;
+- Android CI `32151771317`;
+- API-35 connected instrumentation `32151771297`;
+- merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
 
 See [docs/TESTING.md](docs/TESTING.md) and [docs/CI_CD.md](docs/CI_CD.md).
 
@@ -360,7 +376,7 @@ See [docs/PRIVACY.md](docs/PRIVACY.md), [docs/DATA_STORAGE.md](docs/DATA_STORAGE
 
 The project uses semantic cell descriptions, selected-state semantics, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. Structured hints add semantics for sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
 
-Source/automated accessibility hardening is part of verified v0.9. Real TalkBack and representative large-font/device validation remains a v1.0 release gate and is not claimed as completed.
+Source/automated accessibility hardening and API-35 semantics coverage are verified. Real TalkBack and representative large-font/device validation remain stable-v1.0 release gates and are not claimed as completed.
 
 See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) and [docs/V1_RELEASE_CANDIDATE.md](docs/V1_RELEASE_CANDIDATE.md).
 
