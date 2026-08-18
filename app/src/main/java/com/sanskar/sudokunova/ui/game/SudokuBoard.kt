@@ -20,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,12 @@ import com.sanskar.sudokunova.data.UserSettings
 import com.sanskar.sudokunova.engine.SudokuHint
 import com.sanskar.sudokunova.engine.SudokuBoard as EngineBoard
 import com.sanskar.sudokunova.game.GameState
+
+fun sudokuCellTestTag(row: Int, column: Int): String {
+    require(row in 0..8)
+    require(column in 0..8)
+    return "sudoku-cell-$row-$column"
+}
 
 @Composable
 fun SudokuBoardView(
@@ -237,7 +245,11 @@ private fun SudokuCell(
             .fillMaxSize()
             .background(background)
             .border(borderWidth, borderColor)
-            .semantics { contentDescription = description }
+            .testTag(sudokuCellTestTag(row, column))
+            .semantics {
+                contentDescription = description
+                this.selected = selected
+            }
             .clickable(onClick = onClick)
             .padding(2.dp),
         contentAlignment = Alignment.Center,

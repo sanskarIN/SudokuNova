@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v09_custom_enter_clues">दिए गए संकेत दर्ज करें, फिर पहेली की जाँच करें।</string>
+    <string name="v09_custom_changed">पहेली बदल गई है। खेलने से पहले फिर से जाँच करें।</string>
+    <string name="v09_custom_contradiction">संकेतों में पंक्ति, कॉलम या बॉक्स का टकराव है।</string>
+    <string name="v09_custom_need_more_clues">अद्वितीयता जाँचने से पहले और संकेत जोड़ें। मानक 9×9 सुडोकू में अद्वितीय पहेली के लिए कम से कम 17 संकेत आवश्यक होते हैं।</string>
+    <string name="v09_custom_validating">पहेली की जाँच की जा रही है…</string>
+    <string name="v09_custom_no_solution">इस पहेली का कोई मान्य समाधान नहीं है।</string>
+    <string name="v09_custom_unique_ready">पहेली मान्य है और इसका ठीक एक समाधान है। खेलने के लिए तैयार।</string>
+    <string name="v09_custom_multiple_solutions">इस पहेली के कई समाधान हैं। अद्वितीय सुडोकू के लिए और संकेत जोड़ें।</string>
+    <string name="v09_custom_solving">पहेली हल की जा रही है…</string>
+    <string name="v09_custom_no_solution_available">इस पहेली के लिए कोई समाधान उपलब्ध नहीं है।</string>
+    <string name="v09_custom_solved_preview">हल किए गए ग्रिड का पूर्वावलोकन। Play puzzle के लिए मूल पहेली सुरक्षित रखी गई है।</string>
+</resources>

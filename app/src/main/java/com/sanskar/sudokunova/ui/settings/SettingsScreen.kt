@@ -1,11 +1,14 @@
 package com.sanskar.sudokunova.ui.settings
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -28,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.InputMode
@@ -76,7 +81,10 @@ fun SettingsScreen(
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.v04_theme)) },
                     supportingContent = {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
                             AppTheme.entries.forEach { theme ->
                                 FilterChip(
                                     selected = settings.theme == theme,
@@ -98,7 +106,10 @@ fun SettingsScreen(
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.v06_input_mode)) },
                     supportingContent = {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
                             FilterChip(
                                 selected = settings.inputMode == InputMode.CELL_FIRST,
                                 onClick = { onInputMode(InputMode.CELL_FIRST) },
@@ -123,7 +134,10 @@ fun SettingsScreen(
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.v04_mistake_limit)) },
                     supportingContent = {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
                             listOf(0 to stringResource(R.string.v04_unlimited), 3 to "3", 5 to "5").forEach { (value, label) ->
                                 FilterChip(
                                     selected = settings.mistakeLimit == value,
@@ -194,9 +208,16 @@ private fun ToggleSetting(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     ListItem(
+        modifier = Modifier
+            .semantics(mergeDescendants = true) {}
+            .toggleable(
+                value = checked,
+                role = Role.Switch,
+                onValueChange = onCheckedChange,
+            ),
         headlineContent = { Text(title) },
         supportingContent = { Text(description) },
-        trailingContent = { Switch(checked = checked, onCheckedChange = onCheckedChange) },
+        trailingContent = { Switch(checked = checked, onCheckedChange = null) },
     )
 }
 

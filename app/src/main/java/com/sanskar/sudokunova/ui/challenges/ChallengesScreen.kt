@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.ui.challenges
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -121,7 +122,7 @@ private fun ChallengesScreen(
                 ChallengeEntryCard(entry = entry, onPlay = { onPlay(entry.descriptor) })
             }
 
-            item { Text("", modifier = Modifier.padding(bottom = 16.dp)) }
+            item { Spacer(modifier = Modifier.padding(bottom = 16.dp)) }
         }
     }
 }
@@ -138,35 +139,31 @@ private fun ChallengeEntryCard(
     val result = entry.result
 
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        when {
-                            entry.current && entry.descriptor.type == ChallengeType.DAILY ->
-                                stringResource(R.string.v06_today)
-                            entry.current -> stringResource(R.string.v06_this_week)
-                            entry.descriptor.type == ChallengeType.WEEKLY ->
-                                stringResource(R.string.v06_week_label, dateLabel)
-                            else -> dateLabel
-                        },
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(
-                        localizedDifficultyLabel(entry.descriptor.difficulty),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(
-                    if (result != null) stringResource(R.string.v06_completed)
-                    else stringResource(R.string.v06_not_completed),
-                    color = if (result != null) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                when {
+                    entry.current && entry.descriptor.type == ChallengeType.DAILY ->
+                        stringResource(R.string.v06_today)
+                    entry.current -> stringResource(R.string.v06_this_week)
+                    entry.descriptor.type == ChallengeType.WEEKLY ->
+                        stringResource(R.string.v06_week_label, dateLabel)
+                    else -> dateLabel
+                },
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                localizedDifficultyLabel(entry.descriptor.difficulty),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                if (result != null) stringResource(R.string.v06_completed)
+                else stringResource(R.string.v06_not_completed),
+                color = if (result != null) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             if (result != null) {
                 Text(
@@ -177,13 +174,13 @@ private fun ChallengeEntryCard(
                         result.mistakes,
                         result.hintsUsed,
                     ),
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
 
             Button(
                 onClick = onPlay,
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
             ) {
                 Text(
                     if (result == null) stringResource(R.string.v06_play_challenge)

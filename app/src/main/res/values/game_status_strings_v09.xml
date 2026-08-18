@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v09_game_abandoned">Game ended. Start a new puzzle from Home.</string>
+    <string name="v09_game_custom_contradiction">The custom puzzle contains contradictory clues.</string>
+    <string name="v09_game_custom_not_unique">The custom puzzle must have exactly one solution before it can be played.</string>
+    <string name="v09_game_creation_failed">The puzzle could not be prepared. Start a new puzzle and try again.</string>
+</resources>

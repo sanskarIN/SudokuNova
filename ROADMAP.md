@@ -133,30 +133,60 @@ Status: **Completed**
 
 ## v0.9 — Release Hardening
 
-Status: **In progress — issue #23**
+Status: **In progress — issue #23 / draft PR #25**
 
 Focused issue: `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`.
 
-Planned release-hardening work:
+Release-hardening work:
 
-- [ ] Full automated regression-suite audit
-- [ ] Accessibility semantics and focus-order audit
-- [ ] Large-font and adaptive-layout QA
-- [ ] High-contrast and reduced-motion audit
-- [ ] Performance and memory audit
-- [ ] Solver/generator/teaching performance regression coverage
-- [ ] Main-thread I/O/CPU audit
-- [ ] Room/DataStore integrity and migration audit
-- [ ] Import/export/backup security and privacy audit
-- [ ] Dependency and license audit
-- [ ] Release R8/shrinking verification
-- [ ] Debug APK, release APK, and release AAB verification
-- [ ] Device QA matrix and manual release checklist
-- [ ] Crash/ANR and lifecycle restoration hardening
-- [ ] UI/store screenshot readiness
-- [ ] Documentation accuracy audit
+- [x] Audit automated regression suites and add bounded-backup edge coverage
+- [x] Complete source-level accessibility semantics review across the current major screens
+- [x] Complete source-level selected-state/large-text accessibility hardening across the main current screens
+- [x] Make settings toggle rows single semantic switch targets and prevent chip-group large-text overflow
+- [x] Harden Game/History/Learn/Custom/Challenges/Saved/Share/Transfer action layouts against obvious large-text collisions
+- [x] Expose Number-first digit selection and Notes mode semantically
+- [ ] Complete manual TalkBack focus-order traversal on representative device/emulator
+- [ ] Complete large-font and adaptive-layout manual QA
+- [ ] Complete high-contrast and reduced-motion manual QA
+- [x] Complete source-level main-thread/performance review and preserve deterministic engine benchmark/corpus coverage
+- [ ] Complete measured startup/frame/memory/ANR device audit
+- [x] Move game hint computation off the main thread with stale-result protection
+- [x] Move Custom Puzzle uniqueness/solve work off the main thread with cancellation and stale-board protection
+- [x] Harden puzzle-code validation against stale asynchronous results
+- [x] Preserve existing solver/generator/teaching deterministic regression coverage
+- [x] Re-audit backup file I/O boundary and preserve bounded off-main-thread architecture
+- [x] Audit Room schema/index/migration configuration without adding a speculative migration
+- [x] Audit import/export/backup security and privacy boundaries
+- [x] Audit manifest runtime permission/export surface
+- [x] Add repository secret/signing-material CI guard
+- [x] Audit direct dependency/license notice coverage
+- [x] Add release R8/shrinking verification to CI
+- [x] Add debug APK, release APK, and release AAB verification tasks to CI
+- [x] Add release-signing guidance that keeps production credentials outside Git
+- [x] Add device QA matrix and manual release checklist without fabricating device results
+- [x] Complete source-level navigation/lifecycle/restoration and crash/ANR-sensitive path review
+- [ ] Complete manual process-death/lifecycle restoration QA
+- [x] Add UI/store screenshot-readiness checklist
+- [x] Add CODEOWNERS and GitHub funding metadata to complete public repository governance/support surfaces
+- [x] Audit final repository for TODO/FIXME/NotImplemented/debug-print placeholders
+- [x] Complete documentation accuracy audit for implemented v0.9 source/tooling changes
+- [x] Expose selected Sudoku game-cell state through accessibility semantics
+- [x] Add stable Sudoku game-cell semantic tags
+- [x] Add connected regression coverage for selected game-cell semantics
+- [x] Expose Custom Puzzle editor cell descriptions/selected/conflict semantics
+- [x] Add stable Custom Puzzle editor cell semantic tags and connected selected-state regression
+- [x] Move Custom Puzzle status/error presentation to paired English/Hindi resources
+- [x] Move game-load/abandon error presentation to typed localized resources
+- [x] Remove hardcoded English grammar from the game completion summary
+- [x] Align the in-app English/Hindi privacy summary with current DataStore, Room, and explicit transfer/backup behavior
+- [x] Repair connected Custom Puzzle visibility coverage for the intentional adaptive full-width action layout
+- [x] Migrate connected Compose activity rule usage to the non-deprecated v2 API
 - [ ] Final standard CI green on exact clean head
 - [ ] Final API-35 connected gate green on exact clean head
+- [ ] Mark PR #25 ready only after release-blocking audits and exact-head gates are complete
+- [ ] Merge PR #25 and close issue #23 only after verified evidence exists
+
+Manual/device rows intentionally remain unchecked until those checks are actually performed; the repository must not treat source review as equivalent to physical-device or assistive-technology evidence.
 
 ## v1.0 — Stable Classic Sudoku Release
 
@@ -179,37 +209,4 @@ Target scope:
 
 ## v1.x — Carefully Selected Extensions
 
-Potential additions after Classic 9×9 quality is stable:
-
-- Mini 4×4 / 6×6
-- Diagonal Sudoku
-- Hyper/Windoku
-- Killer Sudoku
-- Jigsaw/Irregular Sudoku
-- Additional board sizes where UX remains practical
-- Home-screen Daily Challenge widget
-- Optional reminders, default off
-
-## v2.0+ — Longer-Term Possibilities
-
-Only if they can be implemented without compromising privacy or Android quality:
-
-- Larger/advanced variants including Samurai
-- Optional cloud backup/sync
-- Cross-device progress
-- Community puzzle sharing with moderation/safety design
-- Web/desktop/iOS clients reusing platform-independent Sudoku logic
-- Tournament/time-challenge concepts
-
-## Project Principles
-
-- No ads by default in the open-source base.
-- No account required for core play or learning progress.
-- No unnecessary sensitive permissions.
-- No feature is marked complete unless its implementation exists.
-- Advanced solving techniques require deterministic evidence and correctness tests.
-- Advanced variants do not block a high-quality Classic release.
-
-☕ Support continued open-source development: https://buymeacoffee.com/sanskarIN
-
-**Made by the Sanskar**
+Possible post-1.0 work should be selected for quality and maintainability rather than feature count. Candidates may include additional Sudoku variants, expanded learning techniques, richer statistics, optional sync/export integrations, or additional platform clients only after Classic Sudoku remains stable and the privacy/security model is explicit.

@@ -1,114 +1,351 @@
-# Accessibility
+# SudokuNova Accessibility
 
-Accessibility is a release requirement for SudokuNova, not an optional polish step.
+Accessibility is a release requirement for SudokuNova, not optional polish. Automated semantics are required where practical, but they do not replace real assistive-technology, font-scaling, contrast, keyboard, and device testing.
 
-## Implemented Foundation
+## Accessibility Principles
 
-Current code includes:
+SudokuNova aims to ensure that:
 
-- Semantic descriptions for Sudoku cells including row, column, value, original-clue state, and conflict state.
-- Teaching-hint semantics for source cells, target cells, final placement targets, and exact candidate eliminations.
-- Material components for controls where practical.
-- Responsive layouts for narrow and wider screens.
-- Light/dark/dynamic-color support.
-- High-contrast and reduced-motion preference foundations.
-- Pause state represented with readable text rather than visual effect alone.
-- Hardware-keyboard movement, number entry, erase, notes, and hint shortcuts on the game board.
+- game state is not communicated only by color;
+- interactive controls have meaningful semantic labels/roles;
+- Sudoku cells expose enough context to solve/navigate with assistive technology;
+- selected/conflict/clue/hint states are represented semantically;
+- large text does not make critical content unreachable;
+- high-contrast users can distinguish important board states;
+- non-essential motion respects the reduced-motion preference boundary;
+- hardware-keyboard users can operate the game board;
+- dialogs and scrolling content have logical focus/navigation behavior.
 
-These foundations do not replace real assistive-technology testing.
+## Sudoku Cell Semantics
 
-## Required Release Checks
+Interactive Sudoku cells expose localized descriptions derived from the current state.
 
-### TalkBack
+Semantic information can include:
 
-Verify:
+- row number;
+- column number;
+- empty/value state;
+- original clue state;
+- conflict/mistake state;
+- selected state;
+- teaching source state;
+- teaching target state;
+- candidate elimination evidence;
+- final hint placement/value.
 
-- Every interactive cell is discoverable.
-- Cell descriptions are concise but sufficient.
-- Original clues are distinguishable from editable cells.
-- Conflict/error state is announced.
-- Teaching-hint source/target roles are announced when a hint is open.
-- Candidate elimination targets announce which candidates should be removed.
-- The final hint placement announces both the target cell and value.
-- Number pad and game actions have clear labels.
-- Focus order remains logical.
-- Dialogs move focus correctly and return it appropriately.
+The v0.9 board also exposes Compose selected semantics, so the selected cell is not represented only by its visual border/background.
 
-### Font Scaling
+Stable per-cell test tags identify board coordinates for deterministic connected regression tests without replacing user-facing semantics.
 
-Test large system font sizes. Text should not overlap or make critical controls unreachable. Board cells should prioritize value readability and avoid scaling note text beyond what the grid can support.
+## Custom Puzzle Editor Semantics
 
-The v0.8 Learn screen is scrollable and keeps lesson/practice actions inside responsive cards so technique content remains reachable with larger text.
+Custom Puzzle editor cells now follow the same basic semantic contract as gameplay cells where applicable:
 
-### Contrast
+- localized row/column coordinates;
+- empty/value state;
+- selected state;
+- conflict state;
+- stable per-cell test tags for deterministic connected coverage.
 
-Check:
+The connected test suite verifies selected-state transitions in the editor. Manual TalkBack traversal and verbosity still require real QA.
 
-- Clues vs. user entries
-- Selection vs. peer highlight
-- Error state
-- Notes
-- Teaching source vs. teaching target vs. placement target
-- Disabled actions
-- Light and dark themes
-- Dynamic colors
-- High-contrast preference
+## Original vs Editable Cells
 
-Do not communicate correctness, error, or teaching evidence only by color. Teaching evidence is duplicated in content descriptions and localized hint text.
+Original clues must remain distinguishable from editable cells.
 
-### Touch Targets
+The distinction is represented in the content description and by visual styling. Editing actions must remain disabled for original clues regardless of touch or keyboard input.
 
-Controls should aim for Android-recommended touch target sizing. Dense Sudoku cells are constrained by the board itself; surrounding actions must remain comfortably tappable.
+## Conflict / Mistake State
 
-### Motion
+A conflict/error state must not be represented only by error color.
 
-Non-essential animations should respect reduced-motion preference when animation is expanded in future milestones.
+Cell semantics append a localized conflict description. Visual error presentation keeps priority over ordinary selection/peer/hint emphasis so a teaching state does not hide an error.
 
-### Keyboard / Large Screens
+## Hint / Teaching Semantics
 
-The game board supports hardware-keyboard navigation and actions. Verify focus visibility, arrow behavior, number input, erase, notes toggling, and hint shortcuts on tablet/Chromebook-sized windows.
+A `SudokuHint` can contain structured teaching steps. The board derives the union of evidence needed for accessible presentation.
 
-## v0.8 Teaching Evidence Semantics
-
-When a `SudokuHint` is present, `SudokuBoardView` derives the union of evidence from its teaching chain.
-
-For each affected cell, semantics can announce one or more of:
+Affected cells can announce:
 
 - teaching source;
 - teaching target;
-- candidate elimination target and candidate list;
-- final hint placement target and value.
+- candidate elimination target and exact candidate list;
+- final placement target and value.
 
-Visual emphasis uses Material theme roles and borders, but semantic descriptions remain the authoritative non-color representation. Conflicts keep presentation priority over hint emphasis so an error is not visually hidden by a teaching state.
+Reveal fallback may announce a final placement target/value but must not fabricate logical source cells or candidate eliminations.
 
-Reveal fallback has a final placement target but no fabricated logical source cells or eliminations.
+## Selected State Regression Coverage
 
-## Issue Reporting
+The v0.9 connected Compose suite includes board-cell and Custom Puzzle editor semantics regressions that target stable cell tags and check selected-state behavior.
 
-Use the Accessibility issue template in `.github/ISSUE_TEMPLATE/accessibility.yml` with device, Android version, assistive technology, barrier description, and reproduction steps.
+Automated checks are useful for preventing accidental semantics removal, but they do not prove the quality of TalkBack navigation order/verbosity on a real device.
 
-## Release Checklist
+## Number Pad / Game Actions
 
-Before stable release verify at minimum:
+Visible game actions should have meaningful accessible labels and remain reachable with touch exploration/focus.
 
-- TalkBack on a representative device/emulator
-- 200% font scaling where practical
-- Light/dark contrast
-- High-contrast mode
-- Reduced motion
-- Portrait and landscape/window resize where supported
-- Hardware-keyboard operation on a large-screen target
-- Standard phone and tablet
-- Minimum supported Android version
-- Hint evidence with both a direct placement and an elimination chain
-- Learn lesson/practice dialogs
+Important actions include:
 
-## v0.4 High-Contrast and Localized Semantics
+- digits 1–9;
+- Notes;
+- Erase;
+- Undo;
+- Redo;
+- Hint;
+- Pause/Resume;
+- Restart/end actions where shown.
 
-The High Contrast setting affects the playable Sudoku board. It increases major/minor grid strength, emphasizes selected/conflict borders, strengthens peer-cell distinction, and increases note emphasis.
+In Number-first mode, the persistent selected digit exposes semantic selected state. Notes mode also exposes selected state, so neither mode depends only on button color.
 
-Sudoku cell semantic descriptions are Android resources and have English/Hindi variants. They announce row, column, empty/value state, original clue state, and conflict state without relying on color alone.
+The main game action rows can horizontally scroll at larger text sizes instead of forcing all localized labels into one fixed-width row.
 
-## Verification
+Icon-only buttons require content descriptions.
 
-The connected Android workflow runs Compose instrumentation on API 35. It is a regression gate, not a substitute for manual TalkBack testing. Accessibility regressions discovered manually should receive dedicated tests when practical.
+## Settings Semantics
+
+Settings toggle rows are exposed as one merged switch target. The row owns the switch role/state/action and the trailing Material switch is presentation-only, avoiding two independently focusable controls for the same setting.
+
+Theme, input-mode, and mistake-limit chip groups can horizontally scroll so larger/localized labels remain reachable instead of overflowing a single row.
+
+## Large-Text Source Hardening
+
+The v0.9 source audit removed several obvious fixed-width assumptions before manual 200% font QA:
+
+- Game action rows can horizontally scroll.
+- Settings chip groups can horizontally scroll.
+- History filters, metrics, and badges can horizontally scroll.
+- Learn Study/Practice actions are stacked at full width.
+- Custom Puzzle text actions are stacked at full width.
+- Puzzle-code Copy/Share actions are stacked at full width.
+- Backup & Transfer Copy/Share/Export/Import actions are stacked at full width.
+- Challenge title/difficulty/status information is stacked instead of competing in one row.
+- Empty `Text("")` layout placeholders were removed from Saved Puzzles/Challenges/History/Learn where found.
+
+These are source-level defenses against obvious clipping/collision. They are **not** evidence that every screen passes 200% font scale on every target device.
+
+## Dialogs
+
+Dialog content must remain:
+
+- readable;
+- focusable in logical order;
+- dismissible using a clearly labeled action;
+- reachable at large font sizes;
+- safe for screen-reader traversal.
+
+Important dialog families include:
+
+- hint explanations;
+- Learn lessons;
+- technique practice/results;
+- destructive/reset confirmations;
+- validation/transfer feedback.
+
+Release QA should verify that focus moves into the dialog and returns sensibly after dismissal.
+
+## Learn Accessibility
+
+The Learn screen uses scrollable content and stable technique actions.
+
+Accessibility review should cover:
+
+- overall progress text;
+- technique titles;
+- mastery percentages/progress indicators;
+- Study action;
+- Practice action;
+- practice question/evidence;
+- answer choices;
+- correct/incorrect result;
+- reset-learning confirmation.
+
+Study/Practice controls are full-width stacked actions to avoid predictable large-font collisions.
+
+Off-screen LazyColumn items must remain reachable by accessibility scrolling; automated tests use stable tags/scroll-to-index only for deterministic testing.
+
+## Font Scaling
+
+Test large system font sizes, including 200% where practical.
+
+Requirements:
+
+- no essential action is permanently clipped/unreachable;
+- cards/lists remain scrollable;
+- dialog content remains reachable;
+- labels may wrap rather than overlap;
+- Sudoku solved values remain readable;
+- note text remains legible without overflowing the fixed grid;
+- top bars/navigation controls remain usable.
+
+The Sudoku board is geometrically constrained, so board note typography may need bounded sizing independent from ordinary body-text scaling.
+
+## Contrast
+
+Review contrast/state differentiation for:
+
+- original clues vs user entries;
+- selected cell;
+- peers;
+- same-number highlight;
+- conflict/error;
+- notes;
+- teaching source;
+- teaching target;
+- final hint placement;
+- disabled controls;
+- light theme;
+- dark theme;
+- dynamic color;
+- High Contrast preference.
+
+High Contrast strengthens grid lines, selected/conflict borders, peer distinction and note emphasis.
+
+Do not rely on a single hue difference for correctness/error/teaching meaning; semantic/text descriptions remain the non-color path.
+
+## Motion
+
+The Reduced Motion preference is the project boundary for non-essential animations.
+
+New animation work should:
+
+- check the preference;
+- avoid making information depend on animation;
+- avoid long/repeated decorative motion when reduced motion is enabled;
+- keep state transitions understandable without motion.
+
+## Touch Targets
+
+Controls outside the dense Sudoku grid should aim for Android-recommended touch target sizing.
+
+Sudoku cells are constrained by fitting a 9×9 board on the screen. Within that constraint:
+
+- the whole cell remains tappable;
+- text/notes should not create tiny separate tap targets;
+- surrounding controls should not be unnecessarily dense.
+
+Full-width stacked actions are preferred when two long localized labels would otherwise be forced into small half-width controls.
+
+## Hardware Keyboard
+
+The game supports keyboard navigation/actions, including arrows, digits, erase, Notes, and Hint pathways.
+
+Manual QA should verify:
+
+- visible selected state;
+- semantic selected state;
+- arrow movement bounds;
+- digit input;
+- clue protection;
+- erase;
+- Notes toggle;
+- Hint;
+- no input/focus trap.
+
+See `KEYBOARD_SHORTCUTS.md`.
+
+## Large Screens / Resizable Windows
+
+Verify phone and larger/tablet-style widths.
+
+Important checks:
+
+- board does not grow beyond intended usable maximum;
+- controls remain reachable;
+- lists/cards use available width sensibly;
+- orientation/window resize does not lose state;
+- hardware keyboard focus/input remains usable.
+
+## Themes / Dynamic Color
+
+Accessibility must be checked across:
+
+- Light;
+- Dark;
+- System;
+- Dynamic Color where supported;
+- High Contrast on/off.
+
+Dynamic Color can alter actual color relationships, so visual review is still required even when Material semantic color roles are used.
+
+## Localization and Accessibility
+
+Cell/hint/action semantics are player-facing text and belong in Android resources.
+
+English and Hindi maintained resources must stay in parity. A new accessibility description is incomplete until both maintained locales are updated and `verify_translations.py` passes.
+
+The in-app privacy summary is also maintained in both locales and reflects the current local DataStore/Room + explicit transfer/backup behavior rather than an older DataStore-only state.
+
+## Automated Accessibility-Related Tests
+
+Automated coverage can verify deterministic properties such as:
+
+- semantic selected state;
+- content descriptions;
+- visible tagged controls;
+- dialog/result presence;
+- Learn flow accessibility-relevant semantics.
+
+The connected API-35 workflow is a regression gate, not a full accessibility certification.
+
+## Required Manual Release Checks
+
+Before a stable release, verify at minimum:
+
+- [ ] TalkBack on a representative device/emulator;
+- [ ] Home navigation;
+- [ ] Sudoku cell traversal;
+- [ ] clue/editable distinction;
+- [ ] conflict announcement;
+- [ ] selected-state behavior;
+- [ ] hint source/target/elimination/placement announcements;
+- [ ] direct-placement hint;
+- [ ] multi-step elimination-chain hint;
+- [ ] Reveal fallback;
+- [ ] Number Pad/actions and selected digit state;
+- [ ] Notes selected-state announcement;
+- [ ] Settings switch rows;
+- [ ] Custom Puzzle editor cell traversal;
+- [ ] dialog focus/return behavior;
+- [ ] Learn lesson/practice;
+- [ ] 200% font scaling where practical;
+- [ ] light/dark contrast;
+- [ ] dynamic color;
+- [ ] High Contrast;
+- [ ] Reduced Motion;
+- [ ] narrow phone;
+- [ ] tablet/large window;
+- [ ] hardware keyboard;
+- [ ] minimum supported Android target.
+
+Do not mark these complete from code inspection alone.
+
+## Accessibility Bug Reporting
+
+Use the repository accessibility issue template when available and include:
+
+- device/emulator;
+- Android version;
+- assistive technology and version/settings;
+- screen/action;
+- expected vs actual behavior;
+- whether the problem blocks task completion;
+- reproduction steps;
+- screenshot/screen recording only when safe and useful.
+
+For accessibility defects involving sensitive/security information, follow the root security reporting policy instead of posting private details publicly.
+
+## Contributor Rule
+
+A UI feature is not complete if it introduces an accessible regression without a justified plan/fix.
+
+When adding a new interactive feature, review:
+
+1. semantic label/role/state;
+2. focus order;
+3. large-font layout;
+4. contrast/non-color communication;
+5. reduced-motion behavior;
+6. keyboard support where applicable;
+7. English/Hindi accessibility strings;
+8. automated regression coverage where reliable;
+9. release manual QA impact.

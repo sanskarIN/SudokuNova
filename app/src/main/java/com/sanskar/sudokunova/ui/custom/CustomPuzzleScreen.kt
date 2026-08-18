@@ -34,7 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +47,12 @@ import com.sanskar.sudokunova.data.history.HistoryRepository
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.SudokuBoard
 import kotlinx.coroutines.launch
+
+fun customPuzzleCellTestTag(row: Int, column: Int): String {
+    require(row in 0..8)
+    require(column in 0..8)
+    return "custom-sudoku-cell-$row-$column"
+}
 
 @Composable
 fun CustomPuzzleRoute(
@@ -126,7 +136,7 @@ private fun CustomPuzzleScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(state.message, modifier = Modifier.fillMaxWidth())
+            Text(localizedCustomPuzzleMessage(state.message), modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(12.dp))
             EditorBoard(
                 board = state.displayedBoard,
@@ -154,30 +164,36 @@ private fun CustomPuzzleScreen(
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_erase)) }
-                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_clear)) }
-                Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_validate)) }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }
+                OutlinedButton(onClick = onErase, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_erase))
+                }
+                OutlinedButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_clear))
+                }
+                Button(onClick = onValidate, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_validate))
+                }
+                OutlinedButton(onClick = onSolve, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_solve))
+                }
                 OutlinedButton(
                     onClick = onSave,
                     enabled = state.isUnique,
-                    modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.v05_save_puzzle)) }
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.v05_save_puzzle))
+                }
                 Button(
                     onClick = onPlay,
                     enabled = state.isUnique,
-                    modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.v04_play_puzzle)) }
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.v04_play_puzzle))
+                }
             }
             if (saveStatus != null) {
                 Text(
@@ -189,6 +205,21 @@ private fun CustomPuzzleScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+@Composable
+private fun localizedCustomPuzzleMessage(message: CustomPuzzleMessage): String = when (message) {
+    CustomPuzzleMessage.ENTER_CLUES -> stringResource(R.string.v09_custom_enter_clues)
+    CustomPuzzleMessage.CHANGED -> stringResource(R.string.v09_custom_changed)
+    CustomPuzzleMessage.CONTRADICTION -> stringResource(R.string.v09_custom_contradiction)
+    CustomPuzzleMessage.NEED_MORE_CLUES -> stringResource(R.string.v09_custom_need_more_clues)
+    CustomPuzzleMessage.VALIDATING -> stringResource(R.string.v09_custom_validating)
+    CustomPuzzleMessage.NO_SOLUTION -> stringResource(R.string.v09_custom_no_solution)
+    CustomPuzzleMessage.UNIQUE_READY -> stringResource(R.string.v09_custom_unique_ready)
+    CustomPuzzleMessage.MULTIPLE_SOLUTIONS -> stringResource(R.string.v09_custom_multiple_solutions)
+    CustomPuzzleMessage.SOLVING -> stringResource(R.string.v09_custom_solving)
+    CustomPuzzleMessage.NO_SOLUTION_AVAILABLE -> stringResource(R.string.v09_custom_no_solution_available)
+    CustomPuzzleMessage.SOLVED_PREVIEW -> stringResource(R.string.v09_custom_solved_preview)
 }
 
 @Composable
@@ -209,6 +240,13 @@ private fun EditorBoard(
                     val value = board.valueAt(index)
                     val selected = index == selectedIndex
                     val conflict = board.hasConflict(index)
+                    val baseDescription = if (value == SudokuBoard.EMPTY) {
+                        stringResource(R.string.v04_cell_empty, row + 1, column + 1)
+                    } else {
+                        stringResource(R.string.v04_cell_value, row + 1, column + 1, value)
+                    }
+                    val conflictSuffix = if (conflict) stringResource(R.string.v04_conflict_suffix) else ""
+                    val description = baseDescription + conflictSuffix
                     Surface(
                         modifier = Modifier
                             .weight(1f)
@@ -218,7 +256,12 @@ private fun EditorBoard(
                                 top = if (row % 3 == 0) 1.5.dp else 0.5.dp,
                                 end = if (column == 8) 1.5.dp else 0.5.dp,
                                 bottom = if (row == 8) 1.5.dp else 0.5.dp,
-                            ),
+                            )
+                            .testTag(customPuzzleCellTestTag(row, column))
+                            .semantics {
+                                contentDescription = description
+                                this.selected = selected
+                            },
                         onClick = { onSelect(index) },
                         color = when {
                             conflict -> MaterialTheme.colorScheme.errorContainer

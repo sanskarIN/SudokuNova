@@ -1,0 +1,9 @@
+# Default ownership for SudokuNova.
+* @sanskarIN
+
+# Release, security, and automation surfaces.
+/.github/ @sanskarIN
+/SECURITY.md @sanskarIN
+/docs/ @sanskarIN
+/app/ @sanskarIN
+/sudoku-engine/ @sanskarIN

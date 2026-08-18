@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.ui.game
 import android.view.SoundEffectConstants
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -55,6 +56,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -248,8 +251,13 @@ private fun GameScreen(
                         title = { Text(stringResource(R.string.v04_puzzle_complete)) },
                         text = {
                             Text(
-                                "${localizedDifficultyLabel(game.difficulty)} · ${formatTime(game.elapsedSeconds)} · " +
-                                    "${game.mistakes} mistake(s) · ${game.hintsUsed} hint(s)",
+                                stringResource(
+                                    R.string.v04_completion_summary,
+                                    localizedDifficultyLabel(game.difficulty),
+                                    formatTime(game.elapsedSeconds),
+                                    game.mistakes,
+                                    game.hintsUsed,
+                                ),
                             )
                         },
                         confirmButton = {
@@ -471,8 +479,10 @@ private fun ControlsPanel(
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             ActionButton(stringResource(R.string.v04_undo), Icons.AutoMirrored.Filled.Undo, onUndo)
             ActionButton(stringResource(R.string.v04_redo), Icons.AutoMirrored.Filled.Redo, onRedo)
@@ -490,8 +500,10 @@ private fun ControlsPanel(
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             ActionButton(stringResource(R.string.v04_hint), Icons.Default.Lightbulb, onHint)
             ActionButton(
@@ -526,10 +538,16 @@ private fun NumberPad(
     ) {
         (1..9).forEach { number ->
             val selected = persistentSelection && selectedNumber == number
+            val selectionModifier = if (persistentSelection) {
+                Modifier.semantics { this.selected = selected }
+            } else {
+                Modifier
+            }
             Surface(
                 modifier = Modifier
                     .weight(1f)
                     .height(52.dp)
+                    .then(selectionModifier)
                     .clickable(role = Role.Button) { onNumber(number) },
                 shape = MaterialTheme.shapes.medium,
                 color = if (selected) {
@@ -556,12 +574,16 @@ private fun ActionButton(
     label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit,
-    selected: Boolean = false,
+    selected: Boolean? = null,
 ) {
+    val selectionModifier = selected?.let { isSelected ->
+        Modifier.semantics { this.selected = isSelected }
+    } ?: Modifier
     Surface(
+        modifier = selectionModifier,
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
-        color = if (selected) {
+        color = if (selected == true) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.surfaceVariant

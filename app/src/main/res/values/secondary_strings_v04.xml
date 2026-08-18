@@ -7,7 +7,7 @@
     <string name="v04_business_email_one">Business: sanskarin@outlook.in</string>
     <string name="v04_business_email_two">Business: sanskarin.business@gmail.com</string>
     <string name="v04_support_email">Support: supportramsandesh@gmail.com</string>
-    <string name="v04_privacy_summary">Privacy: SudokuNova stores settings, active game state, and gameplay statistics locally using Android DataStore. You can reset statistics from Settings. No gameplay data is transmitted by the base application.</string>
+    <string name="v04_privacy_summary">Privacy: SudokuNova stores settings, active-game state, statistics, learning progress, History, Saved Puzzles, and challenge records locally using Android DataStore and Room. The base app has no account, ads, analytics, or SudokuNova cloud backend. Sharing, document export/import, and backup/restore happen only after explicit user actions through Android system surfaces.</string>
 
     <string name="v04_first_puzzle">First Puzzle</string>
     <string name="v04_first_puzzle_desc">Complete your first puzzle.</string>

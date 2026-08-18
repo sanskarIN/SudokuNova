@@ -35,11 +35,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
+enum class GameError {
+    ABANDONED,
+    CUSTOM_CONTRADICTION,
+    CUSTOM_NOT_UNIQUE,
+    CREATION_FAILED,
+}
+
 sealed interface GameScreenState {
     data object Loading : GameScreenState
     data class Ready(val game: GameState) : GameScreenState
-    data class Error(val message: String) : GameScreenState
+    data class Error(val error: GameError) : GameScreenState
 }
+
+private class GameLoadException(val gameError: GameError) : IllegalArgumentException()
 
 class GameViewModel(
     application: Application,
@@ -83,6 +92,7 @@ class GameViewModel(
     private val undoStack = ArrayDeque<GameState>()
     private val redoStack = ArrayDeque<GameState>()
     private var timerJob: Job? = null
+    private var hintJob: Job? = null
     private var completionRecorded = false
 
     init {
@@ -155,20 +165,39 @@ class GameViewModel(
     }
 
     fun requestHint() {
-        val state = currentGame() ?: return
-        if (state.isPaused || state.status != GameStatus.PLAYING) return
-        val hint = hintEngine.nextHint(state.board)
-        _pendingHint.value = hint
-        if (hint != null) {
-            mutateGame { it.copy(selectedIndex = hint.cellIndex) }
+        val requestedState = currentGame() ?: return
+        if (requestedState.isPaused || requestedState.status != GameStatus.PLAYING) return
+
+        hintJob?.cancel()
+        hintJob = viewModelScope.launch {
+            val hint = withContext(Dispatchers.Default) {
+                hintEngine.nextHint(requestedState.board)
+            }
+            val current = currentGame() ?: return@launch
+            if (
+                current.board != requestedState.board ||
+                current.status != GameStatus.PLAYING ||
+                current.isPaused
+            ) {
+                return@launch
+            }
+
+            _pendingHint.value = hint
+            if (hint != null) {
+                mutateGame { it.copy(selectedIndex = hint.cellIndex) }
+            }
         }
     }
 
     fun dismissHint() {
+        hintJob?.cancel()
+        hintJob = null
         _pendingHint.value = null
     }
 
     fun applyHint() {
+        hintJob?.cancel()
+        hintJob = null
         val hint = _pendingHint.value ?: return
         val state = currentGame() ?: return
         if (state.isOriginal(hint.cellIndex) || state.status != GameStatus.PLAYING) return
@@ -190,6 +219,9 @@ class GameViewModel(
     }
 
     fun restart() {
+        hintJob?.cancel()
+        hintJob = null
+        _pendingHint.value = null
         val state = currentGame() ?: return
         pushUndo(state)
         completionRecorded = false
@@ -209,12 +241,14 @@ class GameViewModel(
     }
 
     fun abandon() {
+        hintJob?.cancel()
+        hintJob = null
         val state = currentGame() ?: return
         viewModelScope.launch {
             if (state.replayOfHistoryId == null) repository.recordGameAbandoned()
             repository.clearActiveGame()
         }
-        _uiState.value = GameScreenState.Error("Game ended. Start a new puzzle from Home.")
+        _uiState.value = GameScreenState.Error(GameError.ABANDONED)
         undoStack.clear()
         redoStack.clear()
         _pendingHint.value = null
@@ -253,8 +287,9 @@ class GameViewModel(
                 if (game.replayOfHistoryId == null) repository.recordGameStarted()
                 _uiState.value = GameScreenState.Ready(game)
                 persist(game)
-            }.onFailure { error ->
-                _uiState.value = GameScreenState.Error(error.message ?: "Puzzle generation failed.")
+            }.onFailure { throwable ->
+                val error = (throwable as? GameLoadException)?.gameError ?: GameError.CREATION_FAILED
+                _uiState.value = GameScreenState.Error(error)
             }
         }
     }
@@ -282,10 +317,10 @@ class GameViewModel(
 
     private suspend fun createCustomGame(encodedPuzzle: String): GameState = withContext(Dispatchers.Default) {
         val puzzle = SudokuBoard.parse(encodedPuzzle)
-        require(puzzle.isValid()) { "The custom puzzle contains contradictory clues." }
+        if (!puzzle.isValid()) throw GameLoadException(GameError.CUSTOM_CONTRADICTION)
         val analysis = solver.analyze(puzzle, solutionLimit = 2)
-        require(analysis.solutionCount == 1 && analysis.solution != null) {
-            "The custom puzzle must have exactly one solution before it can be played."
+        if (analysis.solutionCount != 1 || analysis.solution == null) {
+            throw GameLoadException(GameError.CUSTOM_NOT_UNIQUE)
         }
         GameState(
             puzzle = puzzle,

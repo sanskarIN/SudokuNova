@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.data.transfer
 import java.io.ByteArrayInputStream
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class BackupFileIoTest {
@@ -25,5 +26,28 @@ class BackupFileIoTest {
                 16,
             ),
         )
+    }
+
+    @Test
+    fun boundedReaderAcceptsPayloadExactlyAtLimit() {
+        val text = "12345678"
+
+        assertEquals(
+            text,
+            BackupFileIo.readBoundedUtf8(
+                ByteArrayInputStream(text.toByteArray(Charsets.UTF_8)),
+                8,
+            ),
+        )
+    }
+
+    @Test
+    fun boundedReaderRequiresPositiveLimit() {
+        assertThrows(IllegalArgumentException::class.java) {
+            BackupFileIo.readBoundedUtf8(
+                ByteArrayInputStream(byteArrayOf(1)),
+                0,
+            )
+        }
     }
 }

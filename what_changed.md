@@ -12,14 +12,64 @@
 **Final API-35 instrumentation:** run `32121249202` — GREEN  
 **Current focused milestone:** `v0.9 — Release Hardening`  
 **Current focused issue:** `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`  
+**Current v0.9 draft pull request:** `#25` — `feat: harden SudokuNova v0.9 release quality`  
+**Current v0.9 branch:** `feature/v0.9-release-hardening`  
 **Android application ID:** `in.sanskar.sudokunova`  
 **Kotlin source namespace:** `com.sanskar.sudokunova`  
-**Android versionCode:** `800`  
-**Android versionName:** `0.8.0`  
+**Android versionCode on v0.9 branch:** `900`  
+**Android versionName on v0.9 branch:** `0.9.0`  
 **License:** MIT  
 **Project commit email:** `sanskarin@outlook.in`
 
 SudokuNova now has one cumulative verified v0.1–v0.8 line on `main`. The v0.8 feature branch was 0 commits behind `main` before merge, the final PR head passed both required workflows, PR #22 was merged with the verified expected head SHA, and issue #21 was closed only after the merge completed.
+
+## v0.9 Release-Hardening Work In Progress
+
+The v0.9 branch was created from post-v0.8 `main` and is intentionally still a draft release-hardening line. No v0.9 release-quality, physical-device, accessibility, performance, or store-readiness claim is made until the corresponding evidence is actually recorded.
+
+Implemented so far on the v0.9 branch:
+
+1. Android development metadata advanced to `versionCode = 900` and `versionName = "0.9.0"`.
+2. Standard Android CI expanded to verify `:app:lintRelease` in addition to debug lint.
+3. Standard Android CI expanded to build the release APK with R8/resource shrinking enabled.
+4. Standard Android CI expanded to build the release Android App Bundle.
+5. Successful CI release verification uploads short-lived release APK/AAB/mapping outputs as workflow artifacts for evidence, not as automatically production-publishable packages.
+6. Backup-file JVM regression coverage expanded to prove exact-limit acceptance, oversized rejection, empty rejection, UTF-8 decoding, and positive-limit enforcement.
+7. `docs/BUILDING.md` expanded with debug/release APK, AAB, release mapping, translation parity, release lint, signing, Windows/Linux/macOS command, reproducibility, and evidence guidance.
+8. `SECURITY.md` expanded with manifest/permission expectations, backup/transfer fail-closed requirements, signing/secret-management rules, dependency/supply-chain expectations, privacy expectations, and release-hardening gates.
+9. `docs/RELEASE_QA.md` added as a non-fabricated release evidence matrix covering automated gates, installation/lifecycle, every major app area, accessibility, font/window sizes, performance smoke checks, security/privacy, release artifacts, and store-screenshot readiness.
+10. Draft PR #25 opened so all later v0.9 commits remain reviewable and workflow evidence can be tied to exact branch heads.
+11. `scripts/verify_repository_security.py` added to reject committed Android signing/private-key bundles, known credential config filenames, PEM private-key material, and obvious GitHub token patterns.
+12. Standard Android CI now executes the repository security guard before build/test work.
+13. The current Android manifest was audited: it declares no runtime permissions; `MainActivity` is exported only as the launcher entry point.
+14. Direct dependency and build/test tooling notice coverage was audited and `THIRD_PARTY_NOTICES.md` was expanded accordingly.
+15. Room schema/index/migration configuration was audited: the database remains explicitly versioned, `MIGRATION_1_2` is registered, destructive fallback is not enabled, and existing principal filter/identity indexes remain present. No speculative migration was added merely to increase commit count.
+16. Sudoku cells now expose Compose `selected` accessibility semantics in addition to their existing localized content descriptions.
+17. Stable per-cell Compose test tags were added for deterministic accessibility regression coverage.
+18. API-35 connected coverage now includes selecting two Sudoku cells and asserting selected/unselected semantics transitions.
+19. `CHANGELOG.md` now distinguishes implemented v0.9 hardening from verification/manual checks that are still pending.
+20. `ROADMAP.md` now records completed audits and keeps final workflow/manual QA gates unchecked until evidence exists.
+21. Draft PR #25 description was refreshed to match the current implementation and its non-fabrication rules.
+
+Focused v0.9 commits currently include:
+
+- `79589232926d7f3ef3c3ef21865e68baa8ca4cd3` — `chore(release): start v0.9 development version`;
+- `319885bcdc899353404bbc48ddf1107e85a9c43d` — `ci(release): verify release lint APK AAB and R8 outputs`;
+- `ffd2cd25295d6ba4c390fdbc98c85cedf84359d3` — `test(backup): expand bounded file read regression coverage`;
+- `ccc28b2863a8bff1661a805ce5920fe69980c089` — `docs(build): harden release APK AAB and signing guidance`;
+- `34a04be6b07a5d991bd9c17112769badfb5b68b6` — `docs(security): define v0.9 permission backup and signing gates`;
+- `885701e15a5d1bc07b1900c83c70256810bbaaf7` — `docs(qa): add v0.9 release validation matrix`;
+- `573ce18801a823fc85b6bdde27ea87bf0ca88b3c` — `docs: record current v0.9 hardening progress`;
+- `ff9a2178e506746fbc7f5ffd2411df1517254b9b` — `security(ci): add deterministic repository secret guard`;
+- `ba84b3677df9db91fff114092bf465b1a49d6249` — `ci(security): enforce repository secret guard`;
+- `8d64d87c027f60d914025dab450015995b4b3199` — `docs(licenses): audit direct dependencies and build tooling`;
+- `89fc1921f87d455c6f674eabc01f2b6df48792e1` — `a11y(game): expose selected Sudoku cell semantics`;
+- `c16fb6ef78c15b6d24b1917569077dff182af9a3` — `testability(game): add stable Sudoku cell semantic tags`;
+- `0c4d4ccf00cc4fee55bc7e9853d220d34b5b3175` — `test(android): verify Sudoku selected-cell semantics`;
+- `57a607251f9910f1207a53b40391aeee2b6f852e` — `docs(changelog): record implemented v0.9 hardening work`;
+- `ee089f7db9202593e1e572cee2bfaf64e9f1b186` — `docs(roadmap): track concrete v0.9 hardening progress`.
+
+PR #25 currently contains the cumulative v0.9 implementation and remains draft. Earlier exact heads started Android CI and API-35 instrumentation runs, but subsequent commits intentionally superseded those heads. The final v0.9 workflow evidence must therefore come from the exact final head after all intended implementation/documentation updates, not from an earlier successful/cancelled run.
 
 ## Final v0.8 Verification — GREEN
 
@@ -179,7 +229,7 @@ Two digits are restricted to the same two cells in a unit. Every other candidate
 
 ### Naked Triple
 
-Three cells in a unit contain candidates whose union is exactly three digits. Those digits are removed from other cells in the same unit.
+Three cells in one unit contain candidates whose union is exactly three digits. Those digits are removed from other cells in the same unit.
 
 ### Hidden Triple
 
@@ -770,19 +820,23 @@ Room-backed:
 
 `.github/workflows/ci.yml` verifies:
 
-1. English/Hindi translation parity;
-2. engine tests;
-3. Android JVM tests;
-4. Android instrumentation-test APK compilation;
-5. Android lint;
-6. debug APK assembly;
-7. report upload/post-job cleanup.
+1. repository signing/private-key/obvious credential guard;
+2. English/Hindi translation parity;
+3. engine tests;
+4. Android JVM tests;
+5. Android instrumentation-test APK compilation;
+6. debug and release Android lint;
+7. debug APK assembly;
+8. release APK assembly with R8/resource shrinking;
+9. release AAB assembly;
+10. verification report upload;
+11. successful release APK/AAB/mapping artifact upload for short-lived CI evidence.
 
 ### API-35 Connected Instrumentation
 
 `.github/workflows/instrumentation.yml` runs connected Compose/Room tests on an Android API-35 x86_64 Pixel 6 emulator with KVM access and animations disabled.
 
-v0.9 will preserve these gates and expand release-build/QA evidence where safe and practical.
+v0.9 preserves these connected gates and expands release-build/QA evidence where safe and practical. The connected suite now also includes selected-cell accessibility-semantics transition coverage.
 
 ## Important Historical Defects Already Fixed
 
@@ -811,34 +865,26 @@ v0.9 will preserve these gates and expand release-build/QA evidence where safe a
 
 ## v0.9 Handoff
 
-Focused issue #23 is now open:
+Focused issue #23 is open:
 
 **`v0.9: release hardening, accessibility, performance, security, and production QA`**
 
+Draft PR #25 carries the current implementation and remains intentionally draft while release-blocking/manual/evidence work remains.
+
 v0.9 is deliberately a quality milestone rather than a new feature-family milestone.
 
-Planned scope:
+Remaining scope includes:
 
-1. audit existing v0.1–v0.8 regression suites and fill release-critical gaps;
-2. accessibility semantics/focus-order review across all major screens;
-3. large-font and adaptive-layout QA;
-4. high-contrast and reduced-motion audit;
-5. performance/memory audit;
-6. solver/generator/teaching/import/backup performance regression checks where practical;
-7. main-thread blocking work audit;
-8. Room/DataStore integrity, indexes, migrations, reset/restore audit;
-9. import/export/backup security/privacy audit;
-10. permission and manifest audit;
-11. dependency/license/third-party notice audit;
-12. release R8/shrinking verification;
-13. debug APK, release APK, and release AAB build verification;
-14. release signing guidance that uses secrets only;
-15. device QA matrix and manual checklist without fabricating device results;
-16. lifecycle/process-death/crash/ANR hardening;
-17. UI/store screenshot readiness;
-18. documentation accuracy audit;
-19. final exact-head standard CI green;
-20. final exact-head API-35 connected gate green.
+1. finish accessibility semantics/focus-order review across all major screens;
+2. large-font and adaptive-layout manual QA;
+3. high-contrast and reduced-motion manual QA;
+4. performance/memory audit and additional bounded regression checks where practical;
+5. main-thread blocking work audit outside the already hardened backup path;
+6. crash/ANR/lifecycle restoration audit;
+7. documentation accuracy audit after final code changes;
+8. final exact-head standard CI green;
+9. final exact-head API-35 connected gate green;
+10. only then decide whether PR #25 is ready to merge and issue #23 can close.
 
 ### v0.9 non-goals
 
@@ -868,6 +914,258 @@ The existing v0.1–v0.8 feature set already includes the intended core Classic 
 - Support: `supportramsandesh@gmail.com`
 - Credit: **Made by the Sanskar**
 - License: **MIT**
+
+## v0.9 Complete Documentation Pass — 2026-08-18
+
+A complete implementation-aligned documentation audit was performed on the v0.9 branch. The work preserved the existing historical documentation while adding missing current references and correcting stale pages that still described implemented v0.7/v0.8 functionality as planned.
+
+### New documentation added
+
+- `docs/FEATURES.md` — complete implemented product feature reference and explicit current non-features.
+- `docs/USER_GUIDE.md` — end-to-end player guide covering every current major screen/workflow.
+- `docs/PROJECT_STRUCTURE.md` — repository/module/package/test/schema/workflow map and change-placement rules.
+- `docs/CI_CD.md` — GitHub Actions gates, exact-head policy, scripts, release artifacts, and failure triage.
+- `docs/DATA_FORMATS.md` — board strings, `SNP1`, `SNB1`, DataStore, active-game, Room, Android backup, and compatibility rules.
+- `docs/PERFORMANCE.md` — main-thread, solver/generator/hints, parser, Room/DataStore, Compose, memory, measurement, and ANR hardening guide.
+- `docs/MAINTAINER_GUIDE.md` — maintainer priorities, review/triage, dependency/security/localization/accessibility/release maintenance, and handoff rules.
+- `docs/KEYBOARD_SHORTCUTS.md` — hardware keyboard behavior and release QA expectations.
+- `docs/GLOSSARY.md` — canonical Sudoku, logical-technique, data, Android, build, and repository terminology.
+- `docs/DOCUMENTATION_STANDARDS.md` — rules for implemented/planned/verified claims, links, security/privacy, persistent formats, and release documentation accuracy.
+
+### Existing documentation corrected/expanded
+
+- `docs/TESTING.md` now reflects the actual cumulative engine/JVM/Compose/Room/security/translation/lint/release/manual QA strategy rather than saying connected UI coverage is only planned.
+- `docs/SUDOKU_ENGINE.md` now documents all supported v0.8 techniques, teaching traces, practice catalog, HintEngine hardest-technique identity, Reveal fallback, `SNP1`, and current engine invariants rather than calling advanced techniques future work.
+- `docs/BACKUP_RESTORE.md` now documents the implemented `SNB1` user export/import path rather than describing it as planned.
+- `docs/PRIVACY.md` now reflects current Preferences DataStore plus Room History/Saved/Challenge storage, learning progress, explicit sharing/export actions, user backup behavior, Android backup rules, and permission surface.
+- `docs/SECURITY.md` now reflects actual `SNP1`/`SNB1` validation, bounded file I/O, Room/DataStore integrity, repository secret guard, signing, supply-chain review, release R8, logging, and privacy boundaries.
+- `docs/ACCESSIBILITY.md` now includes selected-cell semantics, advanced teaching evidence, connected semantics regression coverage, Learn/dialog/font/contrast/motion/keyboard/large-screen checks, and explicit automated-vs-manual evidence rules.
+- `docs/QA_MATRIX.md` now covers the complete current application, all supported logical hint techniques, Learn, Daily/Weekly Challenges, History/Saved, `SNP1`, `SNB1`, Room/DataStore, performance, release builds, accessibility, security/privacy, and store assets.
+- `docs/RELEASE_CHECKLIST.md` now matches v0.9 security/translation/debug+release lint/R8/AAB/API-35 exact-head gates plus complete manual release requirements.
+- `docs/RELEASING.md` now defines the end-to-end controlled release flow from scope freeze through exact-head verification, secure signing, R8 smoke QA, manual QA, tag/GitHub Release/store submission, monitoring, and fix-forward handling.
+- `docs/README.md` is now the categorized documentation hub with user, contributor, engine, data, accessibility, QA, maintainer, and release paths.
+- root `README.md` now exposes the complete documentation hub and high-value references directly from the repository landing page.
+
+### Documentation accuracy defect found and fixed
+
+During final cross-check, several new guides used the intended public command name `scripts/verify_no_secrets.py` while the existing implementation file was `scripts/verify_repository_security.py`.
+
+Rather than duplicating security logic, a stable compatibility entry point `scripts/verify_no_secrets.py` was added that delegates to the existing verifier `main()` function. Standard Android CI was then updated to call the documented entry point. The authoritative security checks remain implemented only once in `verify_repository_security.py`.
+
+### Focused documentation/consistency commits
+
+- `ebe3549b53ad31c24eee398a860c7a0ed1c54535` — `docs(features): add complete product feature reference`.
+- `b2d0a838adb48406d32079c0f3168cb12b476324` — `docs(user): add complete application user guide`.
+- `a664afaed6db2f51227d677f6feb1f66c875aedb` — `docs(structure): document repository and source layout`.
+- `1db2fe3109c6e815ad3ca09b9b3f1f422cb6c939` — `docs(ci): document automated quality and release gates`.
+- `1ef457c7a7b3a84604f47f9651368c53919f82e2` — `docs(data): document puzzle backup and persistence formats`.
+- `f799d13b6be0cdfde6a6992a4cdeae53880f9bb3` — `docs(perf): add performance and ANR hardening guide`.
+- `2e1805a2fae85ae868df6339428313383805aa06` — `docs(maintainers): add project maintenance handbook`.
+- `b7521465da008f3a3c269d57782e841b9f506f7f` — `docs(input): add hardware keyboard reference`.
+- `1f13f6ec765bce13785c86f6336ef628cff069e1` — `docs(reference): add SudokuNova terminology glossary`.
+- `fc5ee162a5c2aba065285f619c34f15612587551` — `docs(meta): define documentation maintenance standards`.
+- `91a15f9566ca83b55735df93fdc85f4c7192c24b` — `docs(testing): align test guide with cumulative v0.9 suite`.
+- `e5da0341d460358c0175ec7e73bd2889e516720e` — `docs(engine): document complete solver generator and teaching pipeline`.
+- `1e36c7aba80e61169487f682ab023d2365b7683a` — `docs(release): expand controlled release and signing process`.
+- `a8cd240107b6239daf609520ee8b7b575dbb509f` — `docs(index): build complete categorized documentation map`.
+- `ec8985ca6a48caed9a33788c56de0893218fcd21` — `docs(backup): replace obsolete planned backup guide`.
+- `717a60d6908ceacba828190f3802f3c252da02c6` — `docs(privacy): align policy with current local data features`.
+- `58e08795a780483401743c06372cecf78f03cc0f` — `docs(security): align technical security guide with v0.9`.
+- `cb067036687ce274d270f9fa4e5bedba64ef0c0d` — `docs(qa): align general QA matrix with current feature set`.
+- `dab469d50f28e726e5d16411e83fbe001ab5f6fb` — `docs(release): align checklist with v0.9 quality gates`.
+- `fa1ce632687e4985e152d3dc88d3ad6e0752e24b` — `docs(a11y): document v0.9 semantics and release checks`.
+- `c077f14518883e5b7784169f08a55956fcee7680` — `docs(readme): link complete SudokuNova documentation hub`.
+- `5b3739a678abffb9d18575d76666f346083e9acb` — `chore(scripts): add documented security verifier entry point`.
+- `c0b92433cbe772c0643f28a4e82be23cd71a297a` — `ci(security): use documented repository security command`.
+
+No manual device, TalkBack, signed-production, Play Store publication, or final v0.9 exact-head green workflow claim is made by this documentation pass. Because this log update itself creates a new head, required v0.9 final workflow evidence must still be taken from the later exact final head before PR #25 is promoted/merged.
+
+## v0.9 Runtime, Accessibility, and Localization Audit — 2026-08-18
+
+The next hardening pass audited UI-facing asynchronous work, stale-result handling, selected-state semantics, and localization boundaries. The work intentionally fixed defects found by source/CI evidence instead of marking broad manual QA items complete.
+
+### API-35 regression found and fixed
+
+API-35 instrumentation run `32129482037` on head `371ffc95f12617bd4ac116eeab4e83837f5cd7a3` failed one connected test: `MainActivityTest.gameBoardExposesSelectedCellSemantics` attempted to assert `sudoku-cell-0-0` immediately after tapping Easy while puzzle generation was still asynchronous.
+
+The test contract was not weakened. Commit `e77a1cc716c89232fccf00169df4fef98a27e3c0` (`fix(androidTest): wait for generated game board semantics`) now waits for the stable first-cell semantics tag to enter the Compose tree, then performs the same selected/unselected assertions.
+
+### Main-thread and stale-result fixes
+
+- `8aae5673cfd882b42ede4697241138aa71e548e7` — `fix(room): align migration parameter with Room API`; removes a Room override naming warning without changing migration SQL/schema behavior.
+- `95d81234a40f0eb6afb336a98e3089165e23aff2` — `perf(custom): move puzzle solving off main thread`; Custom Puzzle uniqueness validation and solution preview now use `Dispatchers.Default`, cancellation, and stale-board checks.
+- `92090f7b012ee148ca104f36e0598315f206d372` — `fix(transfer): discard stale puzzle validation results`; imported puzzle uniqueness results are not published after the input has changed.
+- `52c844b115337bc35d4de77039b961c9ccb238d6` — `fix(transfer): preserve busy state during text edits`; text edits no longer clear a busy state owned by unrelated backup/restore work.
+
+The state-layer source review covered Game, Custom Puzzle, Transfer, Challenges, History, Saved Puzzles, Learn, Statistics, Home, and app/settings state. CPU-heavy game generation/hints, Custom Puzzle solving, and imported-puzzle uniqueness analysis are dispatched away from the UI thread; backup document I/O remains on `Dispatchers.IO`. This is a source audit, not a measured device-performance claim.
+
+### Custom Puzzle accessibility hardening
+
+- `a8bbfde1b96a38f5d68a70bfaa3d925e8b5a2669` — `a11y(custom): expose editor cell semantics`; editor cells now expose localized row/column/value descriptions, conflict descriptions, selected semantics, and stable `custom-sudoku-cell-<row>-<column>` tags.
+- `7d2917ac69bbb54fc588220034d122c90bf09713` — `test(android): cover custom editor selected semantics`; connected coverage verifies the initial selected cell and selected/unselected transition after clicking another editor cell.
+
+### Custom Puzzle localization hardening
+
+Paired v0.9 resources were added for all validation/solve states:
+
+- `ef450ae0313eb0482933adf03073a8975a4815bd` — `feat(i18n): add custom puzzle status resources`;
+- `01b6c245f8512f632a0355454b396b9c65c0ee28` — `feat(i18n): add Hindi custom puzzle status parity`.
+
+`6cb7991a1480f6ebecad4abd5d0fa4004c6548f1` (`refactor(custom): move status prose out of ViewModel`) replaced raw English `String` state with typed `CustomPuzzleMessage` values. `548ac91e21132cb790f79b1610751847c6ff72dc` (`feat(i18n): localize custom puzzle status presentation`) maps those values to Android resources in Compose.
+
+### Game error/completion localization hardening
+
+- `25e57e7193b8948bf470f749d57bcde8dabcdae4` — `feat(i18n): add game error status resources`;
+- `91cd04c15d588d04904c348e1c6fe7adecfc4acd` — `feat(i18n): add Hindi game error status parity`;
+- `c3be90fa144194b6f6ccd3c7a0eca4ef90ebe1fe` — `refactor(game): expose typed localized error states`; game load/abandon state no longer forwards raw exception prose;
+- `0bf5f130a8863663b718ee5641cc2e73326bb4da` — `feat(i18n): localize typed game error presentation`; a separate Compose presentation mapper resolves typed game errors to paired resources;
+- `2827ba6bc9d1e4bd1981922cf844cb6a68a73bc4` — `fix(i18n): localize game completion summary`; removes concatenated English `mistake(s)` / `hint(s)` fragments and uses the maintained completion-summary resource.
+
+### Audit documentation and roadmap
+
+- `3171df6d1de83a936040196b39c978f8d4d293c0` — `docs(changelog): record additional v0.9 hardening fixes`;
+- `95a1e6cd7a2aed77b545bc44692ae8e3b8007661` — `docs(roadmap): track additional v0.9 audit fixes`;
+- `1142351450229b13eeaa768330f8baad3cdee9c8` — `docs(audit): record v0.9 hardening findings` adds `docs/V09_HARDENING_AUDIT.md` with findings, fixes, and explicit manual-evidence exclusions;
+- `f187f8b68811cca7af396170e927d918a5fb94f9` — `docs(index): link v0.9 hardening audit`.
+
+Manual TalkBack traversal/focus-order, representative 200% font/device layout checks, high-contrast/reduced-motion device QA, measured memory/frame/ANR traces, signed-production artifact checks, and store-readiness checks remain unclaimed. Final exact-head Android CI/API-35 evidence is also still pending for the final verification candidate after this implementation-log correction.
+
+## v0.9 Large-Text, Control-State, and Privacy Source Audit — 2026-08-18
+
+The accessibility source pass continued across the currently shipped screens. The purpose was to remove obvious fixed-width layout pressure and semantics gaps before manual large-font/TalkBack QA, without treating source inspection as device evidence.
+
+### Settings
+
+- Whole toggle rows now form a single merged `Role.Switch` interaction target; the trailing switch displays state without creating a second click target.
+- Theme, input-mode, and mistake-limit chips can horizontally scroll rather than overflow a single row at larger text sizes.
+
+### Game controls
+
+- Number-first persistent digit selection exposes semantic selected state.
+- Notes mode exposes semantic selected state.
+- One-shot actions such as Undo/Redo/Erase/Hint/Pause/Restart do not falsely expose toggle selection semantics.
+- Game action rows can horizontally scroll so longer localized labels remain reachable at large font scales.
+
+### Custom Puzzle
+
+- Text actions (Erase, Clear, Validate, Solve, Save, Play) are stacked at full width; the compact numeric pad remains a digit-only grid.
+- Existing editor-cell selected/conflict/coordinate semantics and connected coverage remain intact.
+
+### History, Challenges, Saved Puzzles, Learn
+
+- History scope/difficulty filters, metric rows, and badge rows can horizontally scroll instead of forcing long content into narrow columns.
+- Challenge title, difficulty, and completion state are vertically stacked rather than sharing a cramped status row.
+- Learn Study/Practice actions are full-width stacked controls.
+- Empty `Text("")` layout placeholders found in History, Challenges, Saved Puzzles, and Learn were replaced with non-semantic spacing.
+
+### Sharing and Backup & Transfer
+
+- Puzzle-code Copy/Share actions are full-width stacked buttons.
+- Backup & Transfer Copy/Share/Export/Import actions are full-width stacked buttons, preserving the existing explicit-user-action and bounded file-I/O behavior.
+
+### Home / in-app privacy
+
+- Home uses the maintained `v04_made_by` resource instead of duplicating the credit as hardcoded UI text.
+- English and Hindi in-app privacy summaries were corrected from the obsolete DataStore-only description. They now describe local settings, active game, statistics, learning progress, History, Saved Puzzles, and challenge records through DataStore + Room, and explicitly state that sharing/document import/export/backup/restore occur only after user actions through Android system surfaces.
+
+### Documentation synchronization
+
+- `CHANGELOG.md` records these source-level large-text/semantics/privacy changes while keeping manual QA pending.
+- `ROADMAP.md` distinguishes completed source-level hardening from still-unchecked full accessibility/focus-order and manual 200% font QA.
+- `docs/ACCESSIBILITY.md` now documents Settings switch semantics, Number-first/Notes selected state, source-level large-text defenses, and the remaining manual release checklist.
+- `docs/V09_HARDENING_AUDIT.md` records the concrete findings, fixes, navigation/restoration source review, and explicit evidence exclusions.
+
+This source audit does **not** claim that TalkBack, 200% font scaling, high contrast, reduced motion, physical devices, measured performance traces, signed production artifacts, or store assets have been manually verified. Those gates remain pending until real evidence exists.
+
+## v0.9 Final Repository Completion Pass — 2026-08-18
+
+This final source/tooling pass was performed after the broad v0.9 accessibility, performance, security, persistence, localization, release-build, and documentation audits. The branch was deliberately kept in release-hardening scope: missing public-repository infrastructure and concrete verification defects were fixed, but unrelated feature families were not added simply to increase feature count.
+
+### Final API-35 regression found and fixed
+
+Exact head `0a1eba2afe11cdaeb4cedb5cc46fb67a4e72ed62` produced:
+
+- Android CI run `32134443544` / run #571 — **GREEN**;
+- Android Instrumentation run `32134443558` / run #146 — **FAILED**.
+
+The connected failure was `MainActivityTest.customPuzzleEditorIsReachable`. The test still assumed the pre-hardening compact Custom Puzzle action rows and asserted `Play puzzle` without scrolling. v0.9 had intentionally stacked text actions at full width to reduce large-font/localization collisions, making the final action legitimately fall below the initial viewport.
+
+Commit `93045a538941f56f91b76bf61f3ec2d6397a7c6c` — `fix(androidTest): align connected tests with adaptive layouts` — corrected the test contract without reversing the accessible layout. The test now:
+
+- verifies Custom Puzzle editor selected/unselected cell semantics before changing viewport position;
+- scrolls Validate, Save puzzle, and Play puzzle into view;
+- asserts each action remains reachable/displayed;
+- uses `androidx.compose.ui.test.junit4.v2.createAndroidComposeRule` instead of the deprecated Compose rule API.
+
+The product behavior assertion was not weakened; the connected test was aligned to the intentional adaptive layout.
+
+### Final open-source project tooling
+
+The public repository already contained:
+
+- MIT `LICENSE`;
+- `CONTRIBUTING.md` and detailed contributor documentation;
+- `CODE_OF_CONDUCT.md`;
+- `SECURITY.md`;
+- `SUPPORT.md`;
+- `AUTHORS.md`;
+- `THIRD_PARTY_NOTICES.md`;
+- structured bug, feature, accessibility, performance, and documentation issue forms;
+- issue-template security/support contact links;
+- pull-request template;
+- Dependabot for Gradle and GitHub Actions;
+- standard Android CI;
+- API-35 connected instrumentation;
+- repository secret/signing-material verification.
+
+Two remaining low-risk public-repository gaps were filled:
+
+- `ac651e98f6fa338dc66ada7f36e7a2867de6331b` — `chore(github): add project funding metadata`; adds `.github/FUNDING.yml` with the optional `https://buymeacoffee.com/sanskarIN` support link.
+- `4ded7d9ae1cc5b3c249ed7a6143eefe267253b7a` — `chore(github): define repository code ownership`; adds `.github/CODEOWNERS` with default ownership and explicit release/security/docs/app/engine ownership for `@sanskarIN`.
+
+### Final repository hygiene/source audit
+
+The final repository review rechecked:
+
+- Android manifest permission/export surface — no runtime `<uses-permission>` declarations, launcher `MainActivity` intentionally exported for its launcher intent filter;
+- release build config — R8/minification and resource shrinking remain enabled for release, with CI release APK/AAB gates;
+- release ProGuard rules — intentionally minimal and compatible with AndroidX/Compose consumer rules while retaining useful source/line crash information;
+- localized hint presentation — hint technique names and explanations remain Android-resource backed rather than engine-owned player-facing prose;
+- source placeholders — no repository `TODO`, `FIXME`, `XXX`, `HACK`, placeholder, or `NotImplementedException` result requiring release cleanup was found by the final search;
+- obvious debug leakage — no `printStackTrace`, `System.out`, or obvious debug `println` path requiring release cleanup was found by the final search;
+- public project scaffolding — contribution/conduct/security/support policies, issue forms, PR template, Dependabot, CODEOWNERS, funding metadata, CI, and connected instrumentation are all present.
+
+These are specific audit findings, not a claim that static source search can mathematically prove the absence of every future defect.
+
+### Final documentation synchronization
+
+The final public-project and verification findings were synchronized into focused commits:
+
+- `ce3dbb46d639b55b9ee1f66d9314c9dd83e04b3f` — `docs(maintainers): document repository automation and ownership`;
+- `9256c56bf89e7a8e87ebe2ebb264440b2a565747` — `docs(changelog): record final governance and adaptive-test fixes`;
+- `d96e9ab309f0184b9ad72d196ba45cecef5701e9` — `docs(audit): record final repository and connected-test findings`;
+- `4b9384b585947e5d87045107ce4f5b34fb3c8544` — `docs(roadmap): close final source-level hardening audits`;
+- `e08322a10ab66e2aed857308ef24b2e0ae48443a` — `docs(readme): align final v0.9 project health status`.
+
+`ROADMAP.md` now distinguishes completed source-level/automation work from manual evidence that cannot be fabricated. `README.md` now accurately describes the open-source project-health surfaces and remaining manual release evidence. `docs/V09_HARDENING_AUDIT.md` records the API-35 adaptive-layout failure/fix and final source/tooling audit.
+
+### Manual evidence still not claimed
+
+Even after this final repository-completion pass, the following remain explicitly unclaimed until actually performed on representative targets:
+
+- full TalkBack traversal/focus-order QA;
+- 200% font-scale and representative window/device manual QA;
+- high-contrast and reduced-motion manual device validation;
+- measured startup/frame/memory/ANR traces;
+- process-death/manual lifecycle scenarios;
+- signed production APK/AAB installation/signature verification;
+- real Play Store screenshot/listing review.
+
+The repository contains checklists and source/automated defenses for these areas, but source inspection is not substituted for real device or assistive-technology evidence.
+
+### Final branch-freeze rule
+
+This `what_changed.md` update is the final **planned** branch commit for the v0.9 source/tooling hardening pass. The exact SHA created by this log commit must run both required workflows. No further branch commit should be made unless one of those exact-head gates exposes a concrete defect. Final workflow run IDs can be recorded in PR metadata without changing the verified branch SHA; post-merge documentation on `main` can record the immutable verified-head/merge evidence.
 
 ## Commit Policy
 
