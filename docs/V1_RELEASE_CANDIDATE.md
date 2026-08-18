@@ -1,32 +1,38 @@
 # v1.0 Release Candidate Evidence Worksheet
 
-This is the authoritative manual/production evidence worksheet for SudokuNova v1.0. Repository automation may prepare a release candidate, but this document must not be marked complete from source review alone.
+This is the authoritative manual/production evidence worksheet for SudokuNova v1.0. Repository automation has prepared and verified the RC1 repository line, but this document must not mark real device, accessibility-service, signing, performance, repository-admin, or store checks complete from source review/CI alone.
 
-Current preparation branch metadata:
+Current merged candidate metadata:
 
 - candidate version name: `1.0.0-rc.1`
 - candidate version code: `1000`
 - package: `in.sanskar.sudokunova`
+- final verified PR #27 source head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- PR #27 merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`
 - stable publication: **not yet claimed**
 
 If RC version code `1000` is uploaded to a store track that reserves it, the later stable build must use a higher version code.
 
 ## Evidence header
 
-Complete these fields for the exact candidate being manually validated:
+Repository-side automated evidence is prefilled from the exact verified RC1 head. Manual/production identity fields remain blank until real validation occurs.
 
-- Source commit SHA: `________________`
-- GitHub PR: `________________`
-- Standard Android CI run: `________________`
-- API-35 connected run: `________________`
-- APK SHA-256: `________________`
-- AAB SHA-256: `________________`
-- R8 mapping SHA-256: `________________`
-- Signing certificate digest/fingerprint: `________________`
-- Tester: `________________`
-- Date/time/timezone: `________________`
+- Source commit SHA: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- GitHub PR: `#27` — merged as `2329881aff8dabaf8d040918e16b6113e3900245`
+- Standard Android CI run: `#635 / 32151771317 — PASS`
+- API-35 connected run: `#188 / 32151771297 — PASS`
+- Unsigned RC APK SHA-256: `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7`
+- Unsigned RC AAB SHA-256: `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd`
+- RC R8 mapping SHA-256: `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac`
+- CI artifact ID: `9330415157`
+- CI artifact digest: `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`
+- Signing certificate digest/fingerprint: `________________` — **PENDING production signing**
+- Manual tester: `________________`
+- Manual test date/time/timezone: `________________`
 
-Do not copy evidence from an earlier source commit after the candidate changes.
+The hashes above are for unsigned repository-CI RC verification artifacts. They are not substitutes for final signed stable artifact hashes/signature identity.
+
+Do not copy manual evidence from an earlier source commit after the stable candidate changes.
 
 ## Target matrix
 
@@ -42,7 +48,7 @@ Record real tested targets. Add rows rather than replacing evidence.
 
 - [ ] signed production/production-equivalent APK installs successfully on intended direct-install target;
 - [ ] installed package is `in.sanskar.sudokunova`;
-- [ ] version name/code match the candidate;
+- [ ] version name/code match the final candidate;
 - [ ] cold launch reaches the expected splash/home flow;
 - [ ] no startup crash or obvious ANR;
 - [ ] upgrade from an existing supported SudokuNova build preserves compatible local data;
@@ -273,12 +279,13 @@ Follow `PRODUCTION_SIGNING.md`.
 - [ ] all four signing values were supplied through a secure environment;
 - [ ] no signing secrets exist in Git/diff/logs/artifacts;
 - [ ] clean signed APK/AAB build succeeds;
+- [ ] `scripts/verify_release_outputs.py --require-signatures` succeeds on the exact signed artifacts;
 - [ ] `apksigner verify --verbose --print-certs` succeeds for signed APK;
 - [ ] certificate fingerprint matches expected production/upload certificate;
 - [ ] signed APK installs/launches where direct installation is part of validation;
 - [ ] AAB passes the distribution platform's pre-upload/upload validation;
 - [ ] R8 mapping is retained securely for the exact release;
-- [ ] artifact SHA-256 evidence is archived.
+- [ ] final signed-artifact SHA-256 evidence is archived.
 
 Evidence/notes:
 
@@ -306,17 +313,19 @@ Evidence/notes:
 
 All mandatory fields below must be explicit.
 
-- Automated exact-head gates: `PASS / FAIL / PENDING`
-- Manual functional matrix: `PASS / FAIL / PENDING`
-- Accessibility/TalkBack: `PASS / FAIL / PENDING`
-- Font/adaptive layout: `PASS / FAIL / PENDING`
-- Contrast/motion: `PASS / FAIL / PENDING`
-- Lifecycle/process death: `PASS / FAIL / PENDING`
-- Performance/ANR/memory: `PASS / FAIL / PENDING`
-- Production signing: `PASS / FAIL / PENDING`
-- Store assets/declarations: `PASS / FAIL / PENDING`
-- Known release blockers: `________________`
-- Final decision: `SHIP / DO NOT SHIP / PENDING`
+- Automated RC1 repository-side exact-head gates: `PASS` — PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- Fresh stable-metadata/source exact-head gates: `PENDING`
+- Manual functional matrix: `PENDING`
+- Accessibility/TalkBack: `PENDING`
+- Font/adaptive layout: `PENDING`
+- Contrast/motion: `PENDING`
+- Lifecycle/process death: `PENDING`
+- Performance/ANR/memory: `PENDING`
+- GitHub repository-admin protection/settings: `PENDING`
+- Production signing: `PENDING`
+- Store assets/declarations: `PENDING`
+- Known release blockers/evidence gaps: `manual/admin/production/stable-promotion evidence listed above remains pending`
+- Final decision: `PENDING`
 - Decision owner: `________________`
 - Decision date: `________________`
 
