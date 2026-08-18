@@ -4,16 +4,69 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ## [Unreleased]
 
-### Added
-- v0.4 development: English/Hindi resource-backed localization for core Home, Game, Settings, Custom Puzzle, Statistics, About, Learn, difficulty, theme, and Sudoku accessibility text.
-- v0.4 development: translation-resource parity checker promoted into CI.
-- v0.4 development: visible High Contrast board behavior with stronger grid lines, state borders, peer distinction, and note emphasis.
+### v0.8.0 — Learning and Advanced Hints
+
+#### Added
+- Platform-independent `TeachingStep` evidence model with technique, source cells/unit, target cells, exact candidate eliminations, and optional placement.
+- Deterministic `TeachingStepFinder` candidate-state pipeline.
+- Structured evidence for Naked Single, Hidden Single, Naked Pair, Pointing Pair/Triple, Box-Line Reduction, Hidden Pair, Naked Triple, Hidden Triple, and X-Wing.
+- Row-oriented and column-oriented X-Wing elimination detection.
+- Deterministic teaching traces reused by the logical solver and hint engine.
+- Explicit Reveal fallback kept separate from supported logical teaching evidence.
+- In-game hint source/target/elimination/placement highlighting.
+- Accessibility descriptions for teaching sources, targets, placement values, and exact eliminated candidates.
+- English and Hindi v0.8 learning/hint resources with translation-parity enforcement.
+- Deterministic offline practice catalog covering every supported logical technique.
+- Interactive Learn practice answer states with correct/incorrect feedback.
+- Local per-technique lesson/practice progress stored in Preferences DataStore.
+- Per-technique and overall mastery presentation plus safe learning-progress reset.
+- Hidden Pair, Naked Triple, Hidden Triple, X-Wing, trace-safety, practice-catalog, learning-progress, and Compose Learn/practice tests.
+- `docs/LEARNING_AND_HINTS.md` with the complete teaching/hint/practice architecture and verification rules.
+
+#### Changed
+- `LogicalSolver` now consumes the same teaching-step pipeline used by hints instead of maintaining separate candidate logic.
+- `HintEngine` no longer owns player-facing English explanation strings; Android resources render localized names and explanations.
+- Learn is now an interactive learning center instead of a read-only lesson list.
+- Android version metadata advanced to `versionCode 800` / `versionName 0.8.0`.
+
+#### Safety / Correctness
+- Advanced candidate-state probes may only use candidates that are legal subsets for the current Sudoku board.
+- Generated-puzzle corpus tests verify that teaching placements agree with the unique solution and candidate eliminations never remove the solved value.
+- Invalid or complete boards fail closed in hint/teaching-step entry points.
+- Practice progress cannot modify Sudoku truth, solver behavior, game history, or puzzle generation.
+
+### v0.7 — Safe Sharing, Import, Export, and Backup
+- Added versioned puzzle codes with checksum/bounds validation.
+- Added strict import parsing and size limits.
+- Added safe text/clipboard/share flows and Android document-picker file transfer.
+- Added result sharing/export support.
+- Added versioned local backup and duplicate-safe restore behavior.
+- Added English/Hindi transfer resources, security documentation, and connected regression coverage.
+
+### v0.6 — Challenges
+- Added challenge archive flows, deterministic challenge identity, weekly challenges, challenge records, and challenge UI/tests.
+
+### v0.5 — Player Data and History
+- Added Room-backed history/saved-puzzle foundations, player records, replay/browse flows, and local data controls.
+
+### v0.4 — UX, Accessibility, and Localization
+- Added English/Hindi resource-backed localization for core Home, Game, Settings, Custom Puzzle, Statistics, About, Learn, difficulty, theme, and Sudoku accessibility text.
+- Promoted translation-resource parity verification into CI.
+- Added visible High Contrast board behavior with stronger grid lines, state borders, peer distinction, and note emphasis.
+- Added adaptive-layout and accessibility foundations.
+
+### v0.3 — Difficulty and Engine Hardening
+- Added logical/complexity difficulty evidence, deterministic calibration corpus, generation benchmarks, and richer engine regression coverage.
+
+### v0.2 — Gameplay Hardening
+- Expanded gameplay regression tests, input modes, lifecycle restoration, hardware-keyboard controls, and settings-backed interaction behavior.
+
+### v0.1 — Foundation
 - Android application foundation using Kotlin, Jetpack Compose, and Material 3.
 - Platform-independent Sudoku engine module.
 - Immutable 9×9 board model with validation, conflicts, candidates, and serialization.
 - Sudoku solver with solution counting and uniqueness checks.
 - Seeded puzzle generator with seven difficulty targets.
-- Naked Single, Hidden Single, and reveal-fallback hints.
 - Responsive game board, number pad, notes, eraser, undo, redo, hint, pause, timer, restart, mistake handling, and progress display.
 - DataStore-backed preferences, active-game persistence, resume, and local statistics.
 - Daily Challenge deterministic seed flow.
@@ -24,24 +77,27 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 - GitHub Actions build/test/lint automation.
 - Open-source repository policies, support documentation, and contributor guidance.
 
-### Fixed
+## Fixed over the development line
+
 - Replaced the invalid Kotlin source namespace beginning with the reserved `in` keyword by `com.sanskar.sudokunova`, while preserving Android application ID `in.sanskar.sudokunova`.
 - Corrected statistics-reset handling for heterogeneous DataStore preference keys.
 - Corrected custom-puzzle solution preview so it does not overwrite the original playable clues.
 - Corrected theme-label string transformation for Kotlin compilation.
-- Made Gradle Wrapper bootstrap commits rebase before pushing to avoid concurrent branch update rejection.
+- Hardened transfer/import/restore behavior against malformed or duplicate input.
 
-### Security
-- Added a minimal-permission Android manifest and responsible vulnerability disclosure policy.
-- Added Android backup/data extraction policy and secret exclusions in `.gitignore`.
+## Security and privacy
 
-### Accessibility
-- Added semantic Sudoku cell descriptions and adaptive board/layout foundations.
-- Added high-contrast and reduced-motion preference foundations.
+- Minimal-permission Android manifest and responsible vulnerability disclosure policy.
+- Android backup/data extraction policy and secret exclusions in `.gitignore`.
+- No account required for core gameplay or learning progress.
+- No cloud dependency for v0.8 teaching, hints, practice, or progress.
 
-### Documentation
-- Added README, contributing guide, code of conduct, security policy, support guide, authorship information, and third-party notices.
+## Accessibility
 
-## [0.1.0] - Planned
+- Semantic Sudoku cell descriptions and adaptive board/layout foundations.
+- High-contrast and reduced-motion preference foundations.
+- v0.8 teaching-evidence semantics for source, target, candidate elimination, and placement roles.
 
-The first tagged development milestone will formalize the project foundation after CI is green and the v0.1 documentation/quality gates are complete.
+## Documentation
+
+- README, contributing guide, code of conduct, security policy, support guide, authorship information, third-party notices, build/release docs, transfer docs, accessibility docs, data-storage docs, and v0.8 learning/hint documentation.

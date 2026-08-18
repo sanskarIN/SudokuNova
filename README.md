@@ -2,7 +2,7 @@
 
 > **Think. Solve. Master the Grid.**
 
-SudokuNova is a modern, open-source Android Sudoku application built with Kotlin and Jetpack Compose. The project is designed for offline-first play, maintainable architecture, accessibility, deterministic testing, and long-term community development.
+SudokuNova is a modern, open-source Android Sudoku application built with Kotlin and Jetpack Compose. The project is designed for offline-first play, maintainable architecture, accessibility, deterministic testing, safe local data handling, and long-term community development.
 
 **Made by the Sanskar**
 
@@ -13,88 +13,162 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 ## Current Development Status
 
-The repository is under active development. The current implementation includes the v0.1 foundation plus a substantial portion of core gameplay. Features are listed as implemented only when code exists in this repository.
+The current development line is **v0.8.0 — Learning and Advanced Hints**. v0.1 through v0.7 functionality is already integrated on `main`; v0.8 is being verified through the repository's standard Android CI and API-35 connected instrumentation gates before merge.
 
-### Implemented
+Features below are listed as implemented only when code exists in this repository.
+
+## Implemented
+
+### Core Sudoku
 
 - Native Android application in Kotlin
 - Jetpack Compose + Material 3 UI
-- Light, dark, system, and Material You dynamic color support
-- Original launcher icon, monochrome icon, and splash artwork
 - Platform-independent `sudoku-engine` module
-- Immutable 9×9 board model
-- Board validation and conflict detection
-- Candidate calculation
+- Immutable Classic 9×9 board model
+- Board validation, conflicts, candidates, and serialization
 - MRV backtracking solver
 - No-solution and multiple-solution analysis
 - Unique-solution verification
 - Seeded deterministic puzzle generation
-- Seven difficulty targets: Beginner through Extreme
-- Educational Naked Single and Hidden Single hints with safe reveal fallback
+- Seven calibrated difficulty targets: Beginner through Extreme
+- Deterministic logical-analysis corpus and generator tests
+
+### Gameplay
+
 - Responsive Sudoku board for phones and larger widths
-- Number entry, notes, eraser, undo, redo, hints, pause, restart
-- Timer, mistake counting, progress, autosave, and resume
+- Cell-first and number-first input modes
+- Number entry, notes, eraser, undo, redo, pause, restart
+- Timer, mistake counting/limits, progress, autosave, and resume
 - Automatic candidate-note cleanup
-- Deterministic offline Daily Challenge seed
-- Custom puzzle entry, contradiction checking, solvability/uniqueness validation, solution preview, and play flow
-- DataStore-backed settings and local statistics
-- Basic achievements derived from local statistics
-- In-app Sudoku learning center
-- About, privacy, contact, GitHub, and support information
-- Unit tests for board, solver, generator, saved-game codec, and statistics
-- GitHub Actions build/test/lint quality gate
+- Hardware-keyboard navigation and game shortcuts
+- Haptics and optional sound feedback
+- High-contrast and reduced-motion preferences
+- Light, dark, system, and Material You dynamic color support
 
-### Planned for later milestones
+### v0.8 Teaching and Advanced Hints
 
-- Full game-history database and filtering
-- Challenge calendar/archive and weekly/special challenges
-- Deeper achievement catalog and per-difficulty statistics
-- Advanced strategy hints such as pairs, triples, X-Wing and Swordfish
-- Additional Sudoku variants after Classic 9×9 is hardened
-- Backup/import/export and shareable puzzle codes
-- Expanded accessibility audits and instrumentation coverage
-- Release signing workflow and production store assets
+- Structured, platform-independent `TeachingStep` evidence
+- Naked Single
+- Hidden Single
+- Naked Pair
+- Pointing Pair / Triple
+- Box-Line Reduction
+- Hidden Pair
+- Naked Triple
+- Hidden Triple
+- X-Wing in row and column orientations
+- Exact source cells, source unit, target cells, candidate eliminations, and placements
+- Deterministic teaching traces
+- Hint engine backed by the same teaching pipeline as the logical solver
+- Explicit Reveal fallback kept separate from logical explanations
+- Live source/target/elimination/placement board emphasis while a hint is open
+- Accessibility descriptions for teaching evidence
+- English/Hindi localized hint names and explanations
 
-See [ROADMAP.md](ROADMAP.md) for milestone tracking.
+### Learning Center
+
+- Introductory Sudoku, candidate, and solving-habit lessons
+- Technique lessons for every supported v0.8 strategy
+- Deterministic offline practice catalog covering every supported technique
+- Interactive correct/incorrect practice states
+- Per-technique local lesson/practice counters
+- Per-technique and overall mastery presentation
+- Safe learning-progress reset without affecting gameplay data
+- No account or cloud service required
+
+See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
+
+### Challenges, Custom Puzzles, and Player Data
+
+- Deterministic Daily Challenge
+- Challenge archive/history foundations
+- Weekly challenges
+- Custom puzzle editor
+- Contradiction, solvability, and uniqueness validation
+- Custom puzzle save/replay flows
+- Room-backed history/saved-data foundations
+- Local statistics, streaks, and achievements
+
+### Safe Sharing, Import, Export, and Backup
+
+- Versioned puzzle codes
+- Bounds/checksum/format validation
+- Strict import size limits
+- Text/clipboard/Android share flows
+- Android document-picker transfer
+- Result sharing/export support
+- Versioned local backup/restore
+- Duplicate-safe restore behavior
+
+### Localization, Accessibility, and Project Quality
+
+- English and Hindi resource sets
+- Translation parity verification in CI
+- Semantic Sudoku cell descriptions
+- Teaching evidence semantics
+- Adaptive layouts
+- Original launcher, monochrome, and splash vector assets
+- GitHub Actions unit-test/lint/build quality gate
+- API-35 connected Compose instrumentation gate
+- Open-source repository policies, support documentation, and contributor guidance
+
+## Next Milestone
+
+After v0.8 is merged, v0.9 focuses on release hardening:
+
+- full regression-suite audit;
+- TalkBack/focus-order and large-font QA;
+- performance and memory audit;
+- security/privacy review;
+- dependency/license audit;
+- device QA matrix;
+- release shrinking/signing verification;
+- final UI/store-asset polish.
+
+See [ROADMAP.md](ROADMAP.md) for complete milestone tracking.
 
 ## Technology Stack
 
 - Kotlin 2.4.10
-- Android Gradle Plugin 9.3.0
-- Gradle 9.5.0
+- Android Gradle Plugin 9.3.1
+- Gradle 9.5
 - Java 17
-- Jetpack Compose
-- Material 3
+- Android compile/target SDK 37
+- Minimum Android API 26
+- Jetpack Compose + Material 3
 - AndroidX Lifecycle + ViewModel
 - Navigation Compose
 - Kotlin Coroutines / Flow
 - Preferences DataStore
+- Room
 - JUnit / Kotlin Test
+- Compose UI Test / AndroidX Test
 - Android Lint
 
 ## Architecture
 
-SudokuNova currently uses two Gradle modules:
+SudokuNova uses two Gradle modules:
 
 ```text
 SudokuNova/
 ├── app/                    # Android UI, navigation, persistence and app state
-├── sudoku-engine/          # Platform-independent Sudoku logic and tests
+├── sudoku-engine/          # Platform-independent Sudoku logic, teaching evidence and tests
 ├── docs/                   # Technical and contributor documentation
-├── .github/                # CI and community templates
+├── .github/                # CI, instrumentation and community templates
 └── gradle/                 # Version catalog and Gradle wrapper
 ```
 
-The Sudoku engine deliberately has no Android dependency so it can be tested quickly and reused by future platform clients. The Android layer uses immutable UI state, ViewModels, repositories, Flow, and Compose.
+The Sudoku engine deliberately has no Android dependency so it can be tested quickly and reused by future platform clients. The Android layer owns localization, Compose presentation, persistence, Android sharing/document APIs, and lifecycle-aware UI state.
 
 Detailed design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Requirements
 
-- Android Studio compatible with AGP 9.3.0
+- Android Studio compatible with AGP 9.3.1
 - JDK 17
 - Android SDK 37 for compilation
 - Android device/emulator on API 26 or newer
+- API 35 emulator/device for reproducing the repository's connected verification gate
 
 ## Build
 
@@ -117,23 +191,50 @@ Windows PowerShell / Command Prompt:
 gradlew.bat :app:assembleDebug
 ```
 
-Run the main verification tasks:
+Run the standard local verification tasks:
 
 ```bash
-./gradlew :sudoku-engine:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+python scripts/verify_translations.py
+./gradlew :sudoku-engine:test --stacktrace
+./gradlew :app:testDebugUnitTest --stacktrace
+./gradlew :app:assembleDebugAndroidTest --stacktrace
+./gradlew :app:lintDebug --stacktrace
+./gradlew :app:assembleDebug --stacktrace
 ```
 
-More commands and tooling requirements are documented in [docs/BUILDING.md](docs/BUILDING.md).
+More build types, executable outputs, tooling requirements, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md).
+
+## Testing
+
+SudokuNova treats deterministic correctness as a merge requirement.
+
+Important suites include:
+
+- board/solver/generator tests;
+- uniqueness and difficulty corpus tests;
+- game-state codec and persistence model tests;
+- transfer/import/backup tests;
+- teaching-trace solution-safety tests;
+- controlled Hidden Pair, Naked Triple, Hidden Triple, and X-Wing evidence tests;
+- practice-catalog completeness/determinism tests;
+- learning-progress JVM tests;
+- Compose connected smoke tests on API 35.
+
+GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the final clean head.
 
 ## Privacy
 
-SudokuNova is designed to work without an account, login, analytics, or advertising in the open-source base application. Current gameplay settings, active-game state, and statistics are stored locally through Android DataStore. No sensitive Android permissions are requested.
+SudokuNova is designed to work without an account, login, analytics, or advertising in the open-source base application. Gameplay settings, active-game state, statistics, structured local records, and v0.8 learning progress are stored locally. No sensitive Android permissions are requested for core play.
 
-See [docs/PRIVACY.md](docs/PRIVACY.md).
+Sharing/export happens only through explicit user actions and Android system UI.
+
+See [docs/PRIVACY.md](docs/PRIVACY.md) and [docs/DATA_STORAGE.md](docs/DATA_STORAGE.md).
 
 ## Accessibility
 
-The project uses semantic cell descriptions, large touch targets where practical, contrast-aware states, theme support, adaptive layouts, and settings for high contrast/reduced motion. Accessibility work remains a release quality gate and will continue through dedicated TalkBack and large-font testing.
+The project uses semantic cell descriptions, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. v0.8 adds semantics for hint sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
+
+Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests.
 
 See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 
@@ -144,12 +245,14 @@ Contributions to code, tests, documentation, accessibility, translations, and de
 Use Conventional Commits such as:
 
 ```text
-feat: add puzzle history filter
-fix: restore timer after process recreation
-test: cover generator uniqueness regression
-a11y: improve board semantics
+feat(engine): add a tested logical technique
+test(engine): cover candidate elimination safety
+fix(ui): preserve hint accessibility semantics
+a11y: improve board focus descriptions
 docs: document release verification
 ```
+
+For a new advanced Sudoku technique, implementation, structured evidence, deterministic correctness tests, localized explanation resources, and learning/practice representation should land together.
 
 ## Security
 

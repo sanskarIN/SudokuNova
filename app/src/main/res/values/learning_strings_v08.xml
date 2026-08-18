@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v08_hint_naked_single">Naked Single</string>
+    <string name="v08_hint_hidden_single">Hidden Single</string>
+    <string name="v08_hint_naked_pair">Naked Pair</string>
+    <string name="v08_hint_pointing">Pointing Pair / Triple</string>
+    <string name="v08_hint_box_line">Box-Line Reduction</string>
+    <string name="v08_hint_hidden_pair">Hidden Pair</string>
+    <string name="v08_hint_naked_triple">Naked Triple</string>
+    <string name="v08_hint_hidden_triple">Hidden Triple</string>
+    <string name="v08_hint_x_wing">X-Wing</string>
+    <string name="v08_hint_reveal">Reveal</string>
+
+    <string name="v08_unit_row">row %1$d</string>
+    <string name="v08_unit_column">column %1$d</string>
+    <string name="v08_unit_box">3×3 box %1$d</string>
+    <string name="v08_cell_label">row %1$d, column %2$d</string>
+
+    <string name="v08_hint_naked_single_body">This cell has only one candidate. Place %1$d in %2$s.</string>
+    <string name="v08_hint_hidden_single_body">In %1$s, %2$d can appear in only one cell. Place it in %3$s.</string>
+    <string name="v08_hint_elimination_body">%1$s removes %2$d candidate(s) from %3$d target cell(s). Follow the highlighted evidence, then place %4$d in %5$s.</string>
+    <string name="v08_hint_reveal_body">No supported teaching chain reaches a direct placement from the current state. Reveal %1$d in %2$s only if you want the stronger fallback.</string>
+    <string name="v08_hint_chain_steps">Teaching chain: %1$d logical step(s)</string>
+    <string name="v08_hint_chain_advanced">Includes candidate elimination before the final placement.</string>
+
+    <string name="v08_hint_source_semantics">Teaching source: %1$s</string>
+    <string name="v08_hint_target_semantics">Teaching target: %1$s</string>
+    <string name="v08_hint_placement_semantics">Hint placement target: %1$s, value %2$d</string>
+    <string name="v08_hint_elimination_semantics">Candidate elimination target: %1$s; remove %2$s</string>
+
+    <string name="v08_learn_progress_title">Learning progress</string>
+    <string name="v08_learn_progress_overall">Overall mastery: %1$d%%</string>
+    <string name="v08_learn_progress_mastered">Mastered techniques: %1$d of %2$d</string>
+    <string name="v08_learn_progress_practice">Practice: %1$d correct of %2$d attempts</string>
+    <string name="v08_learn_mastery_percent">Mastery %1$d%%</string>
+    <string name="v08_learn_view_lesson">Study technique</string>
+    <string name="v08_learn_practice">Practice</string>
+    <string name="v08_learn_practice_title">Technique practice</string>
+    <string name="v08_learn_practice_prompt">Which technique explains this vetted logical step?</string>
+    <string name="v08_learn_practice_evidence">Source cells: %1$d · Target cells: %2$d · Candidate eliminations: %3$d</string>
+    <string name="v08_learn_practice_correct">Correct. This evidence matches %1$s.</string>
+    <string name="v08_learn_practice_incorrect">Not this time. The evidence matches %1$s. Review the lesson and try another step.</string>
+    <string name="v08_learn_practice_next">Next practice</string>
+    <string name="v08_learn_practice_close">Close practice</string>
+    <string name="v08_learn_practice_unavailable">No vetted practice step is available for this technique in the local practice corpus yet.</string>
+    <string name="v08_learn_reset_progress">Reset learning progress</string>
+    <string name="v08_learn_reset_title">Reset learning progress?</string>
+    <string name="v08_learn_reset_body">This clears lesson views and practice results stored on this device. Game history and settings are not changed.</string>
+    <string name="v08_learn_reset_confirm">Reset</string>
+    <string name="v08_learn_reset_cancel">Cancel</string>
+
+    <string name="v08_lesson_hidden_pair_title">Hidden Pair</string>
+    <string name="v08_lesson_hidden_pair_body">If two digits can appear only in the same two cells of a row, column, or box, those cells are reserved for that hidden pair. Remove every other candidate from the two cells.</string>
+    <string name="v08_lesson_naked_triple_title">Naked Triple</string>
+    <string name="v08_lesson_naked_triple_body">If three cells in one unit contain candidates drawn from the same three digits, those digits are reserved for the three cells. Remove those digits from other cells in that unit.</string>
+    <string name="v08_lesson_hidden_triple_title">Hidden Triple</string>
+    <string name="v08_lesson_hidden_triple_body">If three digits are restricted to the same three cells of a unit, keep only those three digits in the source cells and remove their other candidates.</string>
+    <string name="v08_lesson_x_wing_body">When a digit is limited to the same two columns in each of two rows, or the same two rows in each of two columns, the four source cells form an X-Wing. Remove that digit from the other cells on the matching lines.</string>
+</resources>
