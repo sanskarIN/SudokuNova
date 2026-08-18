@@ -31,6 +31,22 @@ For milestone pull requests:
 - record final workflow evidence before declaring the milestone verified;
 - close the milestone issue only after successful merge when that is the stated process.
 
+## Repository Automation and Ownership
+
+The public repository carries the project-maintenance surfaces needed for normal open-source operation:
+
+- `.github/CODEOWNERS` assigns default ownership to `@sanskarIN` and explicitly covers release/security/docs/app/engine surfaces;
+- `.github/dependabot.yml` checks both Gradle dependencies and GitHub Actions weekly;
+- `.github/ISSUE_TEMPLATE/` provides structured bug, feature, accessibility, performance, and documentation reports plus security/support contact links;
+- `.github/pull_request_template.md` keeps contributor verification and documentation expectations visible during review;
+- `.github/FUNDING.yml` exposes the optional Buy Me a Coffee support link through GitHub's funding metadata;
+- root `SECURITY.md` is the vulnerability-reporting authority;
+- root `SUPPORT.md` is the general support boundary;
+- `.github/workflows/ci.yml` is the standard build/test/release-assembly gate;
+- `.github/workflows/instrumentation.yml` is the API-35 connected Compose/Room gate.
+
+These files are project infrastructure, not decoration. Changes to them should receive the same review discipline as code because they can affect dependency intake, release evidence, contributor routing, security reporting, or merge confidence.
+
 ## Commit Policy
 
 Preferred commit categories include:
