@@ -3,13 +3,15 @@
 ## Current Development State
 
 **Repository:** `https://github.com/sanskarIN/SudokuNova`  
-**Latest merged milestone on `main`:** `v0.7.0`  
-**Current implementation milestone:** `v0.8.0 — Learning and Advanced Hints`  
-**v0.8 focused issue:** `#21`  
-**v0.8 pull request:** `#22` — `feat: add v0.8 learning and advanced hints`  
-**v0.8 branch:** `feature/v0.8-learning-advanced-hints`  
-**Branch base:** `71ad519d1cc1fc02c4bf6ed8f5133832418943b7`  
-**Branch state before this change log update:** 39 focused commits ahead of `main`, 0 behind  
+**Latest merged milestone on `main`:** `v0.8.0 — Learning and Advanced Hints`  
+**v0.8 focused issue:** `#21` — closed as completed  
+**v0.8 pull request:** `#22` — merged  
+**Final verified v0.8 PR head:** `b63c8019cfc2b6f606247af1543586a7ede1b3df`  
+**v0.8 merge commit:** `f07e6496ff5de5bfdfb7676b527a31f71f8b912c`  
+**Final standard Android CI:** run `32121249242` — GREEN  
+**Final API-35 instrumentation:** run `32121249202` — GREEN  
+**Current focused milestone:** `v0.9 — Release Hardening`  
+**Current focused issue:** `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`  
 **Android application ID:** `in.sanskar.sudokunova`  
 **Kotlin source namespace:** `com.sanskar.sudokunova`  
 **Android versionCode:** `800`  
@@ -17,13 +19,71 @@
 **License:** MIT  
 **Project commit email:** `sanskarin@outlook.in`
 
-v0.8 implementation is feature-complete on the pull-request branch. It is not considered merged or released until the standard Android CI and API-35 connected instrumentation workflows are green on the final clean PR head.
+SudokuNova now has one cumulative verified v0.1–v0.8 line on `main`. The v0.8 feature branch was 0 commits behind `main` before merge, the final PR head passed both required workflows, PR #22 was merged with the verified expected head SHA, and issue #21 was closed only after the merge completed.
 
-## v0.8 Implementation
+## Final v0.8 Verification — GREEN
 
-### Structured teaching evidence
+The exact clean PR head `b63c8019cfc2b6f606247af1543586a7ede1b3df` passed every required merge gate.
 
-The Sudoku engine now has a platform-independent teaching evidence model rather than storing hint prose in domain code.
+### Standard Android CI — GREEN
+
+**Workflow:** `Android CI`  
+**Run number:** `417`  
+**Run ID:** `32121249242`
+
+Completed successfully:
+
+1. Set up job.
+2. Checkout sources.
+3. Set up Java 17.
+4. Set up Gradle cache and validate wrapper.
+5. Verify English/Hindi translation parity.
+6. Verify `:sudoku-engine:test`.
+7. Verify `:app:testDebugUnitTest`.
+8. Compile Android instrumentation tests through `:app:assembleDebugAndroidTest`.
+9. Run `:app:lintDebug`.
+10. Assemble debug APK through `:app:assembleDebug`.
+11. Upload reports.
+12. Post-job cleanup.
+
+The final translation gate remained green after all v0.8 localization changes. The earlier successful parity stage reported 250 localized English/Hindi keys, and the final head passed the same parity verifier again.
+
+### API-35 Connected Instrumentation — GREEN
+
+**Workflow:** `Android Instrumentation`  
+**Run number:** `50`  
+**Run ID:** `32121249202`
+
+Completed successfully:
+
+1. Set up job.
+2. Checkout the exact final PR head.
+3. Set up Java 17.
+4. Validate/configure Gradle.
+5. Enable KVM access.
+6. Run connected Compose and Room tests on the API-35 emulator.
+7. Upload instrumentation reports.
+8. Post-job cleanup.
+
+The connected gate includes the repaired v0.8 Learn lesson/practice smoke flow in addition to the existing navigation, persistence, challenge, history, saved-puzzle, settings, custom-puzzle, Room, and transfer regression coverage.
+
+## v0.8 Merge Record
+
+PR #22 was moved out of draft only after both final-head workflows were green.
+
+The merge operation used:
+
+- expected head SHA: `b63c8019cfc2b6f606247af1543586a7ede1b3df`;
+- merge method: merge commit;
+- resulting merge commit: `f07e6496ff5de5bfdfb7676b527a31f71f8b912c`.
+
+After the successful merge, issue #21 was explicitly closed with state reason `completed`.
+
+No implementation commit was added to the PR branch after the final successful workflow pair, so the verified head and merged implementation are the same code/documentation state.
+
+## v0.8 Structured Teaching Evidence
+
+The Sudoku engine now has a platform-independent teaching evidence model rather than embedding player-facing hint prose in domain logic.
 
 `TeachingStep` records:
 
@@ -34,13 +94,25 @@ The Sudoku engine now has a platform-independent teaching evidence model rather 
 - exact candidate eliminations;
 - optional final placement.
 
-Supporting evidence types validate cell/value bounds and reject duplicate/empty evidence states where applicable.
+Supporting evidence types validate:
 
-### Deterministic teaching-step finder
+- board cell indices;
+- candidate values;
+- placement values;
+- duplicate source cells;
+- duplicate target cells;
+- duplicate elimination records;
+- the requirement that a teaching step has a real placement or at least one elimination.
 
-`TeachingStepFinder` owns a deterministic candidate-state pipeline. It applies candidate eliminations internally and applies placements through immutable `SudokuBoard` values.
+This model is reusable by the logical solver, hints, learning content, practice, accessibility presentation, and future platform clients without importing Android UI concepts into `sudoku-engine`.
 
-Technique order is intentionally simple-to-advanced:
+## Deterministic Teaching-Step Finder
+
+`TeachingStepFinder` owns the candidate-state pipeline used by v0.8 teaching logic.
+
+It applies candidate eliminations to an internal candidate state and applies placements through new immutable `SudokuBoard` values. Placing a value also removes that value from row/column/box peers.
+
+Technique search order is intentionally deterministic and simple-to-advanced:
 
 1. Naked Single
 2. Hidden Single
@@ -54,167 +126,225 @@ Technique order is intentionally simple-to-advanced:
 
 The implementation includes both row-oriented and column-oriented X-Wing detection.
 
-### Shared logical pipeline
+`TeachingTrace` records:
 
-`LogicalSolver` no longer maintains an independent duplicate candidate-solving implementation. It consumes `TeachingStepFinder.trace()` and derives:
+- initial board;
+- final board;
+- ordered teaching steps;
+- solved state;
+- unresolved-cell count.
 
-- technique usage counts;
-- candidate-elimination counts;
+Trace generation has an explicit positive maximum-step bound and requires a valid Sudoku board.
+
+## Shared Logical Pipeline
+
+`LogicalSolver` was refactored so it does not maintain a second independent candidate-solving implementation.
+
+It now consumes `TeachingStepFinder.trace()` and derives:
+
+- per-technique usage counts;
+- candidate-elimination count;
 - hardest technique;
+- placement count;
 - unresolved-cell count;
 - final logical board state.
 
-This keeps difficulty evidence, teaching evidence, and hints aligned to the same Sudoku logic.
+This aligns logical difficulty evidence, teaching evidence, and hint behavior around one deterministic candidate transformation pipeline.
 
-### HintEngine refactor
+## Supported v0.8 Techniques
 
-`HintEngine` now consumes structured teaching traces.
+### Naked Single
 
-Behavior:
+A cell has exactly one remaining candidate. The step records the source/target cell and the final placement.
 
-- invalid boards fail closed;
-- completed boards return no hint;
-- supported logical chains are preferred;
-- a logical hint contains every teaching step through the first supported placement;
-- the value applied to the game remains the final proven placement;
-- the hint identity is the hardest logical technique used in the chain;
-- Reveal remains an explicit solver-backed fallback when the supported teaching pipeline cannot reach a placement;
-- Reveal does not fabricate source cells or candidate-elimination evidence.
+### Hidden Single
 
-### Advanced hint identity correction
+Within a row, column, or box, one digit can occur in only one remaining candidate cell. The evidence records the source unit and the final placement.
 
-A review defect was found before merge: a chain such as Naked Pair → Naked Single originally displayed the final Single as the hint title. That hid the advanced elimination that actually enabled the placement.
+### Naked Pair
 
-The fix makes `SudokuHint.technique` report the hardest ranked technique in its teaching chain while `SudokuHint.placement` remains the final placement. Dedicated engine tests cover advanced-chain identity, direct placement identity, and Reveal identity.
+Two cells in one unit contain the same two candidates. Those two candidates are eliminated from other cells in the same unit.
 
-## Advanced Technique Correctness
+### Pointing Pair / Triple
+
+Within one box, every remaining candidate for a digit lies on one row or one column. The digit is eliminated from the matching line outside that box.
+
+### Box-Line Reduction
+
+Within one row or column, all remaining candidates for one digit lie inside one box. The digit is eliminated from other cells in that box.
 
 ### Hidden Pair
 
-Two digits restricted to the same two cells in a unit cause other candidates to be removed from those source cells.
+Two digits are restricted to the same two cells in a unit. Every other candidate is removed from those two source cells.
 
 ### Naked Triple
 
-Three cells whose candidates form the same three-digit union reserve those digits for the triple and remove them from other cells in the unit.
+Three cells in a unit contain candidates whose union is exactly three digits. Those digits are removed from other cells in the same unit.
 
 ### Hidden Triple
 
-Three digits restricted to the same three cells keep only those digits in the source cells and remove extra candidates there.
+Three digits are restricted to the same three cells in a unit. Candidates outside those digits are removed from the source cells.
 
 ### X-Wing
 
-For a digit:
+For a candidate digit:
 
-- two rows with the same two candidate columns form the row-oriented pattern and eliminate the candidate from other cells in those columns;
-- two columns with the same two candidate rows form the transposed pattern and eliminate the candidate from other cells in those rows.
+- two rows with exactly the same two candidate columns form a row-oriented X-Wing and eliminate the candidate from other cells in those two columns;
+- two columns with exactly the same two candidate rows form the transposed X-Wing and eliminate the candidate from other cells in those two rows.
 
-### Legal candidate-state probes
+## Legal Candidate-State Testability
 
-Tests can inject controlled candidate subsets through an internal testability path. Overrides are accepted only when they:
+Advanced-technique tests use an internal controlled-candidate entry point so specific patterns can be proven deterministically.
 
-- target an empty board cell;
-- are non-empty;
-- remain a subset of candidates that are actually legal under Sudoku constraints.
+Overrides are accepted only when they:
 
-This allows deterministic pattern tests without creating impossible candidate states that production logic could never reach.
+- reference board indices 0–80;
+- target cells that are currently empty;
+- contain at least one candidate;
+- remain a subset of candidates that are actually legal on the supplied Sudoku board.
 
-## Engine Correctness Tests
+Impossible test-only candidate states are rejected instead of silently bypassing Sudoku legality.
 
-### Teaching trace safety
+## HintEngine Refactor
 
-`TeachingStepFinderTest` verifies deterministic traces and solution safety.
+`HintEngine` consumes structured teaching traces instead of maintaining user-facing explanation logic inside the engine.
 
-For known and generated puzzles:
+Behavior now is:
 
-- repeated traces must be equal;
-- each placement must match the unique solved value;
-- no candidate elimination may remove the solved value of its target cell;
-- invalid/completed progress states fail closed where required.
+- invalid boards fail closed;
+- completed boards return no hint;
+- supported logical teaching is preferred;
+- a logical hint contains the teaching steps through the first supported placement;
+- the game applies only the final proven placement;
+- the displayed hint identity is the hardest technique in the teaching chain;
+- Reveal is a separate solver-backed fallback when the supported teaching pipeline cannot reach a placement;
+- Reveal does not claim a logical source unit, candidate-elimination chain, or unsupported technique.
 
-Generated corpus coverage spans the supported difficulty enum with deterministic seeds.
+## Advanced Hint Identity Defect Found and Fixed
 
-### Advanced technique tests
+During review, a multi-step chain such as Naked Pair → Naked Single originally reported the final Naked Single as the hint title. That hid the elimination technique that enabled the placement.
 
-`AdvancedTeachingTechniqueTest` directly validates:
-
-- Hidden Pair source/evidence/eliminations;
-- Naked Triple source/evidence/eliminations;
-- Hidden Triple source/evidence/eliminations;
-- row-oriented X-Wing targets and eliminated digit;
-- rejection of impossible candidate overrides.
-
-### Hint identity tests
+The corrected `SudokuHint.technique` selects the maximum-ranked logical technique from the chain while `SudokuHint.placement` still returns the final placement step.
 
 `SudokuHintTest` verifies:
 
-- multi-step chains report the hardest technique;
-- the final placement remains the action applied;
-- direct placements retain their own technique;
+- a multi-step advanced chain reports its hardest technique;
+- the final placement remains unchanged;
+- a direct placement reports its own technique;
 - Reveal remains a separate fallback identity.
 
-### Offline practice catalog tests
+## Engine Correctness Coverage
 
-`TeachingPracticeCatalogTest` verifies:
+### `TeachingStepFinderTest`
+
+Verifies:
+
+- deterministic repeat traces;
+- known-puzzle solving through teaching steps;
+- generated-puzzle solution safety;
+- every teaching placement equals the unique solved value;
+- no candidate elimination removes the unique solved value from its target cell;
+- empty/invalid progress states fail closed where designed.
+
+Generated corpus coverage uses deterministic seeds across the supported `Difficulty` enum.
+
+### `AdvancedTeachingTechniqueTest`
+
+Directly verifies:
+
+- Hidden Pair source cells and exact extra-candidate eliminations;
+- Naked Triple source set and elimination domain;
+- Hidden Triple source set and exact extra-candidate eliminations;
+- row-oriented X-Wing source cells and target-line restrictions;
+- rejection of illegal candidate overrides.
+
+### `TeachingPracticeCatalogTest`
+
+Verifies:
 
 - every supported `LogicalTechnique` has practice coverage;
-- practice lookup is deterministic;
-- choices are unique;
-- the correct technique is included;
-- incorrect choices are rejected;
-- elimination exercises contain target and candidate evidence.
+- catalog lookup is deterministic;
+- answer choices are unique;
+- the correct answer is always included;
+- wrong answers are rejected;
+- elimination exercises expose candidate and target evidence.
 
-## Offline Learning and Practice
+### `SudokuHintTest`
 
-### TeachingPracticeCatalog
+Verifies hint technique/placement/fallback contracts independently from Android UI.
 
-The engine now contains a deterministic, platform-independent practice catalog. Practice exercises store:
+## Offline Practice Catalog
+
+`TeachingPracticeCatalog` is platform-independent and deterministic.
+
+Each `TeachingPracticeExercise` contains:
 
 - stable exercise ID;
 - structured `TeachingStep` evidence;
-- bounded/unique technique choices;
-- correct-answer identity.
+- unique answer choices;
+- the correct logical technique.
 
-There is at least one practice exercise for every v0.8 supported technique.
+The catalog contains at least one exercise for every v0.8 supported technique.
 
-The catalog contains no Android resources or player-facing prose.
+No account, network request, cloud API, Android resource, or player-facing prose is required to construct an exercise.
 
-### LearnViewModel
+## LearnViewModel
 
 The Android learning state layer now supports:
 
-- lesson-view recording;
-- starting practice for a technique;
+- observing local learning progress;
+- recording lesson views;
+- starting deterministic practice by technique;
 - unanswered state;
-- first-answer-only recording;
-- correct/incorrect result state;
-- deterministic next practice;
-- closing practice;
-- resetting learning progress.
+- first-answer-only submission;
+- correct/incorrect feedback state;
+- deterministic next-practice selection;
+- practice close;
+- learning-progress reset.
 
-Repeated taps after a practice question is answered do not create duplicate attempts.
+Once a practice answer has been submitted, repeated taps do not create extra attempts.
 
-### Learn screen
+## Interactive Learn Screen
 
-The old read-only Learn page is now an interactive learning center with:
+The previous read-only learning page is now an interactive learning center.
 
-- existing Sudoku/candidate/solving-habit introductory lessons preserved;
-- all nine supported technique lessons;
-- overall mastery card;
+It preserves the introductory lessons for:
+
+- what Sudoku is;
+- candidates;
+- solving habits.
+
+It adds technique learning cards for all nine supported strategies with:
+
+- lesson title;
+- mastery percentage;
+- progress indicator;
+- correct/attempt statistics;
+- Study Technique action;
+- Practice action.
+
+The screen also contains:
+
+- overall mastery;
 - mastered-technique count;
-- aggregate practice results;
-- per-technique mastery bars;
-- per-technique practice statistics;
-- Study Technique controls;
-- Practice controls;
+- total practice results;
 - localized lesson dialogs;
-- localized correct/incorrect practice feedback;
-- reset confirmation.
+- localized practice prompt/evidence/result dialogs;
+- safe local learning-progress reset confirmation.
 
-Stable semantic test tags were added to the lazy learning list, technique study/practice controls, and practice answer choices so connected tests do not depend on off-screen text discovery.
+## Stable Learn Test Semantics
 
-## Local Learning Progress
+The Learn LazyColumn, technique study buttons, technique practice buttons, and answer choices now have stable semantic test tags.
 
-### Data model
+This allows connected Compose tests to:
+
+- scroll the lazy list by index so the target item is actually composed;
+- target a specific logical technique without relying on duplicate labels;
+- keep user-facing text assertions for the visible dialog and result.
+
+These tags fixed the first connected-test failure without weakening the actual UI flow.
+
+## Local Learning Progress Model
 
 `TechniqueLearningProgress` stores:
 
@@ -222,11 +352,26 @@ Stable semantic test tags were added to the lazy learning list, technique study/
 - practice attempts;
 - practice successes.
 
-It derives a bounded mastery percentage from lesson exposure, practice depth, and accuracy.
+It validates:
 
-Mastery is not claimed without repeated practice: at least three attempts, at least three successful attempts, and sufficient derived mastery are required.
+- non-negative lesson views;
+- non-negative attempts;
+- non-negative successes;
+- successes must not exceed attempts.
 
-`LearningProgress` aggregates all supported techniques and derives:
+It derives a bounded mastery percentage from:
+
+- lesson exposure;
+- practice depth;
+- practice accuracy.
+
+A technique is not marked mastered until it has at least:
+
+- three attempts;
+- three successes;
+- sufficient derived mastery.
+
+`LearningProgress` aggregates every supported technique and exposes:
 
 - total lesson views;
 - total attempts;
@@ -234,323 +379,376 @@ Mastery is not claimed without repeated practice: at least three attempts, at le
 - mastered-technique count;
 - overall mastery percentage.
 
-### DataStore persistence
+## DataStore Learning Persistence
 
-`AppPreferencesRepository` now persists three bounded counters per supported logical technique:
+`AppPreferencesRepository` now stores per-technique counters for:
 
-- `learning_lesson_views_*`;
-- `learning_practice_attempts_*`;
-- `learning_practice_successes_*`.
+- lesson views;
+- practice attempts;
+- practice successes.
 
-Learning counters are bounded to prevent integer overflow.
+Keys are generated from the logical-technique name and stored in the existing Preferences DataStore.
 
-`resetLearningProgress()` removes only learning counters. It does not erase:
+Learning counter increments are bounded to prevent integer overflow.
+
+`resetLearningProgress()` removes only learning counters. It does not remove:
 
 - user settings;
 - active game;
-- gameplay statistics;
-- Room history;
-- saved/custom puzzles;
-- challenge records.
+- aggregate game statistics;
+- Room History;
+- Saved Puzzles;
+- custom puzzles;
+- Daily/Weekly challenge records.
 
-No account, cloud service, analytics SDK, ad SDK, or network connection is required for v0.8 learning progress.
+Learning progress remains fully local and requires no account or cloud backend.
 
-### App JVM tests
+## Android Learning JVM Tests
 
 `LearningProgressTest` covers:
 
-- zero-state initialization for every technique;
+- default zero state for every supported technique;
 - lesson-only progress without false mastery;
-- repeated successful practice reaching mastery;
+- repeated correct practice reaching mastery;
 - aggregate totals;
-- rejection of impossible success/attempt counters.
+- invalid success/attempt relationships.
 
-A CI defect was caught before merge because this Android module uses JUnit4 while the first version of the new test imported `kotlin.test`. The test was corrected to use `org.junit.Test` and `org.junit.Assert` in a dedicated fix commit.
+### JUnit Framework Defect Found and Fixed
+
+The first v0.8 standard CI attempt reached Android unit-test compilation after translation parity and all engine tests had already passed. The new app JVM test imported `kotlin.test`, but the Android `app` module is configured with JUnit4.
+
+The fix changed the app test to:
+
+- `org.junit.Test`;
+- `org.junit.Assert.assertEquals`;
+- `org.junit.Assert.assertFalse`;
+- `org.junit.Assert.assertTrue`.
+
+The final CI run then passed the Android JVM test stage and all later standard CI stages.
 
 ## Localized Hint Presentation
 
-`HintPresentation.kt` maps structured domain evidence into Android resources.
+`HintPresentation.kt` converts structured engine evidence into Android resources.
 
-The Android layer localizes:
+The Android layer owns localized:
 
 - technique names;
+- row labels;
+- column labels;
+- box labels;
 - cell labels;
-- row/column/box labels;
 - Naked Single explanations;
 - Hidden Single explanations;
-- elimination-chain explanations;
+- advanced elimination-chain explanations;
 - Reveal fallback explanations;
 - teaching-chain metadata.
 
-No player-facing English/Hindi hint explanation is stored in `sudoku-engine`.
+This keeps `sudoku-engine` free from English/Hindi player-facing strings.
 
-## English / Hindi Localization
+## English / Hindi v0.8 Resources
 
-New paired files:
+New paired resource files:
 
-- `app/src/main/res/values/learning_strings_v08.xml`
-- `app/src/main/res/values-hi/learning_strings_v08.xml`
+- `app/src/main/res/values/learning_strings_v08.xml`;
+- `app/src/main/res/values-hi/learning_strings_v08.xml`.
 
-They cover:
+They include:
 
-- all nine logical technique names;
+- all nine supported technique names;
 - Reveal;
 - row/column/box/cell labels;
-- hint explanations;
+- direct hint explanation templates;
+- elimination-chain explanation templates;
 - teaching-chain descriptions;
-- source/target/placement/elimination accessibility descriptions;
-- learning-progress labels;
-- practice prompts/results;
-- reset dialog text;
+- source semantics;
+- target semantics;
+- placement semantics;
+- candidate-elimination semantics;
+- learning progress labels;
+- practice prompts/results/actions;
+- reset confirmation;
 - Hidden Pair lesson;
 - Naked Triple lesson;
 - Hidden Triple lesson;
 - X-Wing lesson.
 
-The first v0.8 CI attempt passed translation parity for **250 localized string keys** before reaching later Gradle stages. The final PR head must pass the parity check again.
+The final standard CI head passed English/Hindi translation parity.
 
 ## In-Game Teaching Evidence
 
-`GameRoute` passes the pending `SudokuHint` through the game screen to the Sudoku board while the hint dialog is open.
+`GameRoute` observes the pending `SudokuHint` and passes it through the game surface to `SudokuBoardView` while the hint dialog is open.
 
-`SudokuBoardView` derives:
+The board derives:
 
-- all source cells in the teaching chain;
+- all source cells across the teaching chain;
 - all target cells;
-- final placement cell/value;
+- final placement cell and value;
 - candidate eliminations grouped by target cell.
 
-Presentation priority preserves correctness visibility:
+Presentation priority is:
 
 1. conflict/error;
 2. final hint placement;
 3. teaching target;
 4. teaching source;
-5. ordinary selection/same-value/peer highlighting.
+5. ordinary selection/same-number/peer highlighting.
 
-Applying a hint still changes only the final supported placement; candidate evidence is explanatory and does not silently rewrite player notes or board values.
+The explanatory evidence does not silently mutate player notes or candidate state in the UI. Applying the hint still performs only the final supported placement through the existing game-state path.
 
-## Accessibility
+## Accessibility Evidence
 
-Hint evidence is not color-only.
+Teaching evidence is not represented only by color.
 
-Affected Sudoku cells can announce localized semantics for:
+Affected cells can announce localized descriptions for:
 
 - teaching source;
 - teaching target;
-- final placement target/value;
-- candidate elimination target and exact candidates to remove.
+- final placement target and value;
+- candidate-elimination target and exact candidates to remove.
 
-Existing row/column/value/original-clue/conflict semantics remain present.
+Existing semantic information for row, column, value, original clue, and conflict is preserved.
 
-Documentation now explicitly requires TalkBack checks for teaching evidence and Learn/practice dialogs during release hardening.
+The accessibility documentation now explicitly includes v0.8 hint evidence and Learn/practice dialogs in the release QA checklist.
 
-## Connected Compose Coverage
+## Connected Compose Test Defect Found and Fixed
 
-`MainActivityTest` now includes Learn/practice smoke coverage.
+The first v0.8 API-35 attempt compiled production and Android-test source successfully, installed the APKs, and started 13 tests. Twelve passed; the new Learn flow test failed because it searched by text for a `Naked Single` LazyColumn item before that off-screen item was composed.
 
-The first API-35 run compiled the entire application and Android test source successfully, launched all 13 connected tests, and found one failure in the new Learn smoke test: it attempted to find the off-screen `Naked Single` LazyColumn item before Compose had created that item.
-
-This was a test-selection defect, not an app crash or production compile failure.
-
-The repair:
-
-- gives the Learn LazyColumn a stable semantic test tag;
-- scrolls to the first technique item by LazyList index;
-- selects Study/Practice controls by technique-specific tags;
-- selects the practice answer by technique-specific tag;
-- keeps visible-text assertions for the actual user-facing dialog/result.
-
-The corrected final head must pass API-35 connected instrumentation again before merge.
-
-## Release Metadata
-
-Android application metadata is now:
-
-- `versionCode = 800`
-- `versionName = "0.8.0"`
-- debug builds continue to append `-debug` and the debug application ID suffix.
-
-Toolchain remains:
-
-- Android Gradle Plugin `9.3.1`
-- Kotlin `2.4.10`
-- KSP `2.3.10`
-- Room `2.8.3`
-- Compose BOM `2026.08.00`
-- compile SDK `37`
-- target SDK `37`
-- min SDK `26`
-- Java/JVM `17`
-- Gradle `9.5`
-
-## Documentation Updated for v0.8
-
-### `README.md`
-
-Updated from the early-milestone presentation to the cumulative v0.8 product state, including advanced hints, learning, practice, local progress, transfer, privacy, accessibility, build commands, tests, and next milestone.
-
-### `CHANGELOG.md`
-
-Added a complete v0.8 Unreleased section with additions, changes, safety/correctness notes, release metadata, and cumulative milestone context.
-
-### `ROADMAP.md`
-
-Marks v0.1–v0.7 complete and records the implemented v0.8 scope. Final CI/API-35/merge boxes remain intentionally incomplete until the exact final PR head is verified and merged.
-
-### `docs/LEARNING_AND_HINTS.md`
-
-New complete architecture/reference document for:
-
-- teaching evidence;
-- all supported techniques;
-- hint behavior;
-- Reveal fallback;
-- game-board presentation;
-- Learn/practice architecture;
-- local progress;
-- correctness tests;
-- localization;
-- verification gates;
-- future technique extension rules.
-
-### `docs/ACCESSIBILITY.md`
-
-Expanded with teaching-evidence semantics, TalkBack checks, contrast requirements, Learn dialog checks, and release verification expectations.
-
-### `docs/DATA_STORAGE.md`
-
-Expanded with Preferences DataStore learning counters, bounded/reset behavior, Room structured storage, backup/versioning rules, and data-integrity constraints.
-
-### `docs/ARCHITECTURE.md`
-
-Updated the old architecture description to reflect:
-
-- Room already being in production use;
-- the shared teaching-step pipeline;
-- practice catalog boundary;
-- learning persistence;
-- safe transfer boundary;
-- accessibility boundary;
-- current navigation/testing strategy.
-
-### `docs/LOCALIZATION.md`
-
-Updated to reflect English/Hindi as maintained languages, v0.8 resource files, structured engine evidence, placeholder safety, accessibility localization, and the translation parity gate.
-
-## Complete v0.8 File-by-File Change Map
-
-The branch comparison against `main` immediately before this `what_changed.md` update contained 29 product/test/documentation/build files and 39 focused commits. This list intentionally includes every compared v0.8 file rather than only highlighting selected files.
-
-### Root documentation/build metadata
-
-1. `CHANGELOG.md` — complete v0.8 release-line changes and cumulative milestone record.
-2. `README.md` — current v0.8 capabilities, architecture, build/test/privacy/accessibility information.
-3. `ROADMAP.md` — milestone completion state and v0.8 gate tracking.
-4. `app/build.gradle.kts` — versionCode `800` / versionName `0.8.0`.
-
-### Android application source
-
-5. `app/src/main/java/com/sanskar/sudokunova/data/AppPreferencesRepository.kt` — local per-technique learning persistence/reset.
-6. `app/src/main/java/com/sanskar/sudokunova/data/LearningProgress.kt` — progress/mastery model.
-7. `app/src/main/java/com/sanskar/sudokunova/ui/game/GameScreen.kt` — live pending-hint evidence flow and localized hint dialog.
-8. `app/src/main/java/com/sanskar/sudokunova/ui/game/HintPresentation.kt` — Android resource-backed hint names/explanations.
-9. `app/src/main/java/com/sanskar/sudokunova/ui/game/SudokuBoard.kt` — source/target/elimination/placement visual and accessibility evidence.
-10. `app/src/main/java/com/sanskar/sudokunova/ui/learn/LearnScreen.kt` — interactive learning center, progress, lessons, practice, reset, stable test tags.
-11. `app/src/main/java/com/sanskar/sudokunova/ui/learn/LearnViewModel.kt` — practice and progress interaction state.
-
-### Android localization resources
-
-12. `app/src/main/res/values/learning_strings_v08.xml` — English v0.8 learning/hint/accessibility resources.
-13. `app/src/main/res/values-hi/learning_strings_v08.xml` — Hindi parity resources.
-
-### Android tests
-
-14. `app/src/test/java/com/sanskar/sudokunova/data/LearningProgressTest.kt` — learning-model JVM tests using module-standard JUnit4.
-15. `app/src/androidTest/java/com/sanskar/sudokunova/MainActivityTest.kt` — Learn lesson/practice connected smoke coverage plus prior application smoke tests.
-
-### Documentation
-
-16. `docs/ACCESSIBILITY.md` — v0.8 hint evidence and release accessibility requirements.
-17. `docs/ARCHITECTURE.md` — current engine/app/persistence/teaching architecture.
-18. `docs/DATA_STORAGE.md` — learning persistence and current DataStore/Room rules.
-19. `docs/LEARNING_AND_HINTS.md` — complete v0.8 teaching/learning/hint technical guide.
-20. `docs/LOCALIZATION.md` — v0.8 localization/parity rules.
-
-### Sudoku engine production source
-
-21. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/HintEngine.kt` — structured hint chain + explicit Reveal fallback + hardest-technique identity.
-22. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/LogicalSolver.kt` — advanced technique registry and shared teaching-trace solver.
-23. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/TeachingPractice.kt` — deterministic offline practice catalog.
-24. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/TeachingStep.kt` — structured evidence model.
-25. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/TeachingStepFinder.kt` — deterministic candidate-state detector for all supported v0.8 techniques.
-
-### Sudoku engine tests
-
-26. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/AdvancedTeachingTechniqueTest.kt` — Hidden Pair/Triple, Naked Triple, X-Wing controlled-evidence tests.
-27. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/SudokuHintTest.kt` — hardest-technique, final-placement, direct-placement, Reveal contract tests.
-28. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/TeachingPracticeCatalogTest.kt` — complete deterministic practice coverage.
-29. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/TeachingStepFinderTest.kt` — trace determinism and solution-safety corpus coverage.
-
-`what_changed.md` itself becomes the 30th changed file when this update is committed.
-
-## Pre-Merge Verification Record
-
-### First standard Android CI attempt
-
-The first broad v0.8 verification head successfully passed:
-
-- checkout/toolchain setup;
-- English/Hindi translation parity for 250 keys;
-- all `:sudoku-engine:test` tests;
-- application production Kotlin compilation.
-
-It then failed at Android JVM test compilation because the new app test used `kotlin.test` imports even though `app` is configured with JUnit4. This was fixed in `fix(test): use JUnit4 assertions for app learning tests`.
-
-### First API-35 connected attempt
-
-The application and Android-test sources compiled, APKs installed, and 13 tests started. Twelve tests passed; the new Learn test failed because it searched for a non-composed off-screen LazyColumn item.
-
-This was fixed by:
+The repair was split into focused commits:
 
 - `testability(learn): add stable technique semantic tags`;
 - `fix(androidTest): make Learn practice smoke test deterministic`.
 
-### Required final gate
+The corrected test now:
 
-Before PR #22 can leave draft state and merge, the exact final clean PR head must pass:
+- enters Learn;
+- confirms Learning Progress;
+- scrolls the tagged LazyColumn to the first technique item;
+- opens Naked Single through its technique-specific Study tag;
+- closes the lesson;
+- starts Naked Single practice through its technique-specific Practice tag;
+- verifies the practice dialog/prompt;
+- selects the Naked Single answer through its technique-specific choice tag;
+- verifies the localized correct-result text.
 
-```bash
-python scripts/verify_translations.py
-./gradlew :sudoku-engine:test --stacktrace
-./gradlew :app:testDebugUnitTest --stacktrace
-./gradlew :app:assembleDebugAndroidTest --stacktrace
-./gradlew :app:lintDebug --stacktrace
-./gradlew :app:assembleDebug --stacktrace
-```
+The final API-35 run passed the complete connected suite.
 
-and:
+## Release Metadata
 
-```bash
-./gradlew :app:connectedDebugAndroidTest --stacktrace
-```
+Android app metadata after v0.8:
 
-on the repository API-35 emulator workflow.
+- `versionCode = 800`;
+- `versionName = "0.8.0"`;
+- debug application ID suffix remains configured;
+- debug version suffix remains configured.
 
-No gate will be marked green in this file until it actually completes successfully on the exact final implementation head.
+Current build stack remains:
 
-## v0.2–v0.7 Foundation Preserved
+- Android Gradle Plugin `9.3.1`;
+- Kotlin `2.4.10`;
+- KSP `2.3.10`;
+- Room `2.8.3`;
+- Compose BOM `2026.08.00`;
+- compile SDK `37`;
+- target SDK `37`;
+- min SDK `26`;
+- Java/JVM target `17`;
+- Gradle wrapper `9.5`.
 
-The v0.8 branch is cumulative from the verified v0.7 main line and preserves the existing implementation for:
+Room annotation processing uses KSP2.
 
-- v0.2 gameplay hardening, input modes, keyboard controls, persistence, haptics/sounds;
-- v0.3 logical difficulty, deterministic generation/corpus verification;
-- v0.4 English/Hindi localization, accessibility, high contrast and adaptive layout;
-- v0.5 Room-backed History, Favorites, Saved Puzzles, replay provenance and player data;
-- v0.6 Daily/Weekly Challenges and challenge persistence;
-- v0.7 puzzle codes, strict import validation, result sharing, Android document transfer, versioned backup/restore, duplicate-safe restore and transfer security rules.
+## Documentation Completed for v0.8
 
-The branch is 0 commits behind `main` at the recorded comparison point, so none of the cumulative v0.2–v0.7 work has been dropped.
+### `README.md`
+
+Updated to the cumulative v0.8 feature set and then, after merge, handed off the Current Development Status to v0.9 release hardening while preserving the verified v0.8 workflow record.
+
+### `CHANGELOG.md`
+
+v0.8 is now recorded as `[0.8.0] - 2026-08-18` with implementation, safety, correctness, defect-fix, and exact verification/merge evidence. `[Unreleased]` now points to v0.9 release-hardening work rather than claiming unimplemented completion.
+
+### `ROADMAP.md`
+
+v0.8 is marked Completed. The final Android CI, API-35 instrumentation, merge, and issue-closure items are all checked with real run/commit evidence. v0.9 is now In Progress and linked to issue #23.
+
+### `docs/LEARNING_AND_HINTS.md`
+
+Contains the complete teaching/hint/practice architecture, technique definitions, Reveal policy, Learn architecture, local progress behavior, localization rules, correctness tests, verification commands, and future extension requirements.
+
+### `docs/ACCESSIBILITY.md`
+
+Documents source/target/elimination/placement semantics, TalkBack checks, contrast requirements, large-font expectations, hardware keyboard checks, and v0.8 teaching evidence.
+
+### `docs/DATA_STORAGE.md`
+
+Documents the DataStore learning counters, bounded behavior, scoped reset behavior, current Room use, import/backup integrity, persistent-format rules, and data-integrity constraints.
+
+### `docs/ARCHITECTURE.md`
+
+Reflects the current engine/app boundaries, Room/DataStore persistence, shared teaching pipeline, offline practice catalog, safe transfer boundary, accessibility boundary, navigation, and testing strategy.
+
+### `docs/LOCALIZATION.md`
+
+Reflects English/Hindi maintained resources, v0.8 learning string files, translation parity, placeholder safety, accessibility localization, and the rule that player-facing explanation prose belongs in the Android layer.
+
+## Complete v0.8 File-by-File Implementation Map
+
+The v0.8 PR changed 30 files including `what_changed.md`. The implementation was split into 40 focused commits before merge. The list below intentionally includes every v0.8 PR file.
+
+### Root documentation/build metadata
+
+1. `CHANGELOG.md` — v0.8 release-line implementation/safety/test record.
+2. `README.md` — cumulative v0.8 product/build/test/privacy/accessibility status.
+3. `ROADMAP.md` — v0.8 implementation and gate tracking.
+4. `what_changed.md` — complete implementation, defect, verification, and handoff record.
+5. `app/build.gradle.kts` — versionCode `800`, versionName `0.8.0`.
+
+### Android application source
+
+6. `app/src/main/java/com/sanskar/sudokunova/data/AppPreferencesRepository.kt` — per-technique learning persistence, bounded counters, reset.
+7. `app/src/main/java/com/sanskar/sudokunova/data/LearningProgress.kt` — pure learning/mastery model and aggregate state.
+8. `app/src/main/java/com/sanskar/sudokunova/ui/game/GameScreen.kt` — pending hint flow and localized structured hint dialog.
+9. `app/src/main/java/com/sanskar/sudokunova/ui/game/HintPresentation.kt` — Android resource-backed names/explanations.
+10. `app/src/main/java/com/sanskar/sudokunova/ui/game/SudokuBoard.kt` — visual and semantic source/target/elimination/placement evidence.
+11. `app/src/main/java/com/sanskar/sudokunova/ui/learn/LearnScreen.kt` — interactive progress/lesson/practice/reset UI and stable test tags.
+12. `app/src/main/java/com/sanskar/sudokunova/ui/learn/LearnViewModel.kt` — practice state and learning progress actions.
+
+### Android resources
+
+13. `app/src/main/res/values/learning_strings_v08.xml` — English v0.8 learning/hint/accessibility resources.
+14. `app/src/main/res/values-hi/learning_strings_v08.xml` — Hindi parity resources.
+
+### Android tests
+
+15. `app/src/test/java/com/sanskar/sudokunova/data/LearningProgressTest.kt` — JUnit4 learning progress tests.
+16. `app/src/androidTest/java/com/sanskar/sudokunova/MainActivityTest.kt` — connected Learn lesson/practice smoke coverage plus previous app smoke coverage.
+
+### Documentation
+
+17. `docs/ACCESSIBILITY.md` — teaching semantics and release accessibility checks.
+18. `docs/ARCHITECTURE.md` — current domain/app/persistence/teaching architecture.
+19. `docs/DATA_STORAGE.md` — local learning persistence and existing Room/DataStore integrity.
+20. `docs/LEARNING_AND_HINTS.md` — complete v0.8 technical guide.
+21. `docs/LOCALIZATION.md` — English/Hindi v0.8 localization and parity rules.
+
+### Sudoku engine production source
+
+22. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/HintEngine.kt` — teaching-chain hint behavior, hardest-technique identity, explicit Reveal fallback.
+23. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/LogicalSolver.kt` — advanced technique registry and shared teaching-trace solving.
+24. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/TeachingPractice.kt` — deterministic offline practice catalog.
+25. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/TeachingStep.kt` — structured teaching evidence model.
+26. `sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/TeachingStepFinder.kt` — deterministic candidate-state detection for all supported v0.8 techniques.
+
+### Sudoku engine tests
+
+27. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/AdvancedTeachingTechniqueTest.kt` — Hidden Pair/Triple, Naked Triple, X-Wing controlled-evidence tests.
+28. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/SudokuHintTest.kt` — advanced chain/direct placement/Reveal hint identity tests.
+29. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/TeachingPracticeCatalogTest.kt` — practice coverage/determinism/evidence tests.
+30. `sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/TeachingStepFinderTest.kt` — deterministic trace and solution-safety corpus tests.
+
+## Focused v0.8 Commit Policy
+
+The v0.8 implementation was intentionally split into focused Conventional Commit-style changes rather than a single giant commit. The branch reached 40 commits and 30 changed files before merge.
+
+Commit categories included:
+
+- `feat(engine)`;
+- `refactor(engine)`;
+- `test(engine)`;
+- `testability(engine)`;
+- `feat(data)`;
+- `test(data)`;
+- `feat(i18n)`;
+- `feat(ui)`;
+- `feat(game)`;
+- `feat(learn)`;
+- `feat(accessibility)`;
+- `test(android)`;
+- `testability(learn)`;
+- `fix(test)`;
+- `fix(engine)`;
+- `fix(androidTest)`;
+- `fix(ui)`;
+- `chore(release)`;
+- `docs` variants.
+
+The same focused-commit policy continues for v0.9.
+
+## v0.1–v0.7 Cumulative Foundation Preserved
+
+The v0.8 merge preserves all earlier verified work.
+
+### v0.1 foundation
+
+- Android/Kotlin/Compose foundation;
+- core Sudoku board/solver/generator;
+- first playable game;
+- notes, undo/redo, hint, pause, timer;
+- basic settings/statistics/learning;
+- CI/documentation foundation.
+
+### v0.2 gameplay hardening
+
+- Cell-first and Number-first input;
+- persisted input mode and selection;
+- keyboard arrows / 1–9 / erase / Notes / Hint;
+- settings-controlled haptic and click feedback;
+- lifecycle/process restore hardening.
+
+### v0.3 puzzle/difficulty system
+
+- logical/complexity evidence;
+- difficulty calibration;
+- generator benchmarks/corpus tests;
+- unique-solution requirement retained as authoritative.
+
+### v0.4 accessibility/localization
+
+- English/Hindi resource-backed core UI;
+- translation-parity CI;
+- localized difficulty/theme labels;
+- Sudoku accessibility semantics;
+- high contrast;
+- reduced-motion foundation;
+- adaptive layouts.
+
+### v0.5 local player data
+
+Room-backed:
+
+- completed-game History;
+- Favorite History;
+- replay provenance;
+- Saved Puzzles;
+- custom-puzzle saving;
+- difficulty summaries;
+- replay-safe statistics.
+
+### v0.6 challenges
+
+- deterministic Daily and ISO Weekly challenge keys;
+- type-separated seeds;
+- challenge archive;
+- first-completion performance storage;
+- Room migration coverage;
+- challenge provenance in active-game state.
+
+### v0.7 safe sharing/import/export/backup
+
+- versioned `SNP1` puzzle codes;
+- strict bounds/checksum/format validation;
+- unique-solution validation before imported play;
+- versioned `SNB1` backup format;
+- import size/count/timestamp/counter bounds;
+- duplicate-safe Room restore;
+- Favorite promotion without demotion;
+- replay-provenance preservation;
+- clipboard/share/document-picker transfer;
+- no broad storage permission;
+- file I/O moved off the main thread;
+- result sharing;
+- English/Hindi transfer resources;
+- connected Room/Compose regression coverage.
 
 ## Current Navigation
 
@@ -572,35 +770,91 @@ The branch is 0 commits behind `main` at the recorded comparison point, so none 
 
 `.github/workflows/ci.yml` verifies:
 
-1. English/Hindi translation parity.
-2. engine tests.
-3. Android JVM tests.
-4. instrumentation-test APK compilation.
-5. Android lint.
-6. debug APK assembly.
+1. English/Hindi translation parity;
+2. engine tests;
+3. Android JVM tests;
+4. Android instrumentation-test APK compilation;
+5. Android lint;
+6. debug APK assembly;
 7. report upload/post-job cleanup.
 
-### API-35 connected instrumentation
+### API-35 Connected Instrumentation
 
-`.github/workflows/instrumentation.yml` runs connected Compose/Room tests on an Android API-35 x86_64 Pixel 6 emulator with KVM and animations disabled.
+`.github/workflows/instrumentation.yml` runs connected Compose/Room tests on an Android API-35 x86_64 Pixel 6 emulator with KVM access and animations disabled.
 
-## Next Milestone After v0.8 Merge
+v0.9 will preserve these gates and expand release-build/QA evidence where safe and practical.
 
-v0.9 remains release hardening, not another uncontrolled feature expansion:
+## Important Historical Defects Already Fixed
 
-- full regression-suite audit;
-- TalkBack/focus-order/large-font accessibility audit;
-- performance and memory profiling;
-- dependency and license audit;
-- security/privacy audit;
-- device QA matrix;
-- release shrinking/signing verification;
-- production APK/AAB validation;
-- screenshots/store asset polish;
-- final documentation accuracy audit;
-- crash/ANR hardening.
+- invalid Kotlin `in.*` source package keyword conflict;
+- invalid Compose `weight` imports;
+- solver regression assertion issue;
+- DataStore typed reset issue;
+- custom-puzzle solution preview data loss;
+- Gradle wrapper bootstrap push race;
+- Android unit-test framework mismatch;
+- divergent phase-branch histories that could drop cumulative work;
+- Room kapt/plugin conflict replaced by KSP2;
+- missing cumulative DAO/database files;
+- duplicate localization helpers;
+- Compose locale observability lint issue;
+- obsolete untranslated resources;
+- challenge saved-state provenance mismatch;
+- replay-statistics inflation risk;
+- connected Compose duplicate/off-screen-node assumptions;
+- v0.7 main-thread backup file I/O;
+- v0.7 duplicate Favorite-state loss;
+- v0.7 replay-provenance loss after restore;
+- v0.8 app learning test using the wrong test framework imports;
+- v0.8 Learn connected test searching an uncomposed LazyColumn item;
+- v0.8 advanced hint chain reporting only the final Single instead of the hardest enabling technique.
 
-v1.0 should be tagged only after these release gates are genuinely satisfied.
+## v0.9 Handoff
+
+Focused issue #23 is now open:
+
+**`v0.9: release hardening, accessibility, performance, security, and production QA`**
+
+v0.9 is deliberately a quality milestone rather than a new feature-family milestone.
+
+Planned scope:
+
+1. audit existing v0.1–v0.8 regression suites and fill release-critical gaps;
+2. accessibility semantics/focus-order review across all major screens;
+3. large-font and adaptive-layout QA;
+4. high-contrast and reduced-motion audit;
+5. performance/memory audit;
+6. solver/generator/teaching/import/backup performance regression checks where practical;
+7. main-thread blocking work audit;
+8. Room/DataStore integrity, indexes, migrations, reset/restore audit;
+9. import/export/backup security/privacy audit;
+10. permission and manifest audit;
+11. dependency/license/third-party notice audit;
+12. release R8/shrinking verification;
+13. debug APK, release APK, and release AAB build verification;
+14. release signing guidance that uses secrets only;
+15. device QA matrix and manual checklist without fabricating device results;
+16. lifecycle/process-death/crash/ANR hardening;
+17. UI/store screenshot readiness;
+18. documentation accuracy audit;
+19. final exact-head standard CI green;
+20. final exact-head API-35 connected gate green.
+
+### v0.9 non-goals
+
+- no Sudoku variants merely to increase feature count;
+- no cloud account dependency;
+- no ads/analytics SDK as part of hardening;
+- no weakening unique-solution checks;
+- no weakening import/backup validation;
+- no weakening teaching evidence correctness;
+- no release-quality claim without actual evidence.
+
+## v1.0 Direction
+
+Stable Classic Sudoku v1.0 should be tagged only after v0.9 release-hardening requirements are satisfied with evidence.
+
+The existing v0.1–v0.8 feature set already includes the intended core Classic gameplay, challenges, custom puzzles, player data, safe sharing/backup, advanced hints, offline learning/practice, localization, and accessibility foundations. v0.9 is the evidence and hardening bridge between that feature set and a credible v1.0 stable release.
 
 ## Branding / Support
 
@@ -617,6 +871,6 @@ v1.0 should be tagged only after these release gates are genuinely satisfied.
 
 ## Commit Policy
 
-v0.8 continues the project policy of focused Conventional Commit-style changes (`feat:`, `fix:`, `test:`, `testability:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than collapsing the implementation into one giant commit.
+Project-authored work continues to use focused Conventional Commit-style messages (`feat:`, `fix:`, `test:`, `testability:`, `a11y:`, `perf:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than one giant implementation commit.
 
-The final post-merge documentation commit will record the exact green workflow run IDs, merge commit, issue closure, completed v0.8 status, and v0.9 handoff after those events actually occur.
+This file must continue to record only verification, merge, device, accessibility, security, and release claims that actually occurred.
