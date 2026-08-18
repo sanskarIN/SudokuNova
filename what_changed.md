@@ -1077,6 +1077,96 @@ The accessibility source pass continued across the currently shipped screens. Th
 
 This source audit does **not** claim that TalkBack, 200% font scaling, high contrast, reduced motion, physical devices, measured performance traces, signed production artifacts, or store assets have been manually verified. Those gates remain pending until real evidence exists.
 
+## v0.9 Final Repository Completion Pass — 2026-08-18
+
+This final source/tooling pass was performed after the broad v0.9 accessibility, performance, security, persistence, localization, release-build, and documentation audits. The branch was deliberately kept in release-hardening scope: missing public-repository infrastructure and concrete verification defects were fixed, but unrelated feature families were not added simply to increase feature count.
+
+### Final API-35 regression found and fixed
+
+Exact head `0a1eba2afe11cdaeb4cedb5cc46fb67a4e72ed62` produced:
+
+- Android CI run `32134443544` / run #571 — **GREEN**;
+- Android Instrumentation run `32134443558` / run #146 — **FAILED**.
+
+The connected failure was `MainActivityTest.customPuzzleEditorIsReachable`. The test still assumed the pre-hardening compact Custom Puzzle action rows and asserted `Play puzzle` without scrolling. v0.9 had intentionally stacked text actions at full width to reduce large-font/localization collisions, making the final action legitimately fall below the initial viewport.
+
+Commit `93045a538941f56f91b76bf61f3ec2d6397a7c6c` — `fix(androidTest): align connected tests with adaptive layouts` — corrected the test contract without reversing the accessible layout. The test now:
+
+- verifies Custom Puzzle editor selected/unselected cell semantics before changing viewport position;
+- scrolls Validate, Save puzzle, and Play puzzle into view;
+- asserts each action remains reachable/displayed;
+- uses `androidx.compose.ui.test.junit4.v2.createAndroidComposeRule` instead of the deprecated Compose rule API.
+
+The product behavior assertion was not weakened; the connected test was aligned to the intentional adaptive layout.
+
+### Final open-source project tooling
+
+The public repository already contained:
+
+- MIT `LICENSE`;
+- `CONTRIBUTING.md` and detailed contributor documentation;
+- `CODE_OF_CONDUCT.md`;
+- `SECURITY.md`;
+- `SUPPORT.md`;
+- `AUTHORS.md`;
+- `THIRD_PARTY_NOTICES.md`;
+- structured bug, feature, accessibility, performance, and documentation issue forms;
+- issue-template security/support contact links;
+- pull-request template;
+- Dependabot for Gradle and GitHub Actions;
+- standard Android CI;
+- API-35 connected instrumentation;
+- repository secret/signing-material verification.
+
+Two remaining low-risk public-repository gaps were filled:
+
+- `ac651e98f6fa338dc66ada7f36e7a2867de6331b` — `chore(github): add project funding metadata`; adds `.github/FUNDING.yml` with the optional `https://buymeacoffee.com/sanskarIN` support link.
+- `4ded7d9ae1cc5b3c249ed7a6143eefe267253b7a` — `chore(github): define repository code ownership`; adds `.github/CODEOWNERS` with default ownership and explicit release/security/docs/app/engine ownership for `@sanskarIN`.
+
+### Final repository hygiene/source audit
+
+The final repository review rechecked:
+
+- Android manifest permission/export surface — no runtime `<uses-permission>` declarations, launcher `MainActivity` intentionally exported for its launcher intent filter;
+- release build config — R8/minification and resource shrinking remain enabled for release, with CI release APK/AAB gates;
+- release ProGuard rules — intentionally minimal and compatible with AndroidX/Compose consumer rules while retaining useful source/line crash information;
+- localized hint presentation — hint technique names and explanations remain Android-resource backed rather than engine-owned player-facing prose;
+- source placeholders — no repository `TODO`, `FIXME`, `XXX`, `HACK`, placeholder, or `NotImplementedException` result requiring release cleanup was found by the final search;
+- obvious debug leakage — no `printStackTrace`, `System.out`, or obvious debug `println` path requiring release cleanup was found by the final search;
+- public project scaffolding — contribution/conduct/security/support policies, issue forms, PR template, Dependabot, CODEOWNERS, funding metadata, CI, and connected instrumentation are all present.
+
+These are specific audit findings, not a claim that static source search can mathematically prove the absence of every future defect.
+
+### Final documentation synchronization
+
+The final public-project and verification findings were synchronized into focused commits:
+
+- `ce3dbb46d639b55b9ee1f66d9314c9dd83e04b3f` — `docs(maintainers): document repository automation and ownership`;
+- `9256c56bf89e7a8e87ebe2ebb264440b2a565747` — `docs(changelog): record final governance and adaptive-test fixes`;
+- `d96e9ab309f0184b9ad72d196ba45cecef5701e9` — `docs(audit): record final repository and connected-test findings`;
+- `4b9384b585947e5d87045107ce4f5b34fb3c8544` — `docs(roadmap): close final source-level hardening audits`;
+- `e08322a10ab66e2aed857308ef24b2e0ae48443a` — `docs(readme): align final v0.9 project health status`.
+
+`ROADMAP.md` now distinguishes completed source-level/automation work from manual evidence that cannot be fabricated. `README.md` now accurately describes the open-source project-health surfaces and remaining manual release evidence. `docs/V09_HARDENING_AUDIT.md` records the API-35 adaptive-layout failure/fix and final source/tooling audit.
+
+### Manual evidence still not claimed
+
+Even after this final repository-completion pass, the following remain explicitly unclaimed until actually performed on representative targets:
+
+- full TalkBack traversal/focus-order QA;
+- 200% font-scale and representative window/device manual QA;
+- high-contrast and reduced-motion manual device validation;
+- measured startup/frame/memory/ANR traces;
+- process-death/manual lifecycle scenarios;
+- signed production APK/AAB installation/signature verification;
+- real Play Store screenshot/listing review.
+
+The repository contains checklists and source/automated defenses for these areas, but source inspection is not substituted for real device or assistive-technology evidence.
+
+### Final branch-freeze rule
+
+This `what_changed.md` update is the final **planned** branch commit for the v0.9 source/tooling hardening pass. The exact SHA created by this log commit must run both required workflows. No further branch commit should be made unless one of those exact-head gates exposes a concrete defect. Final workflow run IDs can be recorded in PR metadata without changing the verified branch SHA; post-merge documentation on `main` can record the immutable verified-head/merge evidence.
+
 ## Commit Policy
 
 Project-authored work continues to use focused Conventional Commit-style messages (`feat:`, `fix:`, `test:`, `testability:`, `a11y:`, `perf:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than one giant implementation commit.
