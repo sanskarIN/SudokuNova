@@ -6,6 +6,10 @@ enum class HintTechnique {
     NAKED_PAIR,
     POINTING_PAIR_OR_TRIPLE,
     BOX_LINE_REDUCTION,
+    HIDDEN_PAIR,
+    NAKED_TRIPLE,
+    HIDDEN_TRIPLE,
+    X_WING,
     REVEAL,
 }
 
@@ -74,4 +78,8 @@ private fun LogicalTechnique.toHintTechnique(): HintTechnique = when (this) {
     LogicalTechnique.NAKED_PAIR -> HintTechnique.NAKED_PAIR
     LogicalTechnique.POINTING_PAIR_OR_TRIPLE -> HintTechnique.POINTING_PAIR_OR_TRIPLE
     LogicalTechnique.BOX_LINE_REDUCTION -> HintTechnique.BOX_LINE_REDUCTION
+    LogicalTechnique.HIDDEN_PAIR -> HintTechnique.HIDDEN_PAIR
+    LogicalTechnique.NAKED_TRIPLE -> HintTechnique.NAKED_TRIPLE
+    LogicalTechnique.HIDDEN_TRIPLE -> HintTechnique.HIDDEN_TRIPLE
+    LogicalTechnique.X_WING -> HintTechnique.X_WING
 }
