@@ -17,6 +17,8 @@ Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to
 - Connected Compose coverage for selected Sudoku-cell accessibility semantics on both the game board and Custom Puzzle editor.
 - English/Hindi v0.9 resources for Custom Puzzle validation/solver statuses and typed game-load error states.
 - Complete categorized documentation set covering end-user workflows, features, project structure, engine internals, data formats, testing, CI/CD, performance, maintenance, release operations, keyboard input, glossary, privacy, security, accessibility, and documentation standards.
+- `.github/CODEOWNERS` with explicit default and release/security/docs/app/engine ownership.
+- `.github/FUNDING.yml` exposing the optional Buy Me a Coffee support link through GitHub funding metadata.
 
 #### Changed
 - Android development metadata advanced to `versionCode 900` / `versionName 0.9.0` on the v0.9 branch.
@@ -46,9 +48,12 @@ Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to
 - Game load/abandon errors now use typed state with a separate localized presentation mapping rather than exposing exception prose.
 - Game completion summary now uses the maintained localized completion resource instead of concatenated English `mistake(s)` / `hint(s)` text.
 - Room migration override naming now matches the Room API without changing schema behavior.
+- Connected Compose tests now use the non-deprecated `androidx.compose.ui.test.junit4.v2.createAndroidComposeRule` API.
+- Adaptive connected tests scroll to full-width Custom Puzzle actions before visibility assertions, matching the intentional large-text layout while preserving the same behavior assertions.
 - `docs/BUILDING.md` now documents debug/release APK, AAB, R8 mapping, Windows/Unix verification commands, release signing boundaries, reproducibility evidence, and release-quality claim rules.
 - `SECURITY.md` now documents Android permission/export rules, bounded/fail-closed backup expectations, signing/secret rules, privacy expectations, dependency/supply-chain review, and v0.9 security gates.
 - `THIRD_PARTY_NOTICES.md` now maps the direct AndroidX/Compose/Room/KSP/build/test tooling families and identifies the version catalog as the dependency source of truth.
+- `docs/MAINTAINER_GUIDE.md` now documents CODEOWNERS, Dependabot, issue forms, PR templates, funding metadata, security/support routing, and CI ownership boundaries.
 - Stale documentation that still described connected testing, advanced hints, backup/restore, or current storage/security behavior as future work has been corrected to match the implemented repository.
 
 #### Audited
@@ -57,9 +62,12 @@ Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to
 - Current history/saved-puzzle entities already define indexes for their principal filtering/identity fields, so no speculative schema migration was added merely for hardening.
 - Main-thread review covered the game, custom-puzzle, transfer, challenge, history, saved-puzzle, learning, settings, home, and statistics state layers; blocking solver work found in Game/Custom/Transfer paths is now dispatched off the UI thread where applicable.
 - Source-level large-text/accessibility review covered Game, Settings, Home/About, Custom Puzzle, History, Saved Puzzles, Challenges, Learn, sharing, and Backup & Transfer. Manual 200% font/TalkBack verification remains separate and unclaimed.
+- Repository source search found no remaining `TODO`, `FIXME`, `NotImplementedException`, or debug-print placeholder paths in the final hardening pass.
+- Public-project scaffolding now includes contribution/conduct/security/support policies, structured issue forms, PR template, Dependabot, CODEOWNERS, funding metadata, CI, and API-35 connected automation.
 
 #### Regression fixes found during v0.9 verification
 - API-35 run `32129482037` exposed a race in the selected-game-cell semantics test: Easy puzzle generation is asynchronous, so the test attempted to assert a board node before the generated board was composed. The test now waits for the stable first-cell semantic tag before performing the same selected/unselected assertions.
+- API-35 run `32134443558` exposed a Custom Puzzle visibility assertion that assumed the pre-hardening compact action layout. After the actions were intentionally stacked for large-text accessibility, `Play puzzle` could be below the viewport. The test now verifies editor-cell semantics first and then scrolls to Validate/Save/Play before asserting visibility; the product layout and behavior checks are not weakened.
 
 #### Verification in progress
 - Final exact-head standard Android CI and API-35 connected instrumentation evidence will be recorded only after both workflows complete successfully.
