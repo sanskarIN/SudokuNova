@@ -5,13 +5,20 @@
 Current repository configuration:
 
 - JDK 17
-- Gradle 9.5.0
-- Android Gradle Plugin 9.3.0
+- Gradle 9.5
+- Android Gradle Plugin 9.3.1
 - Kotlin 2.4.10
 - Android compile/target SDK 37
 - Android min SDK 26
 
 Use the committed Gradle wrapper rather than a globally installed Gradle version so local and CI builds use the same Gradle distribution.
+
+The current v1 readiness branch uses:
+
+- `versionName = "1.0.0-rc1"`
+- `versionCode = 990`
+
+Stable `1.0.0` must use a versionCode higher than every candidate code that has been distributed.
 
 ## Clone
 
@@ -22,7 +29,7 @@ cd SudokuNova
 
 ## Gradle Sync
 
-Android Studio performs sync when the project opens. From the command line, any Gradle task will configure the build. A lightweight check is:
+Android Studio performs sync when the project opens. A lightweight command-line configuration check is:
 
 ```bash
 ./gradlew tasks
@@ -40,11 +47,9 @@ gradlew.bat tasks
 ./gradlew clean
 ```
 
-Do not make clean builds the default development workflow. Use `clean` when stale generated state is actually suspected.
+Do not make clean builds the default workflow. Use `clean` only when stale generated state is actually suspected.
 
 ## Debug APK
-
-Linux/macOS:
 
 ```bash
 ./gradlew :app:assembleDebug
@@ -66,16 +71,8 @@ The debug build uses the `.debug` application-ID suffix and `-debug` version-nam
 
 ## Release APK
 
-Compile and shrink the release APK with:
-
 ```bash
 ./gradlew :app:assembleRelease
-```
-
-Windows:
-
-```bat
-gradlew.bat :app:assembleRelease
 ```
 
 Expected output directory:
@@ -84,22 +81,12 @@ Expected output directory:
 app/build/outputs/apk/release/
 ```
 
-The release build enables R8 code shrinking and resource shrinking. CI deliberately verifies that the release variant can pass R8 without depending on repository-committed signing credentials.
+The release build enables R8 code shrinking and resource shrinking. CI verifies release compilation/R8 without requiring repository-committed production credentials.
 
-A distributable production APK must be signed outside version control with protected release credentials. Never commit keystores, signing passwords, private keys, service-account credentials, or generated credential files.
-
-## Android App Bundle (AAB)
-
-Linux/macOS:
+## Release AAB
 
 ```bash
 ./gradlew :app:bundleRelease
-```
-
-Windows:
-
-```bat
-gradlew.bat :app:bundleRelease
 ```
 
 Expected output:
@@ -108,30 +95,31 @@ Expected output:
 app/build/outputs/bundle/release/app-release.aab
 ```
 
-Google Play publication requires a correctly signed release configured by the release operator or CI environment. Repository source control intentionally contains no production signing secret.
+A distributable production package must be signed using protected credentials outside version control.
 
 ## Release Mapping Output
 
-When minification succeeds, preserve the generated release mapping files together with the exact source commit used for the build:
+Preserve the matching R8 mapping directory with the exact release commit:
 
 ```text
 app/build/outputs/mapping/release/
 ```
 
-These files are needed to de-obfuscate production crash traces for the matching release. Do not publish sensitive diagnostic data merely because mapping files exist.
+## Repository / Release Helper Checks
+
+```bash
+python scripts/verify_no_secrets.py
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+python scripts/verify_translations.py
+```
+
+The release-helper tests cover the artifact integrity/checksum verifier as well as its important failure paths.
 
 ## Unit Tests
 
 ```bash
 ./gradlew :sudoku-engine:test
 ./gradlew :app:testDebugUnitTest
-```
-
-Windows:
-
-```bat
-gradlew.bat :sudoku-engine:test
-gradlew.bat :app:testDebugUnitTest
 ```
 
 ## Android Instrumentation-Test Compilation
@@ -144,25 +132,19 @@ This verifies connected-test sources compile before an emulator/device run.
 
 ## Android Lint
 
-Debug and release lint should both pass for v0.9 release hardening:
-
 ```bash
 ./gradlew :app:lintDebug :app:lintRelease
 ```
 
-## Translation Parity
+Both variants are release gates.
 
-English/Hindi resource parity is a required release gate:
-
-```bash
-python scripts/verify_translations.py
-```
-
-## Full v0.9 Local Verification
+## Full v1.0-RC Non-Connected Verification
 
 Linux/macOS:
 
 ```bash
+python scripts/verify_no_secrets.py
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test \
   :app:testDebugUnitTest \
@@ -173,11 +155,17 @@ python scripts/verify_translations.py
   :app:assembleRelease \
   :app:bundleRelease \
   --stacktrace
+python scripts/verify_release_artifacts.py \
+  app/build/outputs/apk/release/*.apk \
+  app/build/outputs/bundle/release/*.aab \
+  --checksums-out app/build/outputs/SHA256SUMS
 ```
 
 Windows PowerShell:
 
 ```powershell
+python scripts/verify_no_secrets.py
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 python scripts/verify_translations.py
 .\gradlew.bat :sudoku-engine:test `
   :app:testDebugUnitTest `
@@ -188,9 +176,44 @@ python scripts/verify_translations.py
   :app:assembleRelease `
   :app:bundleRelease `
   --stacktrace
+python scripts/verify_release_artifacts.py `
+  app/build/outputs/apk/release/*.apk `
+  app/build/outputs/bundle/release/*.aab `
+  --checksums-out app/build/outputs/SHA256SUMS
 ```
 
-This is the standard non-connected release-hardening command set. API-35 connected tests remain a separate emulator/device gate.
+API-35 connected tests remain a separate emulator/device gate.
+
+## Release Artifact Integrity / Checksums
+
+`scripts/verify_release_artifacts.py` accepts APK/AAB files and:
+
+- rejects missing, empty, unsupported, or corrupt containers;
+- tests ZIP entry integrity;
+- computes SHA-256;
+- optionally writes deterministic checksum lines;
+- optionally requires signature verification through platform tools.
+
+Example for CI-style release verification artifacts:
+
+```bash
+python scripts/verify_release_artifacts.py \
+  app/build/outputs/apk/release/*.apk \
+  app/build/outputs/bundle/release/*.aab \
+  --checksums-out app/build/outputs/SHA256SUMS
+```
+
+Example for final signed production artifacts:
+
+```bash
+python scripts/verify_release_artifacts.py \
+  path/to/signed-release.apk \
+  path/to/signed-release.aab \
+  --require-signature \
+  --checksums-out SHA256SUMS
+```
+
+`--require-signature` requires `apksigner` for APK and `jarsigner` for AAB. If a required verifier is unavailable or the artifact does not verify, the command fails.
 
 ## Install Debug APK with ADB
 
@@ -198,76 +221,84 @@ This is the standard non-connected release-hardening command set. API-35 connect
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+For a production-signed APK, install and smoke-test the exact signed file intended for direct distribution, not a different local build.
+
 ## CI Release Verification
 
-`.github/workflows/ci.yml` verifies on the v0.9 line:
+`.github/workflows/ci.yml` verifies:
 
-1. English/Hindi translation parity.
-2. Sudoku engine tests.
-3. Android JVM unit tests.
-4. Android instrumentation-test compilation.
-5. Debug lint.
-6. Release lint.
-7. Debug APK assembly.
-8. Release APK assembly with R8/resource shrinking.
-9. Release AAB assembly.
-10. Verification reports and release outputs as short-lived workflow artifacts.
+1. repository security guard;
+2. release-helper unit tests;
+3. English/Hindi translation parity;
+4. Sudoku engine tests;
+5. Android JVM tests;
+6. Android instrumentation-test compilation;
+7. debug and release lint;
+8. debug APK;
+9. R8/resource-shrunk release APK;
+10. release AAB;
+11. APK/AAB integrity and SHA-256 generation;
+12. reports and short-lived release artifact evidence, including `SHA256SUMS`.
 
-The CI-produced release artifacts are build-verification outputs. They are not automatically production-publishable packages and must not be presented as store-ready unless production signing and release QA have actually been completed.
+CI-produced release files remain verification artifacts unless production signing and manual release QA are completed.
 
-## Gradle Wrapper Verification
+## Gradle Wrapper / Reproducibility Evidence
 
-The repository wrapper is pinned through `gradle/wrapper/gradle-wrapper.properties`. GitHub's Gradle setup action validates wrapper JARs during CI.
+For a release investigation record:
 
-For reproducible investigation of a release failure, record at minimum:
-
-- exact Git commit SHA;
+- exact Git SHA;
+- versionCode/versionName;
 - Java version;
 - Gradle wrapper version;
-- Android SDK/Build Tools environment;
+- AGP/Kotlin versions;
+- Android SDK environment;
 - command executed;
-- relevant workflow run ID when CI was used.
+- workflow run IDs;
+- artifact SHA-256 values.
 
 ## Build Types
 
 ### Debug
 
-- Development build.
-- Debug application-ID suffix.
-- Debug version-name suffix.
-- Intended for local/CI testing.
+- development/testing build;
+- debug application-ID suffix;
+- debug version-name suffix.
 
 ### Release
 
-- Minification enabled.
-- Resource shrinking enabled.
-- Uses optimized default ProGuard rules plus `app/proguard-rules.pro`.
-- Must pass release lint and R8/AAB assembly before a v0.9 release-quality claim.
-- Production signing remains external to source control.
+- minification enabled;
+- resource shrinking enabled;
+- optimized default ProGuard rules plus `app/proguard-rules.pro`;
+- release lint/R8/AAB/integrity gates required;
+- production signing external to source control.
 
 ## Release-Signing Rules
 
-SudokuNova follows these source-control rules:
+Never commit:
 
-- no `.jks`, `.keystore`, `.p12`, `.pfx`, PEM private keys, or signing passwords in Git;
-- no signing secret embedded in Gradle files, `local.properties`, Android resources, Kotlin/Java code, or workflow YAML;
-- CI production signing, if added later, must consume repository/environment secrets at runtime;
-- fork and pull-request builds must remain safe when signing secrets are unavailable;
-- a failed or missing production-signing step must never be bypassed by committing credentials.
+- `.jks`, `.keystore`, `.p12`, `.pfx`;
+- PEM/private signing keys;
+- keystore/key passwords;
+- signing tokens/service-account credentials;
+- generated secret-bearing configuration.
+
+If production CI signing is configured later, it must consume protected runtime secrets, remain safe for forks/PRs where secrets are unavailable, and must not print secret material.
 
 ## Common Failure Checks
 
 If a build fails:
 
-1. Confirm Java 17.
-2. Confirm Android SDK 37 is installed.
-3. Confirm you are building the intended branch and exact commit.
-4. Confirm the Gradle wrapper rather than an unrelated global Gradle is being used.
-5. Run `./gradlew clean` only when stale build state is suspected.
-6. Read the first real compilation/test/lint/R8 error rather than only the final Gradle stack trace.
-7. For release-only failures, inspect R8 diagnostics and `app/proguard-rules.pro` before adding broad keep rules.
-8. Check `TROUBLESHOOTING.md` and CI logs.
+1. confirm Java 17;
+2. confirm Android SDK 37;
+3. confirm the intended branch/commit;
+4. confirm the Gradle wrapper is used;
+5. read the first real compilation/test/lint/R8/artifact error;
+6. use `clean` only when stale generated state is plausible;
+7. inspect `app/proguard-rules.pro` before adding broad keep rules;
+8. check `TROUBLESHOOTING.md` and CI logs.
 
 ## Release Evidence Policy
 
-A release-quality statement must be tied to actual evidence. Documentation may describe required checks before they run, but it must not claim physical-device coverage, accessibility success, performance numbers, release signing, or store readiness unless those checks were actually performed and recorded.
+A release-quality statement must be tied to actual evidence. Source review/CI may be recorded as automated evidence; physical-device coverage, TalkBack, performance measurements, production signing, signed-artifact validation, and store publication must not be claimed until they are actually performed.
+
+Use `V1_RELEASE_EVIDENCE.md` for the v1.0 evidence ledger.
