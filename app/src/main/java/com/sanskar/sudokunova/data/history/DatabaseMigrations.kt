@@ -4,8 +4,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL(
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
             """
             CREATE TABLE IF NOT EXISTS `challenge_results` (
                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -21,11 +21,11 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             )
             """.trimIndent(),
         )
-        database.execSQL(
+        db.execSQL(
             "CREATE UNIQUE INDEX IF NOT EXISTS `index_challenge_results_challengeType_challengeKey` " +
                 "ON `challenge_results` (`challengeType`, `challengeKey`)",
         )
-        database.execSQL(
+        db.execSQL(
             "CREATE INDEX IF NOT EXISTS `index_challenge_results_completedAtEpochMillis` " +
                 "ON `challenge_results` (`completedAtEpochMillis`)",
         )
