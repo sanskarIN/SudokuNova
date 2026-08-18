@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -11,6 +12,7 @@ SCRIPT_PATH = Path(__file__).resolve().parents[1] / "verify_release_artifacts.py
 SPEC = importlib.util.spec_from_file_location("verify_release_artifacts", SCRIPT_PATH)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
