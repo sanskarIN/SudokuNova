@@ -35,7 +35,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Verify repository security guard
-        run: python scripts/verify_repository_security.py
+        run: python scripts/verify_no_secrets.py
 
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
