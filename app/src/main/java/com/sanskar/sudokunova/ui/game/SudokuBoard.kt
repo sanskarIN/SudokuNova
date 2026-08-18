@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.UserSettings
+import com.sanskar.sudokunova.engine.SudokuHint
 import com.sanskar.sudokunova.engine.SudokuBoard as EngineBoard
 import com.sanskar.sudokunova.game.GameState
 
@@ -37,12 +38,21 @@ fun SudokuBoardView(
     settings: UserSettings,
     onCellSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    hint: SudokuHint? = null,
 ) {
     val selectedValue = game.board.valueAt(game.selectedIndex)
     val selectedRow = game.selectedIndex / 9
     val selectedColumn = game.selectedIndex % 9
     val selectedBoxRow = selectedRow / 3
     val selectedBoxColumn = selectedColumn / 3
+    val teachingSources = hint?.teachingSteps.orEmpty().flatMap { it.sourceCells }.toSet()
+    val teachingTargets = hint?.teachingSteps.orEmpty().flatMap { it.targetCells }.toSet()
+    val hintPlacement = hint?.placement
+    val eliminationsByCell = hint?.teachingSteps
+        .orEmpty()
+        .flatMap { it.candidateEliminations }
+        .groupBy { it.cellIndex }
+        .mapValues { (_, values) -> values.map { it.candidate }.toSortedSet() }
 
     BoxWithConstraints(
         modifier = modifier
@@ -97,6 +107,10 @@ fun SudokuBoardView(
                                     highContrast = settings.highContrast,
                                     row = row,
                                     column = column,
+                                    teachingSource = index in teachingSources,
+                                    teachingTarget = index in teachingTargets,
+                                    hintPlacementValue = hintPlacement?.takeIf { it.cellIndex == index }?.value,
+                                    eliminationCandidates = eliminationsByCell[index].orEmpty(),
                                     onClick = { onCellSelected(index) },
                                     modifier = Modifier.weight(1f),
                                 )
@@ -154,12 +168,19 @@ private fun SudokuCell(
     highContrast: Boolean,
     row: Int,
     column: Int,
+    teachingSource: Boolean,
+    teachingTarget: Boolean,
+    hintPlacementValue: Int?,
+    eliminationCandidates: Set<Int>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
     val background = when {
         conflict -> scheme.errorContainer
+        hintPlacementValue != null -> scheme.tertiaryContainer
+        teachingTarget -> scheme.secondaryContainer
+        teachingSource -> scheme.primaryContainer
         selected -> scheme.primaryContainer
         sameValue -> if (highContrast) scheme.secondaryContainer else scheme.secondaryContainer.copy(alpha = 0.88f)
         peer -> scheme.surfaceVariant.copy(alpha = if (highContrast) 0.82f else 0.55f)
@@ -172,13 +193,44 @@ private fun SudokuCell(
     }
     val originalSuffix = if (original) stringResource(R.string.v04_original_clue_suffix) else ""
     val conflictSuffix = if (conflict) stringResource(R.string.v04_conflict_suffix) else ""
-    val description = baseDescription + originalSuffix + conflictSuffix
+    val cellLabel = stringResource(R.string.v08_cell_label, row + 1, column + 1)
+    val teachingSourceSuffix = if (teachingSource) {
+        " " + stringResource(R.string.v08_hint_source_semantics, cellLabel)
+    } else {
+        ""
+    }
+    val teachingTargetSuffix = if (teachingTarget) {
+        " " + stringResource(R.string.v08_hint_target_semantics, cellLabel)
+    } else {
+        ""
+    }
+    val placementSuffix = hintPlacementValue?.let { hintValue ->
+        " " + stringResource(R.string.v08_hint_placement_semantics, cellLabel, hintValue)
+    }.orEmpty()
+    val eliminationSuffix = if (eliminationCandidates.isNotEmpty()) {
+        " " + stringResource(
+            R.string.v08_hint_elimination_semantics,
+            cellLabel,
+            eliminationCandidates.joinToString(separator = ", "),
+        )
+    } else {
+        ""
+    }
+    val description = baseDescription + originalSuffix + conflictSuffix +
+        teachingSourceSuffix + teachingTargetSuffix + placementSuffix + eliminationSuffix
     val borderColor = when {
         conflict -> scheme.error
-        selected -> scheme.primary
+        hintPlacementValue != null -> scheme.tertiary
+        teachingTarget -> scheme.secondary
+        teachingSource || selected -> scheme.primary
         else -> Color.Transparent
     }
-    val borderWidth = if (highContrast && (conflict || selected)) 2.dp else 0.dp
+    val emphasized = conflict || selected || teachingSource || teachingTarget || hintPlacementValue != null
+    val borderWidth = if (emphasized) {
+        if (highContrast) 3.dp else 2.dp
+    } else {
+        0.dp
+    }
 
     Box(
         modifier = modifier
