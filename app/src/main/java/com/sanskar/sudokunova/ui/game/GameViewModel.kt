@@ -35,11 +35,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
+enum class GameError {
+    ABANDONED,
+    CUSTOM_CONTRADICTION,
+    CUSTOM_NOT_UNIQUE,
+    CREATION_FAILED,
+}
+
 sealed interface GameScreenState {
     data object Loading : GameScreenState
     data class Ready(val game: GameState) : GameScreenState
-    data class Error(val message: String) : GameScreenState
+    data class Error(val error: GameError) : GameScreenState
 }
+
+private class GameLoadException(val gameError: GameError) : IllegalArgumentException()
 
 class GameViewModel(
     application: Application,
@@ -239,7 +248,7 @@ class GameViewModel(
             if (state.replayOfHistoryId == null) repository.recordGameAbandoned()
             repository.clearActiveGame()
         }
-        _uiState.value = GameScreenState.Error("Game ended. Start a new puzzle from Home.")
+        _uiState.value = GameScreenState.Error(GameError.ABANDONED)
         undoStack.clear()
         redoStack.clear()
         _pendingHint.value = null
@@ -278,8 +287,9 @@ class GameViewModel(
                 if (game.replayOfHistoryId == null) repository.recordGameStarted()
                 _uiState.value = GameScreenState.Ready(game)
                 persist(game)
-            }.onFailure { error ->
-                _uiState.value = GameScreenState.Error(error.message ?: "Puzzle generation failed.")
+            }.onFailure { throwable ->
+                val error = (throwable as? GameLoadException)?.gameError ?: GameError.CREATION_FAILED
+                _uiState.value = GameScreenState.Error(error)
             }
         }
     }
@@ -307,10 +317,10 @@ class GameViewModel(
 
     private suspend fun createCustomGame(encodedPuzzle: String): GameState = withContext(Dispatchers.Default) {
         val puzzle = SudokuBoard.parse(encodedPuzzle)
-        require(puzzle.isValid()) { "The custom puzzle contains contradictory clues." }
+        if (!puzzle.isValid()) throw GameLoadException(GameError.CUSTOM_CONTRADICTION)
         val analysis = solver.analyze(puzzle, solutionLimit = 2)
-        require(analysis.solutionCount == 1 && analysis.solution != null) {
-            "The custom puzzle must have exactly one solution before it can be played."
+        if (analysis.solutionCount != 1 || analysis.solution == null) {
+            throw GameLoadException(GameError.CUSTOM_NOT_UNIQUE)
         }
         GameState(
             puzzle = puzzle,
