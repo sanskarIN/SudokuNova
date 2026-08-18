@@ -980,6 +980,56 @@ Rather than duplicating security logic, a stable compatibility entry point `scri
 
 No manual device, TalkBack, signed-production, Play Store publication, or final v0.9 exact-head green workflow claim is made by this documentation pass. Because this log update itself creates a new head, required v0.9 final workflow evidence must still be taken from the later exact final head before PR #25 is promoted/merged.
 
+## v0.9 Runtime, Accessibility, and Localization Audit — 2026-08-18
+
+The next hardening pass audited UI-facing asynchronous work, stale-result handling, selected-state semantics, and localization boundaries. The work intentionally fixed defects found by source/CI evidence instead of marking broad manual QA items complete.
+
+### API-35 regression found and fixed
+
+API-35 instrumentation run `32129482037` on head `371ffc95f12617bd4ac116eeab4e83837f5cd7a3` failed one connected test: `MainActivityTest.gameBoardExposesSelectedCellSemantics` attempted to assert `sudoku-cell-0-0` immediately after tapping Easy while puzzle generation was still asynchronous.
+
+The test contract was not weakened. Commit `e77a1cc716c89232fccf00169df4fef98a27e3c0` (`fix(androidTest): wait for generated game board semantics`) now waits for the stable first-cell semantics tag to enter the Compose tree, then performs the same selected/unselected assertions.
+
+### Main-thread and stale-result fixes
+
+- `8aae5673cfd882b42ede4697241138aa71e548e7` — `fix(room): align migration parameter with Room API`; removes a Room override naming warning without changing migration SQL/schema behavior.
+- `95d81234a40f0eb6afb336a98e3089165e23aff2` — `perf(custom): move puzzle solving off main thread`; Custom Puzzle uniqueness validation and solution preview now use `Dispatchers.Default`, cancellation, and stale-board checks.
+- `92090f7b012ee148ca104f36e0598315f206d372` — `fix(transfer): discard stale puzzle validation results`; imported puzzle uniqueness results are not published after the input has changed.
+- `52c844b115337bc35d4de77039b961c9ccb238d6` — `fix(transfer): preserve busy state during text edits`; text edits no longer clear a busy state owned by unrelated backup/restore work.
+
+The state-layer source review covered Game, Custom Puzzle, Transfer, Challenges, History, Saved Puzzles, Learn, Statistics, Home, and app/settings state. CPU-heavy game generation/hints, Custom Puzzle solving, and imported-puzzle uniqueness analysis are dispatched away from the UI thread; backup document I/O remains on `Dispatchers.IO`. This is a source audit, not a measured device-performance claim.
+
+### Custom Puzzle accessibility hardening
+
+- `a8bbfde1b96a38f5d68a70bfaa3d925e8b5a2669` — `a11y(custom): expose editor cell semantics`; editor cells now expose localized row/column/value descriptions, conflict descriptions, selected semantics, and stable `custom-sudoku-cell-<row>-<column>` tags.
+- `7d2917ac69bbb54fc588220034d122c90bf09713` — `test(android): cover custom editor selected semantics`; connected coverage verifies the initial selected cell and selected/unselected transition after clicking another editor cell.
+
+### Custom Puzzle localization hardening
+
+Paired v0.9 resources were added for all validation/solve states:
+
+- `ef450ae0313eb0482933adf03073a8975a4815bd` — `feat(i18n): add custom puzzle status resources`;
+- `01b6c245f8512f632a0355454b396b9c65c0ee28` — `feat(i18n): add Hindi custom puzzle status parity`.
+
+`6cb7991a1480f6ebecad4abd5d0fa4004c6548f1` (`refactor(custom): move status prose out of ViewModel`) replaced raw English `String` state with typed `CustomPuzzleMessage` values. `548ac91e21132cb790f79b1610751847c6ff72dc` (`feat(i18n): localize custom puzzle status presentation`) maps those values to Android resources in Compose.
+
+### Game error/completion localization hardening
+
+- `25e57e7193b8948bf470f749d57bcde8dabcdae4` — `feat(i18n): add game error status resources`;
+- `91cd04c15d588d04904c348e1c6fe7adecfc4acd` — `feat(i18n): add Hindi game error status parity`;
+- `c3be90fa144194b6f6ccd3c7a0eca4ef90ebe1fe` — `refactor(game): expose typed localized error states`; game load/abandon state no longer forwards raw exception prose;
+- `0bf5f130a8863663b718ee5641cc2e73326bb4da` — `feat(i18n): localize typed game error presentation`; a separate Compose presentation mapper resolves typed game errors to paired resources;
+- `2827ba6bc9d1e4bd1981922cf844cb6a68a73bc4` — `fix(i18n): localize game completion summary`; removes concatenated English `mistake(s)` / `hint(s)` fragments and uses the maintained completion-summary resource.
+
+### Audit documentation and roadmap
+
+- `3171df6d1de83a936040196b39c978f8d4d293c0` — `docs(changelog): record additional v0.9 hardening fixes`;
+- `95a1e6cd7a2aed77b545bc44692ae8e3b8007661` — `docs(roadmap): track additional v0.9 audit fixes`;
+- `1142351450229b13eeaa768330f8baad3cdee9c8` — `docs(audit): record v0.9 hardening findings` adds `docs/V09_HARDENING_AUDIT.md` with findings, fixes, and explicit manual-evidence exclusions;
+- `f187f8b68811cca7af396170e927d918a5fb94f9` — `docs(index): link v0.9 hardening audit`.
+
+Manual TalkBack traversal/focus-order, representative 200% font/device layout checks, high-contrast/reduced-motion device QA, measured memory/frame/ANR traces, signed-production artifact checks, and store-readiness checks remain unclaimed. Final exact-head Android CI/API-35 evidence is also still pending after this log commit.
+
 ## Commit Policy
 
 Project-authored work continues to use focused Conventional Commit-style messages (`feat:`, `fix:`, `test:`, `testability:`, `a11y:`, `perf:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than one giant implementation commit.
