@@ -2,9 +2,11 @@
 
 ## Supported Versions
 
-SudokuNova is currently pre-1.0. Security fixes are applied to the latest actively developed branch and then included in the next release. After 1.0, this section will list maintained release lines explicitly.
+SudokuNova is preparing the first stable Classic Sudoku release through the `v1.0` release-candidate line. Until stable v1.0 is published, security fixes are applied to the latest actively developed branch and included in the next candidate/release as appropriate.
 
-Current hardening line: `v0.9.x` development toward the first stable Classic Sudoku release.
+Current release-candidate preparation line: `release/v1.0-rc1-prep` (`1.0.0-rc.1`).
+
+After stable 1.0, this section will list maintained release lines explicitly.
 
 ## Reporting a Vulnerability
 
@@ -45,7 +47,9 @@ SudokuNova aims to:
 - review exported Android components and external input paths;
 - keep local gameplay data within app-controlled persistence or user-selected transfer files;
 - never commit signing credentials or private certificates;
-- keep release signing external to ordinary source code and pull-request builds.
+- keep production signing external to ordinary source code and pull-request builds;
+- fail closed when a release-signing environment is only partially configured;
+- keep unsigned CI artifact verification clearly distinct from production-signed release validation.
 
 ## Android Permission and Component Surface
 
@@ -89,24 +93,75 @@ Never commit:
 - environment dumps containing secrets;
 - production `local.properties` or other machine-local credential files.
 
-If CI signing is introduced, secrets must come from protected GitHub repository/environment secrets at runtime. Pull requests from forks must remain safe without secret access. Build logic must not print secret values into Gradle or GitHub Actions logs.
+### v1.0 release-signing contract
 
-## Release Hardening
+The Android release build can opt into signing only through these environment variables:
 
-The v0.9 release-hardening gate includes:
+- `SUDOKUNOVA_KEYSTORE_PATH`;
+- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
+- `SUDOKUNOVA_KEY_ALIAS`;
+- `SUDOKUNOVA_KEY_PASSWORD`.
 
-- debug and release lint;
+The build intentionally has three states:
+
+- none set → unsigned release verification is allowed for ordinary CI;
+- all four set → the release signing configuration is enabled;
+- one to three set → Gradle configuration fails immediately.
+
+Standard CI includes a regression check for the partial-configuration failure path. Ordinary pull-request CI intentionally does not receive production signing secrets.
+
+If protected CI signing is introduced later, secrets must come from a protected repository/environment secret store at runtime. Untrusted pull-request code must not receive production signing material. Build logic and workflows must not print secret values into logs, reports, artifacts, or issue/PR output.
+
+See `docs/PRODUCTION_SIGNING.md` for the operational procedure.
+
+## Release Artifact Integrity
+
+The v1.0 RC pipeline does more than check that Gradle returned success.
+
+`scripts/verify_release_outputs.py` verifies the generated release outputs by checking:
+
+- expected APK/AAB archive structure;
+- non-empty R8 mapping output;
+- exact candidate version metadata from APK output metadata;
+- SHA-256 and byte-size evidence for APK, AAB, and mapping.
+
+This protects against publishing or reviewing an unexpected/missing artifact path or version. It does **not** prove production certificate identity, device installability, Play Console acceptance, or rollout safety.
+
+Production-signed APK certificate identity must be verified separately with Android signing tools and recorded in the v1.0 release-candidate evidence worksheet.
+
+## Automated Release Gates
+
+The v1.0 RC repository-side gate includes:
+
+- repository secret/signing-material guard;
+- release-output verifier unit tests;
+- partial release-signing fail-closed regression;
+- English/Hindi translation parity;
 - engine and Android JVM tests;
 - instrumentation-test compilation;
+- debug and release lint;
 - API-35 connected tests;
+- debug APK assembly;
 - release APK assembly with minification/resource shrinking;
 - release AAB assembly;
-- dependency/license review;
+- release APK/AAB/R8 structural/version verification;
+- SHA-256 release evidence generation;
+- dependency/license review carried forward from v0.9;
 - manifest permission/export review;
-- backup size/integrity regression tests;
-- documentation that distinguishes verified CI results from manual checks not yet performed.
+- backup size/integrity regression coverage;
+- documentation that distinguishes automated results from manual/production checks not yet performed.
 
-A release-quality claim must be supported by the exact tested commit and workflow evidence.
+A release-quality claim must be supported by the exact tested commit and workflow evidence. Stable v1.0 additionally requires the real manual/production checks in `docs/V1_RELEASE_CANDIDATE.md`.
+
+## GitHub Repository Security Settings
+
+Source-controlled security policy cannot enforce every GitHub administrative setting.
+
+At the beginning of v1.0 RC preparation, the GitHub API reported that `main` was not protected. The connected repository tool used during this preparation does not expose branch-protection/ruleset mutation, so protection must be enabled through repository administration and later recorded as actual evidence.
+
+Recommended settings are documented in `docs/GITHUB_REPOSITORY_SETTINGS.md`, including required Android CI/API-35 checks, force-push/deletion protection, least-privilege Actions settings, and secret-scanning/security-feature review.
+
+Do not describe these settings as enabled until GitHub actually reports them enabled.
 
 ## Dependency and Supply-Chain Expectations
 
@@ -114,8 +169,10 @@ A release-quality claim must be supported by the exact tested commit and workflo
 - Prefer dependencies already controlled through the version catalog.
 - Review dependency additions for maintenance status, license compatibility, transitive risk, and actual necessity.
 - Keep `THIRD_PARTY_NOTICES.md` synchronized with shipped third-party software where notices are required.
+- Review Dependabot updates deliberately rather than blindly merging all toolchain changes.
 - Avoid adding analytics, advertising, tracking, or cloud SDKs as incidental dependencies to security/release work.
-- Do not disable wrapper validation, lint, R8, tests, or backup validation merely to make CI pass.
+- Do not disable wrapper validation, lint, R8, tests, release-output verification, signing fail-closed behavior, or backup validation merely to make CI pass.
+- Third-party GitHub Actions must not receive production signing secrets in untrusted pull-request contexts.
 
 ## Privacy Expectations
 
@@ -123,9 +180,28 @@ SudokuNova's Classic gameplay, learning progress, statistics, history, saved puz
 
 Security changes must not silently introduce telemetry, remote profiling, advertising identifiers, or user-data upload. Any future networked feature requires an explicit product/privacy review and documentation update before release.
 
+Store/privacy declarations must describe the exact production binary rather than assumptions from an older development build.
+
+## Stable v1.0 Evidence Boundary
+
+Repository automation can prove source/build/artifact properties. It cannot by itself prove:
+
+- real TalkBack traversal quality;
+- representative 200% font/device/window behavior;
+- high-contrast/reduced-motion experience on real targets;
+- measured startup/frame/memory/ANR performance;
+- process-death behavior on representative targets;
+- intended production certificate identity;
+- signed production artifact installation;
+- store-side AAB validation;
+- real listing/privacy/screenshot accuracy;
+- production rollout safety.
+
+Those checks remain pending until performed and recorded in `docs/V1_RELEASE_CANDIDATE.md`. A stable `v1.0.0` tag/publication must not be created solely from green repository CI.
+
 ## Scope
 
-Security reports may cover application code, the Sudoku engine, persistence, file handling, build/release configuration, dependencies, workflows, and project infrastructure.
+Security reports may cover application code, the Sudoku engine, persistence, file handling, build/release configuration, dependencies, workflows, signing configuration, release artifact verification, and project infrastructure.
 
 For ordinary bugs that do not present a security risk, please use GitHub Issues.
 
