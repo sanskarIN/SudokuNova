@@ -61,6 +61,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sanskar.sudokunova.R
 import com.sanskar.sudokunova.data.InputMode
 import com.sanskar.sudokunova.data.UserSettings
+import com.sanskar.sudokunova.engine.SudokuHint
 import com.sanskar.sudokunova.game.GameState
 import com.sanskar.sudokunova.game.GameStatus
 import com.sanskar.sudokunova.ui.common.localizedDifficultyLabel
@@ -89,6 +90,7 @@ fun GameRoute(
     GameScreen(
         uiState = uiState,
         settings = settings,
+        hint = hint,
         onBack = onBack,
         onNewGame = onNewGame,
         onCellSelected = { index ->
@@ -138,20 +140,25 @@ fun GameRoute(
     )
 
     if (hint != null) {
+        val currentHint = hint ?: return
         AlertDialog(
             onDismissRequest = viewModel::dismissHint,
-            title = { Text(hint!!.technique.displayName) },
-            text = { Text(hint!!.explanation) },
+            title = { Text(currentHint.technique.displayName) },
+            text = { Text(currentHint.explanation) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.applyHint()
                         playFeedback()
                     },
-                ) { Text(stringResource(R.string.v04_apply_hint)) }
+                ) {
+                    Text(stringResource(R.string.v04_apply_hint))
+                }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::dismissHint) { Text(stringResource(R.string.v04_not_now)) }
+                TextButton(onClick = viewModel::dismissHint) {
+                    Text(stringResource(R.string.v04_not_now))
+                }
             },
         )
     }
@@ -162,6 +169,7 @@ fun GameRoute(
 private fun GameScreen(
     uiState: GameScreenState,
     settings: UserSettings,
+    hint: SudokuHint?,
     onBack: () -> Unit,
     onNewGame: () -> Unit,
     onCellSelected: (Int) -> Unit,
@@ -181,7 +189,10 @@ private fun GameScreen(
                 title = { Text(stringResource(R.string.v04_app_name)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.v04_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.v04_back),
+                        )
                     }
                 },
             )
@@ -206,7 +217,9 @@ private fun GameScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(uiState.message, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(16.dp))
-                    Button(onClick = onNewGame) { Text(stringResource(R.string.v04_new_game)) }
+                    Button(onClick = onNewGame) {
+                        Text(stringResource(R.string.v04_new_game))
+                    }
                 }
             }
 
@@ -215,6 +228,7 @@ private fun GameScreen(
                 GameContent(
                     game = game,
                     settings = settings,
+                    hint = hint,
                     modifier = Modifier.padding(padding),
                     onCellSelected = onCellSelected,
                     onMoveSelection = onMoveSelection,
@@ -239,10 +253,14 @@ private fun GameScreen(
                             )
                         },
                         confirmButton = {
-                            TextButton(onClick = onNewGame) { Text(stringResource(R.string.v04_play_another)) }
+                            TextButton(onClick = onNewGame) {
+                                Text(stringResource(R.string.v04_play_another))
+                            }
                         },
                         dismissButton = {
-                            TextButton(onClick = onBack) { Text(stringResource(R.string.v04_home)) }
+                            TextButton(onClick = onBack) {
+                                Text(stringResource(R.string.v04_home))
+                            }
                         },
                     )
                 } else if (game.status == GameStatus.FAILED) {
@@ -251,10 +269,14 @@ private fun GameScreen(
                         title = { Text(stringResource(R.string.v04_mistake_limit_reached)) },
                         text = { Text(stringResource(R.string.v04_restart_try_again)) },
                         confirmButton = {
-                            TextButton(onClick = onRestart) { Text(stringResource(R.string.v04_restart)) }
+                            TextButton(onClick = onRestart) {
+                                Text(stringResource(R.string.v04_restart))
+                            }
                         },
                         dismissButton = {
-                            TextButton(onClick = onBack) { Text(stringResource(R.string.v04_home)) }
+                            TextButton(onClick = onBack) {
+                                Text(stringResource(R.string.v04_home))
+                            }
                         },
                     )
                 }
@@ -267,6 +289,7 @@ private fun GameScreen(
 private fun GameContent(
     game: GameState,
     settings: UserSettings,
+    hint: SudokuHint?,
     modifier: Modifier = Modifier,
     onCellSelected: (Int) -> Unit,
     onMoveSelection: (Int) -> Unit,
@@ -337,6 +360,7 @@ private fun GameContent(
                         game = game,
                         settings = settings,
                         onCellSelected = onCellSelected,
+                        hint = hint,
                     )
                 }
                 ControlsPanel(
@@ -355,7 +379,10 @@ private fun GameContent(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(12.dp),
             ) {
                 GameMeta(game, settings)
                 Spacer(Modifier.height(10.dp))
@@ -363,6 +390,7 @@ private fun GameContent(
                     game = game,
                     settings = settings,
                     onCellSelected = onCellSelected,
+                    hint = hint,
                 )
                 Spacer(Modifier.height(12.dp))
                 ControlsPanel(
@@ -392,7 +420,10 @@ private fun GameMeta(game: GameState, settings: UserSettings) {
     ) {
         Column {
             Text(localizedDifficultyLabel(game.difficulty), style = MaterialTheme.typography.titleLarge)
-            Text(stringResource(R.string.v04_percent_complete, game.progressPercent), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(R.string.v04_percent_complete, game.progressPercent),
+                style = MaterialTheme.typography.bodyLarge,
+            )
             Text(
                 if (settings.inputMode == InputMode.CELL_FIRST) {
                     stringResource(R.string.v06_cell_first)
@@ -404,7 +435,9 @@ private fun GameMeta(game: GameState, settings: UserSettings) {
             )
         }
         Column(horizontalAlignment = Alignment.End) {
-            if (settings.showTimer) Text(formatTime(game.elapsedSeconds))
+            if (settings.showTimer) {
+                Text(formatTime(game.elapsedSeconds))
+            }
             Text(
                 if (settings.mistakeLimit > 0) {
                     stringResource(R.string.v04_mistakes_limited, game.mistakes, settings.mistakeLimit)
@@ -445,7 +478,11 @@ private fun ControlsPanel(
             ActionButton(stringResource(R.string.v04_redo), Icons.AutoMirrored.Filled.Redo, onRedo)
             ActionButton(stringResource(R.string.v04_erase), Icons.AutoMirrored.Filled.Backspace, onErase)
             ActionButton(
-                if (game.notesMode) stringResource(R.string.v04_notes_on) else stringResource(R.string.v04_notes),
+                if (game.notesMode) {
+                    stringResource(R.string.v04_notes_on)
+                } else {
+                    stringResource(R.string.v04_notes)
+                },
                 Icons.Default.Edit,
                 onToggleNotes,
                 selected = game.notesMode,
@@ -458,7 +495,11 @@ private fun ControlsPanel(
         ) {
             ActionButton(stringResource(R.string.v04_hint), Icons.Default.Lightbulb, onHint)
             ActionButton(
-                if (game.isPaused) stringResource(R.string.v04_resume) else stringResource(R.string.v04_pause),
+                if (game.isPaused) {
+                    stringResource(R.string.v04_resume)
+                } else {
+                    stringResource(R.string.v04_pause)
+                },
                 if (game.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
                 onPause,
             )
@@ -520,7 +561,11 @@ private fun ActionButton(
     Surface(
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+        color = if (selected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -536,6 +581,9 @@ private fun formatTime(seconds: Long): String {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
     val remaining = seconds % 60
-    return if (hours > 0) "%d:%02d:%02d".format(hours, minutes, remaining)
-    else "%02d:%02d".format(minutes, remaining)
+    return if (hours > 0) {
+        "%d:%02d:%02d".format(hours, minutes, remaining)
+    } else {
+        "%02d:%02d".format(minutes, remaining)
+    }
 }
