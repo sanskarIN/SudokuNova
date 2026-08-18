@@ -4,7 +4,7 @@ This roadmap describes intended milestones without promising dates. Correctness,
 
 ## v0.1 — Foundation and First Playable Build
 
-Status: **In progress**
+Status: **Completed**
 
 - [x] Repository/build foundation
 - [x] Kotlin + Jetpack Compose + Material 3
@@ -22,91 +22,128 @@ Status: **In progress**
 - [x] Learning-center foundation
 - [x] Theme and adaptive-layout foundation
 - [x] CI, testing foundation, and repository policies
-- [ ] Complete v0.1 documentation set
-- [ ] Green build/test/lint gate on integration branch
-- [ ] Manual device/emulator smoke test before milestone tag
+- [x] Documentation/build verification foundation
 
 ## v0.2 — Core Gameplay Hardening
 
-- Expand gameplay regression tests
-- Improve number-first/smart-selection input options
-- Persist undo/redo state if release testing proves it necessary
-- Strengthen process-death and lifecycle restoration tests
-- Add configurable validation modes
-- Add more complete haptics/sound implementation behind settings
-- Improve keyboard input for tablets/Chromebooks
-- Improve board accessibility semantics and focus order
-- Improve generator performance profiling
+Status: **Completed**
+
+- [x] Gameplay regression coverage
+- [x] Number-first/cell-first input behavior
+- [x] Lifecycle/process restoration hardening
+- [x] Validation and mistake controls
+- [x] Haptic/sound settings
+- [x] Hardware keyboard controls
+- [x] Board accessibility semantics
+- [x] Generator regression/performance checks
 
 ## v0.3 — Puzzle and Difficulty System
 
-- Calibrate difficulty using technique/complexity evidence, not clue count alone
-- Add richer solving-technique analysis
-- Add generation benchmarks
-- Add deterministic difficulty regression corpus
-- Add puzzle-code format specification
-- Add stronger generator cancellation/performance controls
+Status: **Completed**
+
+- [x] Logical/complexity-based difficulty evidence
+- [x] Richer solving-technique analysis
+- [x] Generation benchmarks and deterministic corpus coverage
+- [x] Puzzle-code groundwork
+- [x] Generator cancellation/performance controls
 
 ## v0.4 — UX, Accessibility, Localization
 
-- Onboarding and replayable first-game tooltips
-- Expanded high-contrast presentation
-- Reduced-motion audit
-- TalkBack navigation audit
-- Large-font and orientation QA
-- English string-resource cleanup
-- Hindi translation foundation
-- Tablet/foldable layout refinement
+Status: **Completed**
+
+- [x] Onboarding/learning foundation
+- [x] High-contrast presentation
+- [x] Reduced-motion support
+- [x] TalkBack-oriented semantics
+- [x] Adaptive phone/tablet layout
+- [x] English resource cleanup
+- [x] Hindi translation foundation
+- [x] Translation parity verification
 
 ## v0.5 — Player Data and History
 
-- Versioned history storage
-- Per-difficulty statistics
-- Best/average times by difficulty
-- Favorites and saved puzzles
-- History filters
-- Expanded achievements
-- Safe data-reset controls
+Status: **Completed**
+
+- [x] Versioned local history storage
+- [x] Player statistics
+- [x] Best-time and completion records
+- [x] Favorites and saved puzzles
+- [x] History browsing
+- [x] Achievements/statistics expansion
+- [x] Safe reset controls
 
 ## v0.6 — Challenges
 
-- Daily Challenge archive/calendar
-- Daily performance history
-- Weekly Challenge
-- Optional special challenges
-- Fair no-mistake and speed challenges
-- Challenge-related statistics
+Status: **Completed**
 
-## v0.7 — Custom Sudoku and Sharing
+- [x] Daily Challenge archive
+- [x] Challenge performance records
+- [x] Weekly Challenge
+- [x] Deterministic challenge identity
+- [x] Challenge statistics
+- [x] Challenge UI and regression coverage
 
-- Save/archive custom puzzles
-- Replay custom puzzles
-- Safe text/puzzle-code sharing
-- Import validation and size limits
-- Optional result image export
-- Versioned local backup/import/export design
+## v0.7 — Custom Sudoku and Safe Sharing
+
+Status: **Completed**
+
+- [x] Save/archive custom puzzles
+- [x] Replay custom puzzles
+- [x] Versioned puzzle-code sharing
+- [x] Strict import validation, checksums, and size limits
+- [x] Text/clipboard/share flows
+- [x] Result sharing/export support
+- [x] Versioned local backup/import/export
+- [x] Duplicate-safe restore behavior
+- [x] English/Hindi transfer resources
+- [x] Standard CI and API-35 connected verification
 
 ## v0.8 — Learning and Advanced Hints
 
-- Interactive practice states
-- Naked/Hidden Pairs and Triples
-- Pointing Pair/Triple
-- Box-Line Reduction
-- X-Wing
-- Additional techniques only after explanation and correctness tests exist
-- Learning progress stored locally
+Status: **Implementation complete; final verification in progress on PR #22**
+
+- [x] Platform-independent structured `TeachingStep` evidence
+- [x] Deterministic teaching traces
+- [x] Naked Single and Hidden Single placement evidence
+- [x] Naked Pair evidence
+- [x] Pointing Pair / Triple evidence
+- [x] Box-Line Reduction evidence
+- [x] Hidden Pair evidence
+- [x] Naked Triple evidence
+- [x] Hidden Triple evidence
+- [x] X-Wing evidence for row/column forms
+- [x] Explicit Reveal fallback kept separate from teaching logic
+- [x] HintEngine consumes teaching traces
+- [x] In-game source/target/elimination/placement highlighting
+- [x] Accessibility descriptions for teaching evidence
+- [x] English/Hindi hint and learning resources
+- [x] Deterministic offline practice catalog covering every supported technique
+- [x] Interactive practice answer states
+- [x] Local per-technique learning/practice progress
+- [x] Safe learning-progress reset
+- [x] Engine solution-safety corpus tests
+- [x] Direct advanced-technique evidence tests
+- [x] Learning-progress JVM tests
+- [x] Compose Learn/practice smoke coverage
+- [x] Complete learning/hints documentation
+- [ ] Final clean-head Android CI green
+- [ ] Final clean-head API-35 connected instrumentation green
+- [ ] Merge PR #22 and close issue #21
 
 ## v0.9 — Release Hardening
 
-- Full automated regression suite
-- Accessibility audit
-- Performance audit
+Status: **Next milestone after v0.8 merge**
+
+- Full automated regression-suite audit
+- Accessibility audit and focus-order review
+- Performance and memory audit
 - Security/privacy audit
-- Dependency/license audit
+- Dependency and license audit
 - Device QA matrix
 - Release-build shrinking verification
 - UI polish and screenshot readiness
 - Documentation accuracy audit
+- Crash/ANR hardening and release checklist
 
 ## v1.0 — Stable Classic Sudoku Release
 
@@ -115,14 +152,14 @@ Target scope:
 - Polished Classic 9×9 gameplay
 - Reliable generator/solver and unique solutions
 - Seven supported difficulty levels with calibrated scoring
-- Quick Play and Daily Challenge
-- Custom Puzzle
-- Notes, undo/redo, hints, timer, mistake modes
+- Quick Play and Daily/Weekly Challenges
+- Custom Puzzle and safe sharing/import/export
+- Notes, undo/redo, advanced hints, timer, mistake modes
 - Autosave/resume
 - Statistics/history/achievements
-- Learning center
+- Interactive learning center and local practice progress
 - Light/Dark/System/Dynamic Color
-- Accessibility and localization-ready resources
+- Accessibility and English/Hindi localization
 - Settings, About, Support, privacy/security documentation
 - Complete CI/tests/build/release documentation
 - Production-ready APK/AAB release process
@@ -154,15 +191,12 @@ Only if they can be implemented without compromising privacy or Android quality:
 ## Project Principles
 
 - No ads by default in the open-source base.
-- No account required for core play.
+- No account required for core play or learning progress.
 - No unnecessary sensitive permissions.
 - No feature is marked complete unless its implementation exists.
+- Advanced solving techniques require deterministic evidence and correctness tests.
 - Advanced variants do not block a high-quality Classic release.
 
 ☕ Support continued open-source development: https://buymeacoffee.com/sanskarIN
 
 **Made by the Sanskar**
-
-## v0.7 — Safe Sharing / Import / Export / Backup
-
-In active development on the cumulative branch line. Scope includes versioned puzzle codes, checksum/bounds validation, duplicate-safe local backup restore, clipboard/share, Android document-picker file transfer, puzzle/result sharing, English/Hindi resources, and security/testing documentation. Merge requires standard CI plus API-35 connected instrumentation.
