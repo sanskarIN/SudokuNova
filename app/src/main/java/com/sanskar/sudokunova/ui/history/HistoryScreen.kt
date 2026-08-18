@@ -1,13 +1,16 @@
 package com.sanskar.sudokunova.ui.history
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
@@ -104,7 +107,10 @@ private fun HistoryScreen(
         ) {
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     FilterChip(
@@ -167,7 +173,7 @@ private fun HistoryScreen(
                 }
             }
 
-            item { Text("", modifier = Modifier.padding(bottom = 16.dp)) }
+            item { Spacer(modifier = Modifier.padding(bottom = 16.dp)) }
         }
     }
 
@@ -198,27 +204,23 @@ private fun DifficultyFilterRow(
     selected: Difficulty?,
     onDifficulty: (Difficulty?) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
         FilterChip(
             selected = selected == null,
             onClick = { onDifficulty(null) },
             label = { Text(stringResource(R.string.v05_all_difficulties)) },
         )
-        Difficulty.entries.chunked(4).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                row.forEach { difficulty ->
-                    FilterChip(
-                        selected = selected == difficulty,
-                        onClick = { onDifficulty(difficulty) },
-                        label = { Text(localizedDifficultyLabel(difficulty)) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                repeat(4 - row.size) { Text("", modifier = Modifier.weight(1f)) }
-            }
+        Difficulty.entries.forEach { difficulty ->
+            FilterChip(
+                selected = selected == difficulty,
+                onClick = { onDifficulty(difficulty) },
+                label = { Text(localizedDifficultyLabel(difficulty)) },
+            )
         }
     }
 }
@@ -233,16 +235,14 @@ private fun DifficultySummaryCard(summary: DifficultyHistorySummary) {
                 style = MaterialTheme.typography.titleMedium,
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(stringResource(R.string.v05_games_count, summary.games))
                 Text(stringResource(R.string.v05_best_time_value, formatTime(summary.bestSeconds)))
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
                 Text(stringResource(R.string.v05_average_time, formatTime(summary.averageSeconds.toLong())))
                 Text(stringResource(R.string.v05_perfect_count, summary.perfectGames))
             }
@@ -294,8 +294,11 @@ private fun HistoryCard(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(stringResource(R.string.v05_time_value, formatTime(item.elapsedSeconds)))
                 Text(stringResource(R.string.v05_mistakes_value, item.mistakes))
@@ -303,7 +306,10 @@ private fun HistoryCard(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (item.isDailyChallenge) Text(stringResource(R.string.v05_daily_badge))
