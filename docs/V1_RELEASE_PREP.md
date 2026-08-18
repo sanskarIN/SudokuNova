@@ -11,13 +11,15 @@ This document is the repository-side handoff from the verified v0.9 hardening mi
 - Version name: `1.0.0-rc.1`
 - Stable `v1.0.0` release: **not yet claimed**
 
-The RC version exists to validate the complete release path without pretending that real device, accessibility-service, production-signing, or store-publication evidence has already been collected.
+The RC version exists to validate the complete release path without pretending that real device, accessibility-service, production-signing, repository-admin, or store-publication evidence has already been collected.
+
+The older alternate PR #26 / `release/v1.0-readiness` / version code `990` was closed as superseded after its materially stronger unique ideas were absorbed into this line. PR #27 is the single authoritative v1.0 RC preparation path.
 
 ## Repository-side work completed for RC preparation
 
 ### Release metadata
 
-The Android app now identifies this line as `1.0.0-rc.1` / version code `1000`.
+The Android app identifies this line as `1.0.0-rc.1` / version code `1000`.
 
 If version code `1000` is uploaded to a store track that reserves it, the final stable build must use a higher version code.
 
@@ -35,7 +37,14 @@ If version code `1000` is uploaded to a store track that reserves it, the final 
 - version code/name match the expected RC values;
 - SHA-256 and byte-size evidence is written for APK, AAB and R8 mapping.
 
-The verifier has direct Python unit tests under `scripts/tests/`.
+For a protected signed-release validation run, `--require-signatures` additionally requires:
+
+- APK verification through `apksigner`;
+- AAB verification through `jarsigner`.
+
+The verifier does not own or read signing passwords/keys. It validates already-produced artifacts.
+
+The verifier has direct Python unit tests under `scripts/tests/`, including signature-verifier failure/success cases.
 
 ### CI release gates
 
@@ -48,6 +57,8 @@ Standard Android CI now additionally verifies:
 5. checksum/evidence upload with the release build artifacts.
 
 Existing security, translation, engine, app JVM, AndroidTest compilation, lint, debug build, R8 release build and AAB gates remain intact.
+
+Normal PR CI intentionally does not require production signatures because it receives no production signing secrets.
 
 ### Secret-backed production signing
 
@@ -66,6 +77,19 @@ Behavior is fail closed:
 
 See [Production Signing](PRODUCTION_SIGNING.md).
 
+### Evidence records
+
+Two complementary evidence documents are maintained:
+
+- [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md) — concise exact-head/run/artifact/signature/manual/store status record;
+- [v1.0 Release Candidate Evidence Worksheet](V1_RELEASE_CANDIDATE.md) — detailed real-target test matrix and ship/no-ship decision.
+
+Automated CI cannot mark manual-production rows complete.
+
+### Canonical stable release notes
+
+[v1.0 Release Notes Source](V1_RELEASE_NOTES.md) contains the canonical truthful stable-release notes draft and pending exact evidence fields. It must not be published as final while the build remains RC or mandatory stable evidence is pending.
+
 ### Store/publication preparation
 
 [Play Store Release Preparation](PLAY_STORE_RELEASE.md) contains:
@@ -73,36 +97,13 @@ See [Production Signing](PRODUCTION_SIGNING.md).
 - project/store identity;
 - suggested title/short/full description;
 - screenshot/asset checklist;
-- current project privacy/data facts to map to the live store forms;
+- current project privacy/data facts to map to live store forms;
 - stable privacy URL requirements;
 - artifact/signing checklist;
 - draft v1.0 release-note copy;
 - rollout/fix-forward discipline.
 
 It deliberately avoids freezing current Play Console policy wording because store requirements can change independently of this repository.
-
-### Manual evidence worksheet
-
-[v1.0 Release Candidate Evidence Worksheet](V1_RELEASE_CANDIDATE.md) is the mandatory manual-production checklist for:
-
-- installation/upgrade;
-- gameplay;
-- challenges;
-- custom puzzles;
-- Learn/hints;
-- History/Saved/statistics;
-- sharing/import/export/backup;
-- TalkBack;
-- 200% font/adaptive layouts;
-- high contrast/reduced motion;
-- keyboard input;
-- lifecycle/process death;
-- measured performance/ANR/memory;
-- production signing;
-- store/repository assets;
-- final ship/no-ship decision.
-
-Automated CI cannot mark those manual rows complete.
 
 ### GitHub repository health
 
@@ -143,9 +144,11 @@ The following must remain pending until real evidence exists:
 - process-death/lifecycle manual scenarios;
 - actual production/upload key configuration;
 - signed APK certificate verification;
+- signed AAB signature/distribution validation;
 - signed production/production-equivalent install smoke test;
-- AAB distribution-platform validation;
+- final release-only R8 smoke on signed artifacts;
 - final screenshots/listing/privacy declarations;
+- GitHub `main` protection/ruleset settings if required for stable release;
 - stable version-code decision after any RC store uploads;
 - stable source tag/GitHub Release/store publication.
 
@@ -159,12 +162,13 @@ When manual/production evidence passes:
 2. set `versionName = "1.0.0"`;
 3. make only release-blocking fixes after the approved RC, with revalidation proportional to those fixes;
 4. pass exact-head automated gates again;
-5. produce and verify signed stable APK/AAB;
-6. complete the manual evidence worksheet;
-7. update `CHANGELOG.md`, `ROADMAP.md`, `README.md` and `what_changed.md` with actual evidence;
-8. tag the exact approved source commit as `v1.0.0`;
-9. create the GitHub Release from that tag;
-10. publish through the chosen Android distribution track only after the final ship decision.
+5. produce signed stable APK/AAB;
+6. run `scripts/verify_release_outputs.py --require-signatures` against the exact signed artifacts and final version metadata;
+7. complete the manual evidence worksheet and concise evidence ledger;
+8. update `V1_RELEASE_NOTES.md`, `CHANGELOG.md`, `ROADMAP.md`, `README.md` and `what_changed.md` with actual evidence;
+9. tag the exact approved source commit as `v1.0.0`;
+10. create the GitHub Release from that tag;
+11. publish through the chosen Android distribution track only after the final ship decision.
 
 ## Evidence integrity
 
