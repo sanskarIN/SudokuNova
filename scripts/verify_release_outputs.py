@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Validate SudokuNova Android release outputs and write SHA-256 evidence.
 
-This verifier is intentionally independent of Android SDK tooling so it can run in
-CI after Gradle has produced the release APK/AAB. It proves basic archive
-structure, expected APK metadata, a non-empty R8 mapping file, and deterministic
-SHA-256/size evidence for the produced artifacts. It does not claim production
-signing or device-install verification.
+The normal CI path proves archive structure, expected APK metadata, a non-empty
+R8 mapping file, and deterministic SHA-256/size evidence. A protected release
+environment can additionally require APK/AAB signature verification without
+putting signing credentials in this tool or the repository.
 """
 
 from __future__ import annotations
@@ -13,7 +12,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import zipfile
 
@@ -72,6 +74,55 @@ def load_apk_metadata(path: Path) -> tuple[int, str]:
     return version_code, version_name
 
 
+def _run_tool(command: list[str]) -> subprocess.CompletedProcess[str]:
+    env = dict(os.environ)
+    env["LC_ALL"] = "C"
+    env["LANG"] = "C"
+    return subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+
+def verify_apk_signature(path: Path) -> str:
+    tool = shutil.which("apksigner")
+    if tool is None:
+        raise RuntimeError("apksigner is required for mandatory APK signature verification")
+
+    completed = _run_tool([tool, "verify", "--verbose", "--print-certs", str(path)])
+    if completed.returncode != 0:
+        details = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
+        raise RuntimeError(
+            "APK signature verification failed: "
+            + (details or f"apksigner exited with status {completed.returncode}")
+        )
+    return "verified with apksigner"
+
+
+def verify_aab_signature(path: Path) -> str:
+    tool = shutil.which("jarsigner")
+    if tool is None:
+        raise RuntimeError("jarsigner is required for mandatory AAB signature verification")
+
+    completed = _run_tool([tool, "-verify", "-certs", str(path)])
+    combined = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
+    normalized = combined.lower()
+    verified = (
+        completed.returncode == 0
+        and "jar verified" in normalized
+        and "jar is unsigned" not in normalized
+    )
+    if not verified:
+        raise RuntimeError(
+            "AAB signature verification failed: "
+            + (combined or f"jarsigner exited with status {completed.returncode}")
+        )
+    return "verified with jarsigner"
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as source:
@@ -98,7 +149,7 @@ def write_manifest(paths: list[Path], output: Path) -> None:
     output.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", required=True, type=Path)
     parser.add_argument("--aab", required=True, type=Path)
@@ -107,11 +158,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-version-code", required=True, type=int)
     parser.add_argument("--expected-version-name", required=True)
     parser.add_argument("--output", required=True, type=Path)
-    return parser.parse_args()
+    parser.add_argument(
+        "--require-signatures",
+        action="store_true",
+        help="require APK verification with apksigner and AAB verification with jarsigner",
+    )
+    return parser.parse_args(argv)
 
 
-def main() -> int:
-    args = parse_args()
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
     try:
         validate_zip(args.apk, "Release APK", APK_REQUIRED_ENTRIES)
         validate_zip(args.aab, "Release AAB", AAB_REQUIRED_ENTRIES)
@@ -125,8 +181,14 @@ def main() -> int:
             raise ValueError(
                 f"Unexpected APK versionName: expected {args.expected_version_name!r}, got {actual_name!r}"
             )
+
+        signature_statuses: list[str] = []
+        if args.require_signatures:
+            signature_statuses.append(verify_apk_signature(args.apk))
+            signature_statuses.append(verify_aab_signature(args.aab))
+
         write_manifest([args.apk, args.aab, args.mapping], args.output)
-    except ValueError as exc:
+    except (OSError, ValueError, RuntimeError) as exc:
         print(f"Release output verification failed: {exc}", file=sys.stderr)
         return 1
 
@@ -134,6 +196,11 @@ def main() -> int:
         "Release outputs verified: "
         f"versionCode={actual_code}, versionName={actual_name}, evidence={args.output}"
     )
+    if args.require_signatures:
+        for status in signature_statuses:
+            print(f"Signature: {status}")
+    else:
+        print("Signature: not required by this verification run")
     return 0
 
 
