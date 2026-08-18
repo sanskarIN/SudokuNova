@@ -181,53 +181,85 @@ Completed release-hardening work:
 
 ### v0.9 evidence boundary
 
-v0.9 deliberately completes **source, automated, documentation, and repository hardening**. It does not fabricate manual production evidence. Real-device/assistive-technology/signing/store validation remains a v1.0 gate and is tracked in issue #5.
+v0.9 deliberately completed **source, automated, documentation, and repository hardening**. It did not fabricate manual production evidence. Real-device/assistive-technology/signing/store validation remains a v1.0 gate and is tracked in issue #5.
 
 ## v1.0 — Stable Classic Sudoku Release
 
-Status: **In progress — issue #5 / draft PR #27 / RC1 preparation**
+Status: **Repository-side RC1 preparation verified and merged; stable production validation still in progress — issue #5**
 
 The v1.0 line is evidence-driven production validation, not another uncontrolled feature-expansion phase.
 
-### Repository-side RC1 preparation
+### Repository-side RC1 preparation — completed
 
 - [x] Create `release/v1.0-rc1-prep` from verified post-v0.9 `main`
-- [x] Open draft PR #27 for the authoritative v1.0 RC preparation path
+- [x] Open PR #27 for the authoritative v1.0 RC preparation path
 - [x] Advance candidate metadata to `versionCode 1000` / `versionName 1.0.0-rc.1`
 - [x] Add deterministic release APK/AAB/R8 structural/version verifier
 - [x] Add SHA-256/byte-size release evidence generation
-- [x] Add direct unit coverage for the release verifier
+- [x] Add optional mandatory signed-artifact verification mode (`apksigner` APK / `jarsigner` AAB)
+- [x] Add direct unit coverage for archive, metadata, checksum, and signature-verifier behavior
 - [x] Add optional secret-backed release signing through four environment variables
 - [x] Fail closed when release signing is partially configured
 - [x] Add CI regression proving partial signing fails closed
 - [x] Add CI release-output verification/checksum gate and artifact retention
 - [x] Add production signing handbook
 - [x] Add Play Store/listing/privacy/release preparation guide
-- [x] Add v1.0 manual release-candidate evidence worksheet
+- [x] Add detailed v1.0 manual release-candidate evidence worksheet
+- [x] Add concise exact v1.0 release evidence ledger
+- [x] Add canonical v1.0 stable release-notes source
 - [x] Add generated GitHub release-note configuration
 - [x] Add repository-settings/branch-protection checklist
 - [x] Add v1.0 RC repository handoff documentation
-- [ ] Enable `main` protection/ruleset and required checks in GitHub repository settings; current connected GitHub tool does not expose this write action
-- [ ] Final exact-head Android CI green for PR #27
-- [ ] Final exact-head API-35 connected gate green for PR #27
-- [ ] Record final RC repository-side verification evidence in `what_changed.md`
-- [ ] Promote/merge PR #27 only after repository-side exact-head gates are green and no repository-blocking defect remains
+- [x] Synchronize README/changelog/roadmap/build/testing/CI/security/release/docs-index guidance
+- [x] Correct stale toolchain documentation to Gradle 9.5 / AGP 9.3.1
+- [x] Audit older PR #26 (`release/v1.0-readiness`, code 990), absorb stronger signature/evidence concepts, and close it as superseded
+- [x] Final exact-head Android CI green — run #635 / `32151771317`
+- [x] Final exact-head API-35 connected gate green — run #188 / `32151771297`
+- [x] Final verified PR #27 head — `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- [x] Release artifact ID `9330415157` and GitHub artifact digest recorded
+- [x] Unsigned APK/AAB/R8 mapping SHA-256 and byte-size evidence recorded
+- [x] No repository-blocking defect remained in final RC-preparation diff/audit
+- [x] PR #27 promoted only after exact-head workflows were green
+- [x] PR #27 merged with exact verified head — merge commit `2329881aff8dabaf8d040918e16b6113e3900245`
+
+### RC1 automated artifact evidence
+
+- unsigned APK SHA-256: `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7` — `1,849,599` bytes
+- release AAB SHA-256: `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd` — `4,349,513` bytes
+- R8 mapping SHA-256: `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac` — `39,198,732` bytes
+- workflow artifact ID: `9330415157`
+- workflow artifact digest: `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`
+
+These are unsigned repository-CI verification artifacts, not production-signed release evidence.
+
+### GitHub repository-admin setting still pending
+
+At RC-prep start, GitHub reported `main` as unprotected. The connected GitHub tool used for this work does not expose branch-protection/ruleset mutation.
+
+- [ ] Enable an appropriate `main` protection/ruleset in GitHub administration
+- [ ] Require `Android CI / verify`
+- [ ] Require `Android Instrumentation / connected-tests`
+- [ ] Review force-push/deletion/bypass and repository security settings
 
 ### Required stable-release manual/production validation
 
 - [ ] real TalkBack traversal/focus-order QA on representative target(s)
-- [ ] representative 200% font-scale, narrow-phone, tablet/large-window, resize/orientation QA
+- [ ] representative 200% font-scale, narrow-phone, large-phone, tablet/large-window, resize/orientation QA
 - [ ] high-contrast and reduced-motion manual verification
 - [ ] measured startup/frame/memory/ANR evidence on representative targets
 - [ ] process-death and lifecycle-restoration manual scenarios
-- [ ] secure production signing outside Git using the intended production/upload key
-- [ ] signed release APK certificate/signature verification
+- [ ] secure production/upload signing outside Git using the intended key
+- [ ] signed APK verification with `apksigner` and expected certificate identity
+- [ ] signed AAB verification/distribution-platform validation
 - [ ] signed production/production-equivalent APK installation smoke QA
-- [ ] AAB distribution-platform validation
-- [ ] final R8 release-variant smoke QA on signed artifacts
-- [ ] real store/repository screenshots and listing/privacy disclosure review
+- [ ] final release-only R8 smoke QA on signed artifacts
+- [ ] real store/repository screenshots and listing/privacy/data/content/target-API review
 - [ ] final stable version-code decision after any RC store-track uploads
-- [ ] final release notes, immutable `v1.0.0` tag, GitHub Release, and Android publication only after evidence exists
+- [ ] promote metadata to stable `versionName = 1.0.0` with a valid higher versionCode where required
+- [ ] fresh exact-head stable Android CI/API-35 verification after final stable metadata/source changes
+- [ ] final signed artifact hashes/signature evidence recorded
+- [ ] final release decision is `SHIP`
+- [ ] immutable `v1.0.0` tag, GitHub Release, and Android/store publication only after evidence exists
 
 ### Stable v1.0 product contract
 
@@ -250,7 +282,7 @@ Stable v1.0 must preserve:
 
 ### Stable promotion rule
 
-Do not tag `v1.0.0` until the exact source commit has both automated and required manual/production evidence. If RC version code `1000` is accepted by a store/distribution track, the final stable build must use a strictly higher version code.
+Do not tag `v1.0.0` until the exact stable source commit has both automated and required manual/production evidence. If RC version code `1000` is accepted by a store/distribution track, the final stable build must use a strictly higher version code.
 
 ## v1.x — Carefully Selected Extensions
 
