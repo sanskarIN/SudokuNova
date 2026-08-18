@@ -4,34 +4,66 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ## [Unreleased]
 
-### v1.0 RC1 — Stable Release Preparation
+### v1.0 RC1 — Repository-Side Stable Release Preparation
 
-Repository-side work for the first v1.0 release candidate is tracked in issue #5 and draft PR #27. This stage prepares the release path while keeping real device, assistive-technology, production-signing, and store-publication evidence explicitly pending.
+The first v1.0 repository-side release-candidate preparation is now **verified and merged**. Stable `v1.0.0` is still pending the real manual, repository-admin, production-signing, signed-artifact, store, final-stable-metadata, and publication evidence tracked in issue #5.
 
 #### Added
-- `scripts/verify_release_outputs.py` to validate release APK/AAB structure, R8 mapping presence, exact Android output version metadata, and generate SHA-256/byte-size evidence.
-- Python unit coverage for the release-output verifier.
+- `scripts/verify_release_outputs.py` to validate release APK/AAB archive structure, required entries, non-empty R8 mapping, exact Android output version metadata, and SHA-256/byte-size evidence.
+- Optional `--require-signatures` mode requiring `apksigner` for APK and `jarsigner` for AAB in protected signed-release validation.
+- Python unit coverage for release-output and signature-verifier behavior.
 - CI regression proving partially supplied production-signing environment variables fail closed instead of silently producing an unsigned release.
 - `.github/release.yml` for generated GitHub release-note categories.
-- `docs/PRODUCTION_SIGNING.md` documenting secret-backed signing, certificate verification, version-code rules, and CI boundaries.
-- `docs/PLAY_STORE_RELEASE.md` with store listing copy, asset/privacy/data-declaration preparation, release artifact checks and rollout discipline.
+- `docs/PRODUCTION_SIGNING.md` documenting secret-backed signing, certificate verification, mandatory signature-verifier mode, version-code rules, and CI boundaries.
+- `docs/PLAY_STORE_RELEASE.md` with store listing copy, asset/privacy/data-declaration preparation, release artifact checks, and rollout discipline.
 - `docs/V1_RELEASE_CANDIDATE.md` as the authoritative real-device/manual/production evidence worksheet.
-- `docs/GITHUB_REPOSITORY_SETTINGS.md` recording recommended `main` protection, required checks, Actions/security settings and the current unprotected-branch evidence boundary.
-- `docs/V1_RELEASE_PREP.md` summarizing the RC architecture, automated gates and stable-promotion rules.
+- `docs/V1_RELEASE_EVIDENCE.md` as the concise exact-head/run/artifact/signature/manual/store evidence ledger.
+- `docs/V1_RELEASE_NOTES.md` as the canonical truthful stable-release notes source.
+- `docs/GITHUB_REPOSITORY_SETTINGS.md` recording recommended `main` protection, required checks, Actions/security settings, and the current unprotected-branch evidence boundary.
+- `docs/V1_RELEASE_PREP.md` summarizing RC architecture, automated gates, duplicate-RC consolidation, and stable-promotion rules.
 
 #### Changed
 - Android candidate metadata advanced to `versionCode 1000` / `versionName 1.0.0-rc.1`.
 - Release signing is optional and secret-backed through `SUDOKUNOVA_KEYSTORE_PATH`, `SUDOKUNOVA_KEYSTORE_PASSWORD`, `SUDOKUNOVA_KEY_ALIAS`, and `SUDOKUNOVA_KEY_PASSWORD`.
-- Release signing now fails during Gradle configuration when only a subset of those values is provided.
-- Standard Android CI now unit-tests the release verifier, validates partial-signing fail-closed behavior, verifies built release APK/AAB/mapping outputs, checks exact RC metadata, and uploads SHA-256 release evidence.
+- Release signing fails during Gradle configuration when only a subset of those values is provided.
+- Standard Android CI unit-tests the release verifier, validates partial-signing fail-closed behavior, verifies built release APK/AAB/mapping outputs, checks exact RC metadata, generates SHA-256 evidence, and uploads short-lived verification artifacts.
+- Build/testing/CI/security/release/README/documentation-hub guidance was synchronized with the v1.0 RC path.
+- Stale toolchain documentation was corrected to Gradle 9.5 / Android Gradle Plugin 9.3.1.
+- Older alternate PR #26 (`release/v1.0-readiness`, version code `990`) was audited and closed as superseded after its stronger unique signature-verification/evidence concepts were absorbed into PR #27.
+
+#### Final repository-side verification and merge
+- **Final verified PR #27 head:** `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`.
+- **Android CI:** run #635 / ID `32151771317` — GREEN.
+  - repository secret/signing-material guard
+  - release-verifier Python tests
+  - partial release-signing fail-closed regression
+  - English/Hindi translation parity
+  - `:sudoku-engine:test`
+  - `:app:testDebugUnitTest`
+  - `:app:assembleDebugAndroidTest`
+  - `:app:lintDebug` + `:app:lintRelease`
+  - debug APK assembly
+  - R8/resource-shrunk release APK assembly
+  - release AAB assembly
+  - exact `1000 / 1.0.0-rc.1` release-output structure/version verification
+  - SHA-256 release evidence generation
+  - verification/release-artifact uploads
+- **API-35 connected instrumentation:** run #188 / ID `32151771297` — GREEN.
+- `unsigned-release-builds` artifact ID `9330415157`, GitHub digest `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`.
+- Generated exact RC artifact evidence:
+  - unsigned APK SHA-256 `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7` — `1,849,599` bytes;
+  - release AAB SHA-256 `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd` — `4,349,513` bytes;
+  - R8 mapping SHA-256 `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac` — `39,198,732` bytes.
+- PR #27 merged using the exact verified head as merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
 
 #### Evidence boundary
 - Stable `v1.0.0` is not yet claimed.
-- TalkBack traversal, representative 200% font/device/window QA, high-contrast/reduced-motion device review, measured startup/frame/memory/ANR evidence, process-death scenarios, actual production-key signing, signed-artifact certificate/install verification, Play Console validation, screenshots/listing/privacy declarations and publication remain pending until performed on real targets.
-- If version code `1000` is accepted by a distribution track during RC testing, the final stable build must use a strictly higher version code.
+- These RC artifacts are unsigned repository-CI verification outputs, not production-signed release artifacts.
+- TalkBack traversal, representative 200% font/device/window QA, high-contrast/reduced-motion device review, measured startup/frame/memory/ANR evidence, process-death scenarios, actual production/upload-key signing, signed-artifact certificate/install/distribution validation, final signed R8 smoke QA, current store requirements/listing/privacy/screenshots, final stable version code/metadata, final stable exact-head CI/API-35 verification, SHIP decision, tag, GitHub Release, and store publication remain pending until actually performed.
 - At RC-prep start, GitHub reported `main` as unprotected. The connected repository tool does not expose a branch-protection write action, so repository protection remains a documented admin-setting task rather than a fabricated completion claim.
+- If version code `1000` is accepted by a distribution track during RC testing, the final stable build must use a strictly higher version code.
 
-Current post-v0.9 work is tracked toward **v1.0 stable release validation and production readiness** in issue #5. Manual device/TalkBack/font-scale/performance/process-death/signed-artifact/store evidence remains unclaimed until actually performed.
+Current work remains tracked in issue #5 until stable-production/manual/admin requirements are genuinely complete.
 
 ## [0.9.0] - 2026-08-18
 
