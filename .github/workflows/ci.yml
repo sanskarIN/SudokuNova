@@ -19,7 +19,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout sources
@@ -50,21 +50,30 @@ jobs:
         shell: bash
         run: |
           set +e
-          ./gradlew :app:lintDebug --stacktrace
+          ./gradlew :app:lintDebug :app:lintRelease --stacktrace
           status=$?
           if [ "$status" -ne 0 ]; then
-            report="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
-            if [ -f "$report" ]; then
-              echo "----- FULL ANDROID LINT REPORT -----"
-              cat "$report"
-            fi
+            for report in \
+              app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt \
+              app/build/intermediates/lint_intermediate_text_report/release/lintReportRelease/lint-results-release.txt; do
+              if [ -f "$report" ]; then
+                echo "----- $report -----"
+                cat "$report"
+              fi
+            done
           fi
           exit "$status"
 
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
-      - name: Upload reports
+      - name: Assemble release APK with R8
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Build release Android App Bundle
+        run: ./gradlew :app:bundleRelease --stacktrace
+
+      - name: Upload verification reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -73,4 +82,16 @@ jobs:
             **/build/reports/**
             **/build/test-results/**
           if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload release build outputs
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unsigned-release-builds
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/mapping/release/**
+          if-no-files-found: error
           retention-days: 14
