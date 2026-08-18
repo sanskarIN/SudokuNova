@@ -15,9 +15,11 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 **v0.9.0 — Release Hardening is merged and verified on `main`.** Final PR head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9` passed Android CI run `32139568718` and API-35 connected instrumentation run `32139568591` before PR #25 was merged as `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
 
-The next focused milestone is **v1.0 — Stable Release Validation and Production Readiness**, tracked in issue #5. The remaining work is deliberately evidence-driven manual/production validation: TalkBack, representative large-font/device/window QA, measured performance/ANR evidence, process-death/lifecycle scenarios, secure production signing, signed artifact verification, and real store/repository release assets.
+The active line is now **v1.0 RC1 — Stable Release Preparation**, tracked in issue #5 and draft PR #27 on `release/v1.0-rc1-prep`. The candidate metadata is `versionCode 1000` / `versionName 1.0.0-rc.1`.
 
-Features below are listed as implemented only when code exists in this repository. Manual device/TalkBack/font-scale/performance/signing/store checks are not treated as completed merely because source review or automated tests exist.
+The RC branch is completing every repository-side release task that can be verified without fabricating physical-device or production-platform evidence: artifact structure/version verification, SHA-256 evidence, secret-backed release signing configuration, CI fail-closed signing checks, Play Store preparation, generated release-note configuration, repository-settings guidance, and a real-device evidence worksheet.
+
+Stable `v1.0.0` is **not yet claimed**. TalkBack, representative 200% font/device/window QA, measured performance/ANR evidence, process-death scenarios, actual production signing, signed artifact verification, and real store/repository publication evidence remain pending until performed on real targets.
 
 ## Complete Documentation
 
@@ -27,6 +29,11 @@ The complete categorized documentation hub is:
 
 High-value entry points:
 
+- [v1.0 RC Preparation](docs/V1_RELEASE_PREP.md)
+- [v1.0 RC Evidence Worksheet](docs/V1_RELEASE_CANDIDATE.md)
+- [Production Signing](docs/PRODUCTION_SIGNING.md)
+- [Play Store Release Preparation](docs/PLAY_STORE_RELEASE.md)
+- [GitHub Repository Settings](docs/GITHUB_REPOSITORY_SETTINGS.md)
 - [User Guide](docs/USER_GUIDE.md)
 - [Complete Feature Reference](docs/FEATURES.md)
 - [Project Structure](docs/PROJECT_STRUCTURE.md)
@@ -150,11 +157,15 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - Debug/release lint and release APK/AAB/R8 verification
 - Repository secret/signing-material guard
 - API-35 connected Compose/Room instrumentation gate
+- Release APK/AAB structural/version verification and SHA-256 evidence in the v1.0 RC line
+- Partial production-signing configuration fails closed in CI
+- Optional secret-backed production signing without committed credentials
 - Structured bug/feature/accessibility/performance/documentation issue forms
 - Pull-request template and contributor policies
 - Weekly Dependabot checks for Gradle and GitHub Actions
 - `.github/CODEOWNERS` ownership routing
 - `.github/FUNDING.yml` with optional Buy Me a Coffee support metadata
+- `.github/release.yml` generated release-note categories
 - Open-source repository policies, support documentation, and contributor guidance
 
 ## Verified v0.9 Release-Hardening Milestone
@@ -188,22 +199,38 @@ Exact v0.9 verification:
 
 See [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), and [docs/V09_HARDENING_AUDIT.md](docs/V09_HARDENING_AUDIT.md).
 
-## Next Milestone — v1.0 Stable Release Validation
+## Active v1.0 RC1 Preparation
 
-Issue #5 tracks the remaining evidence required for a stable production-quality claim:
+Draft PR #27 prepares the first stable-release candidate without weakening the evidence boundary.
+
+Repository-side RC work includes:
+
+- candidate metadata `1000` / `1.0.0-rc.1`;
+- `scripts/verify_release_outputs.py` and unit tests;
+- release APK/AAB/R8 structure/version checks;
+- SHA-256 release evidence;
+- optional release signing through environment-backed secrets;
+- fail-closed behavior for incomplete signing configuration;
+- production signing handbook;
+- Play Store listing/privacy/release preparation;
+- real-device/manual RC evidence worksheet;
+- generated GitHub release-note categories;
+- GitHub repository-protection/settings checklist.
+
+Still requiring actual real-world evidence before stable v1.0:
 
 - real TalkBack focus-order traversal;
 - representative 200% font and window/device QA;
 - high-contrast and reduced-motion device review;
 - measured startup/frame/memory/ANR traces;
 - process-death/lifecycle manual scenarios;
-- secure production signing outside Git;
+- secure production/upload-key signing;
 - signed production artifact installation/signature verification;
-- final R8 release-variant smoke QA on signed artifacts;
-- real store/repository screenshots, listing text, privacy disclosures, and release assets;
-- final v1.0 release notes/tag/publication after evidence exists.
+- final R8 smoke QA on signed artifacts;
+- real store/repository screenshots, listing text, privacy declarations and release assets;
+- final stable version code, tag and publication.
 
-These items are intentionally not represented as already completed.
+See [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md) and issue #5.
 
 ## Technology Stack
 
@@ -275,6 +302,7 @@ Run the standard local verification tasks:
 
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_release_outputs
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test --stacktrace
 ./gradlew :app:testDebugUnitTest --stacktrace
@@ -285,7 +313,7 @@ python scripts/verify_translations.py
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-More build types, executable outputs, tooling requirements, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md).
+The v1.0 RC CI additionally verifies the built release outputs through `scripts/verify_release_outputs.py` and records SHA-256 evidence. More build types, executable outputs, tooling requirements, signing rules, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
 
 ## Testing
 
@@ -302,17 +330,21 @@ Important suites include:
 - controlled Hidden Pair, Naked Triple, Hidden Triple, and X-Wing evidence tests;
 - practice-catalog completeness/determinism tests;
 - learning-progress JVM tests;
+- release artifact verifier unit tests;
+- release signing fail-closed CI regression;
 - Compose/Room connected tests on API 35;
 - selected Sudoku-cell semantics regression coverage;
 - adaptive connected reachability checks for scrollable large-text layouts.
 
 GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the exact final head when those gates are required for the milestone.
 
-Latest verified milestone evidence:
+Latest fully verified merged milestone evidence:
 
 - v0.9 final head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`;
 - Android CI `32139568718`;
 - API-35 connected instrumentation `32139568591`.
+
+PR #27 must establish its own exact-final-head evidence before the RC preparation can be merged.
 
 See [docs/TESTING.md](docs/TESTING.md) and [docs/CI_CD.md](docs/CI_CD.md).
 
@@ -330,7 +362,7 @@ The project uses semantic cell descriptions, selected-state semantics, large tou
 
 Source/automated accessibility hardening is part of verified v0.9. Real TalkBack and representative large-font/device validation remains a v1.0 release gate and is not claimed as completed.
 
-See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
+See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) and [docs/V1_RELEASE_CANDIDATE.md](docs/V1_RELEASE_CANDIDATE.md).
 
 ## Contributing
 
@@ -355,6 +387,8 @@ For a new advanced Sudoku technique, implementation, structured evidence, determ
 Do not report exploitable vulnerabilities in public issues. Follow [SECURITY.md](SECURITY.md) for responsible disclosure guidance.
 
 Technical design: [docs/SECURITY.md](docs/SECURITY.md)
+
+Production signing: [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md)
 
 ## Support SudokuNova
 
