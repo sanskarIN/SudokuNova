@@ -40,6 +40,25 @@ jobs:
       - name: Verify release artifact verifier tests
         run: python -m unittest scripts.tests.test_verify_release_outputs
 
+      - name: Verify partial release signing fails closed
+        shell: bash
+        run: |
+          set +e
+          SUDOKUNOVA_KEY_ALIAS=partial-test ./gradlew :app:tasks --quiet > partial-signing.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "Gradle unexpectedly accepted a partial release-signing environment."
+            cat partial-signing.log
+            exit 1
+          fi
+          if ! grep -q "Release signing is partially configured" partial-signing.log; then
+            echo "Gradle failed, but not for the expected partial-signing guard."
+            cat partial-signing.log
+            exit 1
+          fi
+          echo "Partial release signing failed closed as expected."
+
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
 
