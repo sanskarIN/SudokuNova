@@ -8,7 +8,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -189,30 +188,25 @@ private fun TransferScreen(
                         stringResource(R.string.v07_backup_info),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(
+                    OutlinedButton(
+                        onClick = {
+                            onCreateBackup { text ->
+                                clipboard.setPrimaryClip(ClipData.newPlainText("SudokuNova backup", text))
+                                transientMessage = copiedMessage
+                            }
+                        },
+                        enabled = !state.busy,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                onCreateBackup { text ->
-                                    clipboard.setPrimaryClip(ClipData.newPlainText("SudokuNova backup", text))
-                                    transientMessage = copiedMessage
-                                }
-                            },
-                            enabled = !state.busy,
-                            modifier = Modifier.weight(1f),
-                        ) { Text(stringResource(R.string.v07_copy_backup)) }
-                        OutlinedButton(
-                            onClick = {
-                                onCreateBackup { text ->
-                                    shareText(context, text, shareTitle)
-                                }
-                            },
-                            enabled = !state.busy,
-                            modifier = Modifier.weight(1f),
-                        ) { Text(stringResource(R.string.v07_share_backup)) }
-                    }
+                    ) { Text(stringResource(R.string.v07_copy_backup)) }
+                    OutlinedButton(
+                        onClick = {
+                            onCreateBackup { text ->
+                                shareText(context, text, shareTitle)
+                            }
+                        },
+                        enabled = !state.busy,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(stringResource(R.string.v07_share_backup)) }
                     Button(
                         onClick = {
                             val text = clipboard.primaryClip
@@ -229,26 +223,21 @@ private fun TransferScreen(
                     ) {
                         Text(stringResource(R.string.v07_restore_clipboard))
                     }
-                    Row(
+                    OutlinedButton(
+                        onClick = {
+                            onCreateBackup { text ->
+                                pendingExportText = text
+                                exportLauncher.launch(BackupFileIo.DEFAULT_FILE_NAME)
+                            }
+                        },
+                        enabled = !state.busy,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                onCreateBackup { text ->
-                                    pendingExportText = text
-                                    exportLauncher.launch(BackupFileIo.DEFAULT_FILE_NAME)
-                                }
-                            },
-                            enabled = !state.busy,
-                            modifier = Modifier.weight(1f),
-                        ) { Text(stringResource(R.string.v07_export_backup_file)) }
-                        OutlinedButton(
-                            onClick = { importLauncher.launch(arrayOf(BackupFileIo.MIME_TYPE, "application/octet-stream")) },
-                            enabled = !state.busy,
-                            modifier = Modifier.weight(1f),
-                        ) { Text(stringResource(R.string.v07_import_backup_file)) }
-                    }
+                    ) { Text(stringResource(R.string.v07_export_backup_file)) }
+                    OutlinedButton(
+                        onClick = { importLauncher.launch(arrayOf(BackupFileIo.MIME_TYPE, "application/octet-stream")) },
+                        enabled = !state.busy,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(stringResource(R.string.v07_import_backup_file)) }
                     Text(
                         stringResource(R.string.v07_file_backup_info),
                         style = MaterialTheme.typography.bodySmall,
