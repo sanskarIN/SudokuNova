@@ -6,6 +6,10 @@ enum class LogicalTechnique(val rank: Int) {
     NAKED_PAIR(3),
     POINTING_PAIR_OR_TRIPLE(4),
     BOX_LINE_REDUCTION(5),
+    HIDDEN_PAIR(6),
+    NAKED_TRIPLE(7),
+    HIDDEN_TRIPLE(8),
+    X_WING(9),
 }
 
 data class LogicalSolveResult(
