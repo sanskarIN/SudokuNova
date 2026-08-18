@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -133,7 +134,8 @@ fun LearnScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .testTag(LEARN_LIST_TEST_TAG),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
@@ -194,7 +196,9 @@ fun LearnScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             OutlinedButton(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag(studyTestTag(lesson.technique)),
                                 onClick = {
                                     openLesson = lesson
                                     viewModel.recordLessonViewed(lesson.technique)
@@ -203,7 +207,9 @@ fun LearnScreen(
                                 Text(stringResource(R.string.v08_learn_view_lesson))
                             }
                             Button(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag(practiceTestTag(lesson.technique)),
                                 onClick = { viewModel.startPractice(lesson.technique) },
                             ) {
                                 Text(stringResource(R.string.v08_learn_practice))
@@ -249,7 +255,9 @@ fun LearnScreen(
                     )
                     state.exercise.choices.forEach { choice ->
                         OutlinedButton(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(practiceChoiceTestTag(choice)),
                             enabled = answer == PracticeAnswerState.Unanswered,
                             onClick = { viewModel.answerPractice(choice) },
                         ) {
@@ -363,3 +371,8 @@ private fun localizedTechniqueName(technique: LogicalTechnique): String = string
         LogicalTechnique.X_WING -> R.string.v08_hint_x_wing
     },
 )
+
+internal const val LEARN_LIST_TEST_TAG = "learn_list"
+internal fun studyTestTag(technique: LogicalTechnique): String = "study_${technique.name}"
+internal fun practiceTestTag(technique: LogicalTechnique): String = "practice_${technique.name}"
+internal fun practiceChoiceTestTag(technique: LogicalTechnique): String = "practice_choice_${technique.name}"
