@@ -13,9 +13,9 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 ## Current Development Status
 
-**v0.8.0 — Learning and Advanced Hints is merged and verified on `main`.** Its final implementation head passed the repository's standard Android CI and API-35 connected instrumentation gates before PR #22 was merged.
+**v0.9.0 — Release Hardening is merged and verified on `main`.** Final PR head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9` passed Android CI run `32139568718` and API-35 connected instrumentation run `32139568591` before PR #25 was merged as `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
 
-The current focused development line is **v0.9 — Release Hardening**, tracked in issue #23 and draft PR #25. v0.9 is intentionally focused on accessibility, performance, security/privacy, release-build verification, QA, crash/ANR-sensitive paths, documentation accuracy, and public-repository health rather than adding another large feature family.
+The next focused milestone is **v1.0 — Stable Release Validation and Production Readiness**, tracked in issue #5. The remaining work is deliberately evidence-driven manual/production validation: TalkBack, representative large-font/device/window QA, measured performance/ANR evidence, process-death/lifecycle scenarios, secure production signing, signed artifact verification, and real store/repository release assets.
 
 Features below are listed as implemented only when code exists in this repository. Manual device/TalkBack/font-scale/performance/signing/store checks are not treated as completed merely because source review or automated tests exist.
 
@@ -141,14 +141,14 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - Translation parity verification in CI
 - Semantic Sudoku cell descriptions
 - Teaching evidence semantics
-- Selected game/custom-cell semantics in the v0.9 hardening line
+- Selected game/custom-cell semantics
 - Number-first and Notes selected-state semantics
 - Large-text source hardening across primary action/filter surfaces
 - Adaptive layouts
 - Original launcher, monochrome, and splash vector assets
 - GitHub Actions unit-test/lint/build quality gate
-- Debug/release lint and release APK/AAB/R8 verification in v0.9
-- Repository secret/signing-material guard in v0.9 CI
+- Debug/release lint and release APK/AAB/R8 verification
+- Repository secret/signing-material guard
 - API-35 connected Compose/Room instrumentation gate
 - Structured bug/feature/accessibility/performance/documentation issue forms
 - Pull-request template and contributor policies
@@ -157,9 +157,11 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - `.github/FUNDING.yml` with optional Buy Me a Coffee support metadata
 - Open-source repository policies, support documentation, and contributor guidance
 
-## Current Milestone — v0.9 Release Hardening
+## Verified v0.9 Release-Hardening Milestone
 
-Issue #23 covers the current release-hardening line. Source/automation work completed on the branch includes:
+v0.9 completed the project’s source, automation, documentation, security/privacy, accessibility, data-integrity, and public-repository hardening pass.
+
+Major completed work includes:
 
 - regression-suite and bounded-backup review;
 - selected-state and large-text accessibility hardening;
@@ -174,19 +176,34 @@ Issue #23 covers the current release-hardening line. Source/automation work comp
 - lifecycle/restoration source review;
 - English/Hindi localization cleanup;
 - complete release QA, build, maintenance, security, accessibility, and project documentation;
-- final public-repository tooling review, including CODEOWNERS and funding metadata.
+- public-repository tooling review, including CODEOWNERS and funding metadata;
+- stale issue/PR cleanup so the cumulative main line remains authoritative.
 
-Still requiring real manual evidence before a stable production-quality claim where applicable:
+Exact v0.9 verification:
 
-- TalkBack focus-order traversal;
+- final PR head: `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`;
+- Android CI run #583 / `32139568718` — green;
+- API-35 instrumentation run #155 / `32139568591` — green;
+- PR #25 merge commit: `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
+
+See [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), and [docs/V09_HARDENING_AUDIT.md](docs/V09_HARDENING_AUDIT.md).
+
+## Next Milestone — v1.0 Stable Release Validation
+
+Issue #5 tracks the remaining evidence required for a stable production-quality claim:
+
+- real TalkBack focus-order traversal;
 - representative 200% font and window/device QA;
 - high-contrast and reduced-motion device review;
 - measured startup/frame/memory/ANR traces;
 - process-death/lifecycle manual scenarios;
-- signed production artifact installation/signing verification;
-- real store screenshot/listing review.
+- secure production signing outside Git;
+- signed production artifact installation/signature verification;
+- final R8 release-variant smoke QA on signed artifacts;
+- real store/repository screenshots, listing text, privacy disclosures, and release assets;
+- final v1.0 release notes/tag/publication after evidence exists.
 
-See [ROADMAP.md](ROADMAP.md), [docs/V09_HARDENING_AUDIT.md](docs/V09_HARDENING_AUDIT.md), and issue #23 for complete milestone tracking.
+These items are intentionally not represented as already completed.
 
 ## Technology Stack
 
@@ -289,9 +306,13 @@ Important suites include:
 - selected Sudoku-cell semantics regression coverage;
 - adaptive connected reachability checks for scrollable large-text layouts.
 
-GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the final clean head when those gates are required for the milestone.
+GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the exact final head when those gates are required for the milestone.
 
-The verified v0.8 merge gate used standard Android CI run `32121249242` and API-35 connected run `32121249202` on final PR head `b63c8019cfc2b6f606247af1543586a7ede1b3df`.
+Latest verified milestone evidence:
+
+- v0.9 final head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`;
+- Android CI `32139568718`;
+- API-35 connected instrumentation `32139568591`.
 
 See [docs/TESTING.md](docs/TESTING.md) and [docs/CI_CD.md](docs/CI_CD.md).
 
@@ -307,7 +328,7 @@ See [docs/PRIVACY.md](docs/PRIVACY.md), [docs/DATA_STORAGE.md](docs/DATA_STORAGE
 
 The project uses semantic cell descriptions, selected-state semantics, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. Structured hints add semantics for sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
 
-Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests. v0.9 explicitly separates source/automated evidence from manual device evidence.
+Source/automated accessibility hardening is part of verified v0.9. Real TalkBack and representative large-font/device validation remains a v1.0 release gate and is not claimed as completed.
 
 See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 
