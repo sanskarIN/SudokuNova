@@ -3,7 +3,7 @@ package com.sanskar.sudokunova.ui.learn
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -191,35 +191,30 @@ fun LearnScreen(
                             ),
                             style = MaterialTheme.typography.bodySmall,
                         )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        OutlinedButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(studyTestTag(lesson.technique)),
+                            onClick = {
+                                openLesson = lesson
+                                viewModel.recordLessonViewed(lesson.technique)
+                            },
                         ) {
-                            OutlinedButton(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .testTag(studyTestTag(lesson.technique)),
-                                onClick = {
-                                    openLesson = lesson
-                                    viewModel.recordLessonViewed(lesson.technique)
-                                },
-                            ) {
-                                Text(stringResource(R.string.v08_learn_view_lesson))
-                            }
-                            Button(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .testTag(practiceTestTag(lesson.technique)),
-                                onClick = { viewModel.startPractice(lesson.technique) },
-                            ) {
-                                Text(stringResource(R.string.v08_learn_practice))
-                            }
+                            Text(stringResource(R.string.v08_learn_view_lesson))
+                        }
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(practiceTestTag(lesson.technique)),
+                            onClick = { viewModel.startPractice(lesson.technique) },
+                        ) {
+                            Text(stringResource(R.string.v08_learn_practice))
                         }
                     }
                 }
             }
 
-            item { Text("", modifier = Modifier.padding(bottom = 12.dp)) }
+            item { Spacer(modifier = Modifier.padding(bottom = 12.dp)) }
         }
     }
 
