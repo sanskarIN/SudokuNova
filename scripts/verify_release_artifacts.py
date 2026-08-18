@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import shutil
 import subprocess
 import sys
@@ -47,13 +48,14 @@ def verify_zip(path: Path) -> None:
 
 
 def run_signature_tool(path: Path, require_signature: bool) -> str:
-    if path.suffix.lower() == ".apk":
+    suffix = path.suffix.lower()
+    if suffix == ".apk":
         tool = shutil.which("apksigner")
         command = [tool, "verify", "--verbose", "--print-certs", str(path)] if tool else None
         label = "apksigner"
     else:
         tool = shutil.which("jarsigner")
-        command = [tool, "-verify", "-strict", str(path)] if tool else None
+        command = [tool, "-verify", "-strict", "-certs", str(path)] if tool else None
         label = "jarsigner"
 
     if command is None:
@@ -61,12 +63,33 @@ def run_signature_tool(path: Path, require_signature: bool) -> str:
             raise RuntimeError(f"{label} is required to verify {path.name} but was not found on PATH")
         return f"not checked ({label} unavailable)"
 
-    completed = subprocess.run(command, capture_output=True, text=True, check=False)
-    if completed.returncode == 0:
+    env = dict(os.environ)
+    env["LC_ALL"] = "C"
+    env["LANG"] = "C"
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    combined_output = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
+
+    if suffix == ".aab":
+        normalized = combined_output.lower()
+        verified = (
+            completed.returncode == 0
+            and "jar verified" in normalized
+            and "jar is unsigned" not in normalized
+        )
+    else:
+        verified = completed.returncode == 0
+
+    if verified:
         return f"verified with {label}"
 
     if require_signature:
-        details = (completed.stderr or completed.stdout).strip()
+        details = combined_output or f"{label} exited with status {completed.returncode}"
         raise RuntimeError(f"signature verification failed for {path.name} with {label}: {details}")
     return f"not verified with {label} (artifact may be intentionally unsigned)"
 
