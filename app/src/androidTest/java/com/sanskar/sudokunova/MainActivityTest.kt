@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
 import com.sanskar.sudokunova.engine.LogicalTechnique
+import com.sanskar.sudokunova.ui.custom.customPuzzleCellTestTag
 import com.sanskar.sudokunova.ui.game.sudokuCellTestTag
 import com.sanskar.sudokunova.ui.learn.LEARN_LIST_TEST_TAG
 import com.sanskar.sudokunova.ui.learn.practiceChoiceTestTag
@@ -89,6 +90,12 @@ class MainActivityTest {
         composeRule.onNodeWithText("Validate").assertIsDisplayed()
         composeRule.onNodeWithText("Save puzzle").assertIsDisplayed()
         composeRule.onNodeWithText("Play puzzle").assertIsDisplayed()
+
+        val firstCell = composeRule.onNodeWithTag(customPuzzleCellTestTag(0, 0))
+        val secondCell = composeRule.onNodeWithTag(customPuzzleCellTestTag(0, 1))
+        firstCell.assertIsDisplayed().assertIsSelected()
+        secondCell.assertIsDisplayed().assertIsNotSelected().performClick().assertIsSelected()
+        firstCell.assertIsNotSelected()
     }
 
     @Test
