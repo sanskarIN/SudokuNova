@@ -164,30 +164,36 @@ private fun CustomPuzzleScreen(
                 }
             }
             Spacer(Modifier.height(12.dp))
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(onClick = onErase, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_erase)) }
-                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_clear)) }
-                Button(onClick = onValidate, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_validate)) }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(onClick = onSolve, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.v04_solve)) }
+                OutlinedButton(onClick = onErase, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_erase))
+                }
+                OutlinedButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_clear))
+                }
+                Button(onClick = onValidate, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_validate))
+                }
+                OutlinedButton(onClick = onSolve, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.v04_solve))
+                }
                 OutlinedButton(
                     onClick = onSave,
                     enabled = state.isUnique,
-                    modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.v05_save_puzzle)) }
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.v05_save_puzzle))
+                }
                 Button(
                     onClick = onPlay,
                     enabled = state.isUnique,
-                    modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.v04_play_puzzle)) }
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.v04_play_puzzle))
+                }
             }
             if (saveStatus != null) {
                 Text(
