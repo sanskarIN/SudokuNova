@@ -7,7 +7,7 @@
     <string name="v04_business_email_one">व्यवसाय: sanskarin@outlook.in</string>
     <string name="v04_business_email_two">व्यवसाय: sanskarin.business@gmail.com</string>
     <string name="v04_support_email">सपोर्ट: supportramsandesh@gmail.com</string>
-    <string name="v04_privacy_summary">गोपनीयता: SudokuNova सेटिंग्स, सक्रिय खेल स्थिति और गेमप्ले आँकड़े Android DataStore का उपयोग करके स्थानीय रूप से संग्रहीत करता है। आप सेटिंग्स से आँकड़े रीसेट कर सकते हैं। बेस ऐप कोई गेमप्ले डेटा प्रसारित नहीं करता।</string>
+    <string name="v04_privacy_summary">गोपनीयता: SudokuNova सेटिंग्स, सक्रिय खेल स्थिति, आँकड़े, सीखने की प्रगति, हिस्ट्री, सेव की गई पहेलियाँ और चुनौती रिकॉर्ड Android DataStore और Room का उपयोग करके स्थानीय रूप से संग्रहीत करता है। बेस ऐप में खाता, विज्ञापन, एनालिटिक्स या SudokuNova क्लाउड बैकएंड नहीं है। शेयरिंग, दस्तावेज़ एक्सपोर्ट/इंपोर्ट और बैकअप/रिस्टोर केवल उपयोगकर्ता की स्पष्ट कार्रवाई के बाद Android सिस्टम विकल्पों के माध्यम से होते हैं।</string>
 
     <string name="v04_first_puzzle">पहली पहेली</string>
     <string name="v04_first_puzzle_desc">अपनी पहली पहेली पूरी करें।</string>
