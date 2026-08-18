@@ -56,25 +56,32 @@ Read:
 7. [`../SECURITY.md`](../SECURITY.md)
 8. [Testing](TESTING.md)
 
-### I am preparing a release
+### I am preparing v1.0 or another release
 
-Read:
+Read in this order:
 
-1. [Releasing](RELEASING.md)
-2. [Release Checklist](RELEASE_CHECKLIST.md)
-3. [Release QA](RELEASE_QA.md)
-4. [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md)
-5. [QA Matrix](QA_MATRIX.md)
-6. [CI/CD](CI_CD.md)
-7. [Testing](TESTING.md)
-8. [Building](BUILDING.md)
-9. [Performance](PERFORMANCE.md)
-10. [Accessibility](ACCESSIBILITY.md)
-11. [Privacy](PRIVACY.md)
-12. [`../SECURITY.md`](../SECURITY.md)
-13. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-14. [`../CHANGELOG.md`](../CHANGELOG.md)
-15. [`../what_changed.md`](../what_changed.md)
+1. [v1.0 RC Preparation](V1_RELEASE_PREP.md)
+2. [Building](BUILDING.md)
+3. [Production Signing](PRODUCTION_SIGNING.md)
+4. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
+5. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+6. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+7. [Releasing](RELEASING.md)
+8. [Release Checklist](RELEASE_CHECKLIST.md)
+9. [Release QA](RELEASE_QA.md)
+10. [QA Matrix](QA_MATRIX.md)
+11. [CI/CD](CI_CD.md)
+12. [Testing](TESTING.md)
+13. [Performance](PERFORMANCE.md)
+14. [Accessibility](ACCESSIBILITY.md)
+15. [Privacy](PRIVACY.md)
+16. [`../SECURITY.md`](../SECURITY.md)
+17. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+18. [`../CHANGELOG.md`](../CHANGELOG.md)
+19. [`../ROADMAP.md`](../ROADMAP.md)
+20. [`../what_changed.md`](../what_changed.md)
+
+For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md).
 
 ## Product and User Documentation
 
@@ -200,11 +207,11 @@ Environment/tooling setup for contributors.
 
 ### [Building](BUILDING.md)
 
-Debug/release APK, release AAB, R8 mapping, lint/tests, signing boundaries and output locations.
+Current JDK/Gradle/AGP/Kotlin/SDK requirements, debug/release APK, release AAB, R8 mapping, secret-backed signing, release artifact verifier, SHA-256 evidence, lint/tests and output locations.
 
 ### [Testing](TESTING.md)
 
-Complete engine/JVM/instrumentation/lint/release/manual QA strategy aligned with the cumulative v0.9 branch.
+Complete engine/JVM/instrumentation/lint/release/manual QA strategy. v1.0 RC adds artifact-verifier and signing fail-closed checks on top of the verified v0.9 suites.
 
 ### [CI/CD](CI_CD.md)
 
@@ -223,6 +230,10 @@ Detailed contributor workflow complementing root `CONTRIBUTING.md`.
 ### [Maintainer Guide](MAINTAINER_GUIDE.md)
 
 Branch/PR discipline, issue triage, review checklists, dependency/security/localization/accessibility/documentation/release maintenance.
+
+### [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+
+Recommended `main` protection/ruleset, required CI checks, merge/review policy, Actions permissions and security settings. This file distinguishes settings that must be enabled in GitHub administration from source-controlled configuration.
 
 ### [Documentation Standards](DOCUMENTATION_STANDARDS.md)
 
@@ -252,11 +263,15 @@ General QA matrix.
 
 ### [Release QA](RELEASE_QA.md)
 
-v0.9 evidence-oriented release-hardening matrix. Manual rows must not be marked complete without real checks.
+v0.9 evidence-oriented hardening matrix retained as a supporting release reference. Manual rows must not be marked complete without real checks.
 
 ### [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md)
 
-Concrete source-audit findings and fixes for main-thread work, stale async results, accessibility, localization, Room, transfer/backup, security, and release gates. Manual/device evidence remains explicitly separate.
+Concrete source-audit findings and fixes for main-thread work, stale async results, accessibility, localization, Room, transfer/backup, security, and release gates.
+
+### [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
+
+Authoritative real-target worksheet for installation, gameplay, TalkBack, 200% font/adaptive layouts, contrast/motion, keyboard, process death, measured performance/ANR/memory, production signing, signed artifacts, store assets and final ship/no-ship decision.
 
 ### [Accessibility](ACCESSIBILITY.md)
 
@@ -268,17 +283,33 @@ Performance/ANR review and measurement guidance.
 
 ## Release and Planning
 
+### [v1.0 RC Preparation](V1_RELEASE_PREP.md)
+
+Current repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
+
+### [Production Signing](PRODUCTION_SIGNING.md)
+
+Four-variable secret-backed signing configuration, fail-closed rules, certificate verification and secure release-environment guidance.
+
+### [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+
+Store identity/listing draft, asset checklist, project privacy/data facts, release artifact checklist, draft stable notes and rollout discipline. Current store requirements must still be reviewed at actual publication time.
+
+### [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+
+Repository-admin settings that cannot be guaranteed merely by committed source files.
+
 ### [Releasing](RELEASING.md)
 
-End-to-end release process from scope freeze through exact-head verification, signing, manual QA, tagging, GitHub release, store submission and fix-forward handling.
+End-to-end RC/stable process from scope freeze through artifact verification, production signing, manual QA, exact-head evidence, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
 
 ### [Release Checklist](RELEASE_CHECKLIST.md)
 
-Concrete release checklist.
+Concrete general release checklist.
 
 ### [Release QA](RELEASE_QA.md)
 
-Detailed release evidence matrix.
+Detailed supporting release evidence matrix.
 
 ### [Documentation Roadmap](ROADMAP.md)
 
@@ -290,7 +321,7 @@ Authoritative current product milestone roadmap.
 
 ### [Changelog](../CHANGELOG.md)
 
-Release history and current unreleased work.
+Release history and current unreleased RC work.
 
 ### [What Changed](../what_changed.md)
 
@@ -309,10 +340,13 @@ Detailed implementation/verification/handoff history.
 - [Changelog](../CHANGELOG.md)
 - [Roadmap](../ROADMAP.md)
 - [Implementation Log](../what_changed.md)
+- [CODEOWNERS](../.github/CODEOWNERS)
+- [Funding metadata](../.github/FUNDING.yml)
+- [Generated release-note config](../.github/release.yml)
 
 ## Historical vs Current Documents
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `TESTING.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `V1_RELEASE_PREP.md`, `PRODUCTION_SIGNING.md`, `V1_RELEASE_CANDIDATE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
 
 ## Documentation Maintenance Rule
 
