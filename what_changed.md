@@ -12,14 +12,44 @@
 **Final API-35 instrumentation:** run `32121249202` — GREEN  
 **Current focused milestone:** `v0.9 — Release Hardening`  
 **Current focused issue:** `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`  
+**Current v0.9 draft pull request:** `#25` — `feat: harden SudokuNova v0.9 release quality`  
+**Current v0.9 branch:** `feature/v0.9-release-hardening`  
 **Android application ID:** `in.sanskar.sudokunova`  
 **Kotlin source namespace:** `com.sanskar.sudokunova`  
-**Android versionCode:** `800`  
-**Android versionName:** `0.8.0`  
+**Android versionCode on v0.9 branch:** `900`  
+**Android versionName on v0.9 branch:** `0.9.0`  
 **License:** MIT  
 **Project commit email:** `sanskarin@outlook.in`
 
 SudokuNova now has one cumulative verified v0.1–v0.8 line on `main`. The v0.8 feature branch was 0 commits behind `main` before merge, the final PR head passed both required workflows, PR #22 was merged with the verified expected head SHA, and issue #21 was closed only after the merge completed.
+
+## v0.9 Release-Hardening Work In Progress
+
+The v0.9 branch was created from post-v0.8 `main` and is intentionally still a draft release-hardening line. No v0.9 release-quality, physical-device, accessibility, performance, or store-readiness claim is made until the corresponding evidence is actually recorded.
+
+Implemented so far on the v0.9 branch:
+
+1. Android development metadata advanced to `versionCode = 900` and `versionName = "0.9.0"`.
+2. Standard Android CI expanded to verify `:app:lintRelease` in addition to debug lint.
+3. Standard Android CI expanded to build the release APK with R8/resource shrinking enabled.
+4. Standard Android CI expanded to build the release Android App Bundle.
+5. Successful CI release verification uploads short-lived release APK/AAB/mapping outputs as workflow artifacts for evidence, not as automatically production-publishable packages.
+6. Backup-file JVM regression coverage expanded to prove exact-limit acceptance, oversized rejection, empty rejection, UTF-8 decoding, and positive-limit enforcement.
+7. `docs/BUILDING.md` expanded with debug/release APK, AAB, release mapping, translation parity, release lint, signing, Windows/Linux/macOS command, reproducibility, and evidence guidance.
+8. `SECURITY.md` expanded with manifest/permission expectations, backup/transfer fail-closed requirements, signing/secret-management rules, dependency/supply-chain expectations, privacy expectations, and release-hardening gates.
+9. `docs/RELEASE_QA.md` added as a non-fabricated release evidence matrix covering automated gates, installation/lifecycle, every major app area, accessibility, font/window sizes, performance smoke checks, security/privacy, release artifacts, and store-screenshot readiness.
+10. Draft PR #25 opened so all later v0.9 commits remain reviewable and workflow evidence can be tied to exact branch heads.
+
+Focused v0.9 commits currently include:
+
+- `79589232926d7f3ef3c3ef21865e68baa8ca4cd3` — `chore(release): start v0.9 development version`;
+- `319885bcdc899353404bbc48ddf1107e85a9c43d` — `ci(release): verify release lint APK AAB and R8 outputs`;
+- `ffd2cd25295d6ba4c390fdbc98c85cedf84359d3` — `test(backup): expand bounded file read regression coverage`;
+- `ccc28b2863a8bff1661a805ce5920fe69980c089` — `docs(build): harden release APK AAB and signing guidance`;
+- `34a04be6b07a5d991bd9c17112769badfb5b68b6` — `docs(security): define v0.9 permission backup and signing gates`;
+- `885701e15a5d1bc07b1900c83c70256810bbaaf7` — `docs(qa): add v0.9 release validation matrix`.
+
+PR #25 was opened at head `885701e15a5d1bc07b1900c83c70256810bbaaf7` with six focused commits and remains draft. At the moment this section was written, no PR-associated workflow run had yet been returned for that head, so no new green v0.9 workflow claim is recorded here.
 
 ## Final v0.8 Verification — GREEN
 
@@ -179,7 +209,7 @@ Two digits are restricted to the same two cells in a unit. Every other candidate
 
 ### Naked Triple
 
-Three cells in a unit contain candidates whose union is exactly three digits. Those digits are removed from other cells in the same unit.
+Three cells in one unit contain candidates whose union is exactly three digits. Those digits are removed from other cells in the same unit.
 
 ### Hidden Triple
 
@@ -774,15 +804,18 @@ Room-backed:
 2. engine tests;
 3. Android JVM tests;
 4. Android instrumentation-test APK compilation;
-5. Android lint;
+5. debug and release Android lint;
 6. debug APK assembly;
-7. report upload/post-job cleanup.
+7. release APK assembly with R8/resource shrinking;
+8. release AAB assembly;
+9. verification report upload;
+10. successful release APK/AAB/mapping artifact upload for short-lived CI evidence.
 
 ### API-35 Connected Instrumentation
 
 `.github/workflows/instrumentation.yml` runs connected Compose/Room tests on an Android API-35 x86_64 Pixel 6 emulator with KVM access and animations disabled.
 
-v0.9 will preserve these gates and expand release-build/QA evidence where safe and practical.
+v0.9 preserves these connected gates and expands release-build/QA evidence where safe and practical.
 
 ## Important Historical Defects Already Fixed
 
@@ -811,9 +844,11 @@ v0.9 will preserve these gates and expand release-build/QA evidence where safe a
 
 ## v0.9 Handoff
 
-Focused issue #23 is now open:
+Focused issue #23 is open:
 
 **`v0.9: release hardening, accessibility, performance, security, and production QA`**
+
+Draft PR #25 now carries the implementation.
 
 v0.9 is deliberately a quality milestone rather than a new feature-family milestone.
 
