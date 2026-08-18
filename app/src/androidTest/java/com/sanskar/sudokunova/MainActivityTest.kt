@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
@@ -39,7 +40,12 @@ class MainActivityTest {
     fun gameBoardExposesSelectedCellSemantics() {
         composeRule.onNodeWithText("Easy").performClick()
 
-        val firstCell = composeRule.onNodeWithTag(sudokuCellTestTag(0, 0))
+        val firstCellTag = sudokuCellTestTag(0, 0)
+        composeRule.waitUntil(timeoutMillis = 15_000) {
+            composeRule.onAllNodesWithTag(firstCellTag).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        val firstCell = composeRule.onNodeWithTag(firstCellTag)
         val secondCell = composeRule.onNodeWithTag(sudokuCellTestTag(0, 1))
 
         firstCell.assertIsDisplayed().performClick().assertIsSelected()
