@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import pathlib
-import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -134,6 +133,41 @@ def verify_release_build() -> None:
         fail("Release rules must preserve source/line metadata for de-obfuscated crash traces")
 
 
+def verify_architecture_safety() -> None:
+    source_roots = (
+        ROOT / "app/src/main/java",
+        ROOT / "sudoku-engine/src/main/kotlin",
+    )
+    forbidden_tokens = {
+        "GlobalScope": "Unstructured GlobalScope work is not allowed in production sources",
+        "runBlocking(": "Blocking coroutine bridges are not allowed in production sources",
+        "allowMainThreadQueries(": "Room main-thread queries are forbidden",
+        "fallbackToDestructiveMigration(": "Destructive Room fallback is forbidden",
+        "fallbackToDestructiveMigrationFrom(": "Destructive Room fallback is forbidden",
+        "fallbackToDestructiveMigrationOnDowngrade(": "Destructive Room downgrade fallback is forbidden",
+    }
+    for source_root in source_roots:
+        if not source_root.is_dir():
+            fail(f"Expected production source directory is missing: {source_root.relative_to(ROOT)}")
+        for path in source_root.rglob("*.kt"):
+            text = path.read_text(encoding="utf-8")
+            for token, message in forbidden_tokens.items():
+                if token in text:
+                    fail(f"{message}: {path.relative_to(ROOT)} contains {token!r}")
+
+    transfer = read("app/src/main/java/com/sanskar/sudokunova/ui/transfer/TransferViewModel.kt")
+    if "Dispatchers.IO" not in transfer:
+        fail("TransferViewModel must keep document/repository I/O on Dispatchers.IO")
+    if "Dispatchers.Default" not in transfer:
+        fail("TransferViewModel must keep CPU-bound puzzle validation off the main dispatcher")
+
+    database = read("app/src/main/java/com/sanskar/sudokunova/data/history/SudokuNovaDatabase.kt")
+    if ".addMigrations(" not in database:
+        fail("Room database builder must register explicit production migrations")
+    if "exportSchema = true" not in database:
+        fail("Room schema export must remain enabled for migration review")
+
+
 def verify_secret_hygiene() -> None:
     gitignore = read(".gitignore")
     required_patterns = {
@@ -179,6 +213,8 @@ def verify_ci_release_gate() -> None:
             fail(f"Android CI must verify release task {task}")
     if "unsigned-release-artifacts" not in workflow:
         fail("Android CI must upload the CI-safe unsigned release artifacts")
+    if "app/schemas/**" not in workflow:
+        fail("Android CI must preserve generated Room schema history for migration review")
 
 
 def main() -> None:
@@ -186,6 +222,7 @@ def main() -> None:
     verify_modern_backup_rules()
     verify_legacy_backup_rules()
     verify_release_build()
+    verify_architecture_safety()
     verify_secret_hygiene()
     verify_ci_release_gate()
     print("Release hygiene verification passed.")
