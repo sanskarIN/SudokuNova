@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.ui.saved
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -137,7 +138,7 @@ private fun SavedPuzzlesScreen(
                     )
                 }
             }
-            item { Text("", modifier = Modifier.padding(bottom = 16.dp)) }
+            item { Spacer(modifier = Modifier.padding(bottom = 16.dp)) }
         }
     }
 }
