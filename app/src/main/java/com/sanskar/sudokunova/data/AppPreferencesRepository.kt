@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.sanskar.sudokunova.engine.LogicalTechnique
 import com.sanskar.sudokunova.ui.theme.AppTheme
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -58,6 +59,18 @@ class AppPreferencesRepository(
         )
     }
 
+    val learningProgress: Flow<LearningProgress> = data.map { preferences ->
+        LearningProgress(
+            techniques = LogicalTechnique.entries.associateWith { technique ->
+                TechniqueLearningProgress(
+                    lessonViews = preferences[Keys.LEARNING_LESSON_VIEWS.getValue(technique)] ?: 0,
+                    practiceAttempts = preferences[Keys.LEARNING_PRACTICE_ATTEMPTS.getValue(technique)] ?: 0,
+                    practiceSuccesses = preferences[Keys.LEARNING_PRACTICE_SUCCESSES.getValue(technique)] ?: 0,
+                )
+            },
+        )
+    }
+
     val activeGame: Flow<String?> = data.map { it[Keys.ACTIVE_GAME] }
 
     suspend fun setTheme(value: AppTheme) = update(Keys.THEME, value.name)
@@ -73,6 +86,31 @@ class AppPreferencesRepository(
     suspend fun setReducedMotion(value: Boolean) = update(Keys.REDUCED_MOTION, value)
     suspend fun setHighContrast(value: Boolean) = update(Keys.HIGH_CONTRAST, value)
     suspend fun setMistakeLimit(value: Int) = update(Keys.MISTAKE_LIMIT, value.coerceAtLeast(0))
+
+    suspend fun recordTechniqueLessonViewed(technique: LogicalTechnique) {
+        increment(Keys.LEARNING_LESSON_VIEWS.getValue(technique))
+    }
+
+    suspend fun recordPracticeAttempt(technique: LogicalTechnique, correct: Boolean) {
+        context.sudokuNovaDataStore.edit { preferences ->
+            val attemptsKey = Keys.LEARNING_PRACTICE_ATTEMPTS.getValue(technique)
+            val successesKey = Keys.LEARNING_PRACTICE_SUCCESSES.getValue(technique)
+            preferences[attemptsKey] = incrementLearningCount(preferences[attemptsKey] ?: 0)
+            if (correct) {
+                preferences[successesKey] = incrementLearningCount(preferences[successesKey] ?: 0)
+            }
+        }
+    }
+
+    suspend fun resetLearningProgress() {
+        context.sudokuNovaDataStore.edit { preferences ->
+            LogicalTechnique.entries.forEach { technique ->
+                preferences.remove(Keys.LEARNING_LESSON_VIEWS.getValue(technique))
+                preferences.remove(Keys.LEARNING_PRACTICE_ATTEMPTS.getValue(technique))
+                preferences.remove(Keys.LEARNING_PRACTICE_SUCCESSES.getValue(technique))
+            }
+        }
+    }
 
     suspend fun saveActiveGame(encodedState: String) {
         context.sudokuNovaDataStore.edit { it[Keys.ACTIVE_GAME] = encodedState }
@@ -161,6 +199,15 @@ class AppPreferencesRepository(
         context.sudokuNovaDataStore.edit { it[key] = value }
     }
 
+    private suspend fun increment(key: Preferences.Key<Int>) {
+        context.sudokuNovaDataStore.edit { preferences ->
+            preferences[key] = incrementLearningCount(preferences[key] ?: 0)
+        }
+    }
+
+    private fun incrementLearningCount(value: Int): Int =
+        if (value >= MAX_LEARNING_COUNT) MAX_LEARNING_COUNT else value + 1
+
     private object Keys {
         val THEME = stringPreferencesKey("theme")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
@@ -189,5 +236,19 @@ class AppPreferencesRepository(
         val CURRENT_STREAK = intPreferencesKey("current_streak")
         val LONGEST_STREAK = intPreferencesKey("longest_streak")
         val LAST_COMPLETED_EPOCH_DAY = longPreferencesKey("last_completed_epoch_day")
+
+        val LEARNING_LESSON_VIEWS = LogicalTechnique.entries.associateWith { technique ->
+            intPreferencesKey("learning_lesson_views_${technique.name.lowercase()}")
+        }
+        val LEARNING_PRACTICE_ATTEMPTS = LogicalTechnique.entries.associateWith { technique ->
+            intPreferencesKey("learning_practice_attempts_${technique.name.lowercase()}")
+        }
+        val LEARNING_PRACTICE_SUCCESSES = LogicalTechnique.entries.associateWith { technique ->
+            intPreferencesKey("learning_practice_successes_${technique.name.lowercase()}")
+        }
+    }
+
+    private companion object {
+        const val MAX_LEARNING_COUNT = 1_000_000
     }
 }
