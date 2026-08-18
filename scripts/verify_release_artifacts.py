@@ -55,7 +55,11 @@ def run_signature_tool(path: Path, require_signature: bool) -> str:
         label = "apksigner"
     else:
         tool = shutil.which("jarsigner")
-        command = [tool, "-verify", "-strict", "-certs", str(path)] if tool else None
+        # Android app-signing certificates are commonly self-signed. Using
+        # jarsigner -strict would reject a valid signed AAB merely because its
+        # certificate chain is not rooted in a public CA. Verify signature
+        # integrity instead, then require explicit "jar verified" output.
+        command = [tool, "-verify", "-certs", str(path)] if tool else None
         label = "jarsigner"
 
     if command is None:
