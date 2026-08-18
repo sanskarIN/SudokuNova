@@ -29,6 +29,20 @@ def is_dynamic(version: str) -> bool:
     return any(pattern.search(version) for pattern in DYNAMIC_PATTERNS)
 
 
+def version_declaration(entry: dict[str, object]) -> tuple[str | None, str | None]:
+    version = entry.get("version")
+    if isinstance(version, str):
+        return None, version
+    if isinstance(version, dict):
+        ref = version.get("ref")
+        if ref is not None and not isinstance(ref, str):
+            fail(f"Invalid version.ref declaration: {version!r}")
+        return ref, None
+    if version is None:
+        return None, None
+    fail(f"Unsupported version declaration: {version!r}")
+
+
 def main() -> None:
     if not CATALOG.is_file():
         fail("gradle/libs.versions.toml is missing")
@@ -54,14 +68,13 @@ def main() -> None:
         if not isinstance(module, str) or module.count(":") != 1:
             fail(f"Library {alias!r} must use an exact group:artifact module coordinate")
 
-        version_ref = library.get("version.ref")
-        inline_version = library.get("version")
+        version_ref, inline_version = version_declaration(library)
         if version_ref is not None:
-            if not isinstance(version_ref, str) or version_ref not in versions:
+            if version_ref not in versions:
                 fail(f"Library {alias!r} references unknown version alias {version_ref!r}")
         elif inline_version is not None:
-            if not isinstance(inline_version, str) or is_dynamic(inline_version):
-                fail(f"Library {alias!r} has an invalid inline version {inline_version!r}")
+            if is_dynamic(inline_version):
+                fail(f"Library {alias!r} has a dynamic inline version {inline_version!r}")
         elif not module.startswith("androidx.compose"):
             fail(
                 f"Unversioned library {alias!r} ({module}) is not a Compose BOM-managed module",
@@ -69,16 +82,15 @@ def main() -> None:
 
     for alias, plugin in plugins.items():
         plugin_id = plugin.get("id")
-        version_ref = plugin.get("version.ref")
-        inline_version = plugin.get("version")
+        version_ref, inline_version = version_declaration(plugin)
         if not isinstance(plugin_id, str) or not plugin_id.strip():
             fail(f"Plugin {alias!r} must declare a non-empty id")
         if version_ref is not None:
-            if not isinstance(version_ref, str) or version_ref not in versions:
+            if version_ref not in versions:
                 fail(f"Plugin {alias!r} references unknown version alias {version_ref!r}")
         elif inline_version is not None:
-            if not isinstance(inline_version, str) or is_dynamic(inline_version):
-                fail(f"Plugin {alias!r} has an invalid inline version {inline_version!r}")
+            if is_dynamic(inline_version):
+                fail(f"Plugin {alias!r} has a dynamic inline version {inline_version!r}")
         else:
             fail(f"Plugin {alias!r} must declare an explicit version or version.ref")
 
