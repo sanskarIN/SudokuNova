@@ -15,6 +15,7 @@ The audit covers:
 - large-text source-level layout risks;
 - English/Hindi presentation boundaries;
 - debug/release build verification;
+- open-source repository tooling/governance;
 - documentation accuracy.
 
 Manual TalkBack, physical-device, large-font, high-contrast, reduced-motion, performance-trace, and store-listing signoff remain separate evidence requirements.
@@ -50,6 +51,12 @@ Manual TalkBack, physical-device, large-font, high-contrast, reduced-motion, per
 **Finding:** API-35 instrumentation run `32129482037` failed because the test asserted the first game-cell semantic node immediately after selecting Easy, while puzzle generation is asynchronous.
 
 **Fix:** the connected test waits for the stable first-cell semantic tag to enter the Compose tree, then performs the same selected/unselected assertions. The assertion itself was not weakened.
+
+### Adaptive Custom Puzzle instrumentation visibility
+
+**Finding:** API-35 instrumentation run `32134443558` failed after the Custom Puzzle action controls were intentionally changed from compact rows to large-text-friendly full-width stacks. The product UI was correct, but the connected smoke test still assumed `Play puzzle` would be visible without scrolling.
+
+**Fix:** the test verifies editor-cell semantics before changing viewport position and then explicitly scrolls Validate, Save puzzle, and Play puzzle into view before asserting them. This validates reachability under the adaptive layout instead of restoring the cramped pre-hardening layout. The connected rule also moved to the non-deprecated Compose UI test v2 API.
 
 ### Custom Puzzle editor accessibility
 
@@ -144,6 +151,16 @@ These source fixes reduce predictable large-text collisions but do **not** repla
 ### Release build gates
 
 **Added:** standard CI verifies debug/release lint, debug APK, minified/resource-shrunk release APK, release AAB, test reports, and short-lived release build evidence artifacts.
+
+### Open-source repository tooling
+
+**Audit:** the repository already includes root contribution/conduct/security/support/license/third-party-notice documents, structured issue forms, a PR template, weekly Dependabot configuration for Gradle and GitHub Actions, standard CI, and API-35 connected instrumentation.
+
+**Final additions:** `.github/CODEOWNERS` now defines default ownership plus explicit high-value repository areas, and `.github/FUNDING.yml` exposes the project's optional Buy Me a Coffee support URL through GitHub's funding metadata. `docs/MAINTAINER_GUIDE.md` records the governance and automation boundaries.
+
+### Placeholder/debug-source audit
+
+**Audit:** the final source search did not find repository `TODO`, `FIXME`, `NotImplementedException`, `printStackTrace`, `System.out`, or obvious debug `println` placeholder paths requiring release cleanup. This does not prove absence of every possible defect; it records the specific final hygiene searches that were performed.
 
 ## State-layer main-thread review
 
