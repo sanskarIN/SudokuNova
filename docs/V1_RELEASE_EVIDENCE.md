@@ -4,8 +4,10 @@ This is the concise exact-evidence ledger for the first stable SudokuNova releas
 
 ## Current candidate
 
-- Branch: `release/v1.0-rc1-prep`
-- Draft PR: `#27`
+- Preparation branch: `release/v1.0-rc1-prep`
+- PR #27: **verified and merged**
+- Final verified PR head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- PR #27 merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`
 - Candidate versionName: `1.0.0-rc.1`
 - Candidate versionCode: `1000`
 - Application ID: `in.sanskar.sudokunova`
@@ -16,32 +18,35 @@ This is the concise exact-evidence ledger for the first stable SudokuNova releas
 
 If version code `1000` is accepted by a distribution track, the stable build must use a strictly higher version code.
 
-## Repository-side RC evidence
+## Repository-side RC evidence — VERIFIED
 
-Record results only for the exact final PR #27 head.
+All rows below were verified on the same exact final PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`.
 
 | Gate | Exact head | Run/evidence | Result |
 |---|---|---|---|
-| Repository secret guard | Pending final RC head | Pending | PENDING |
-| Release-verifier Python tests | Pending final RC head | Pending | PENDING |
-| Partial signing fails closed | Pending final RC head | Pending | PENDING |
-| English/Hindi parity | Pending final RC head | Pending | PENDING |
-| Sudoku engine tests | Pending final RC head | Pending | PENDING |
-| Android JVM tests | Pending final RC head | Pending | PENDING |
-| AndroidTest compilation | Pending final RC head | Pending | PENDING |
-| Debug + release lint | Pending final RC head | Pending | PENDING |
-| Debug APK | Pending final RC head | Pending | PENDING |
-| R8/resource-shrunk release APK | Pending final RC head | Pending | PENDING |
-| Release AAB | Pending final RC head | Pending | PENDING |
-| APK/AAB/R8 structure/version check | Pending final RC head | Pending | PENDING |
-| SHA-256/size evidence generation | Pending final RC head | Pending | PENDING |
-| API-35 connected Compose/Room | Pending final RC head | Pending | PENDING |
+| Repository secret guard | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Release-verifier Python tests | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Partial signing fails closed | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| English/Hindi parity | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Sudoku engine tests | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Android JVM tests | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| AndroidTest compilation | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Debug + release lint | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Debug APK | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| R8/resource-shrunk release APK | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| Release AAB | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| APK/AAB/R8 structure/version check | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| SHA-256/size evidence generation | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android CI `32151771317` | PASS |
+| API-35 connected Compose/Room | `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` | Android Instrumentation `32151771297` | PASS |
 
-When the branch head changes after a green run, the previous run becomes historical evidence only.
+Android CI: run #635 / `32151771317` — GREEN.  
+Android Instrumentation: run #188 / `32151771297` — GREEN.
 
-## RC build artifact evidence
+No branch commit was added after this successful pair before PR #27 was merged.
 
-Normal PR CI verifies unsigned build outputs using:
+## RC build artifact evidence — VERIFIED FOR UNSIGNED CI ARTIFACTS
+
+Normal PR CI verified unsigned build outputs using:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -54,12 +59,21 @@ python scripts/verify_release_outputs.py \
   --output app/build/outputs/release-evidence/sha256.txt
 ```
 
-Record from the exact approved candidate:
+Exact evidence from the verified PR #27 head:
 
-- APK SHA-256: `PENDING`
-- AAB SHA-256: `PENDING`
-- R8 mapping SHA-256: `PENDING`
-- CI artifact name/id: `PENDING`
+- APK SHA-256: `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7`
+- APK size: `1,849,599` bytes
+- AAB SHA-256: `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd`
+- AAB size: `4,349,513` bytes
+- R8 mapping SHA-256: `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac`
+- R8 mapping size: `39,198,732` bytes
+- CI artifact name: `unsigned-release-builds`
+- CI artifact ID: `9330415157`
+- CI artifact size: `12,793,995` bytes
+- GitHub artifact digest: `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`
+- Recorded artifact expiry: `2026-09-01`
+
+These are unsigned repository-CI verification artifacts. They are not production-signed release evidence.
 
 ## Production-signed artifact evidence
 
@@ -82,7 +96,7 @@ python scripts/verify_release_outputs.py \
 - `apksigner` verification for the APK;
 - `jarsigner` verification for the AAB.
 
-Production evidence:
+Production evidence remains pending:
 
 - Production/upload signing configured outside Git: `PENDING`
 - APK signature verification: `PENDING`
@@ -171,9 +185,9 @@ See `PLAY_STORE_RELEASE.md`.
 
 Promote to stable `1.0.0` only when:
 
-1. repository-side RC preparation is merged from an exact green head;
+1. repository-side RC preparation is merged from an exact green head — **completed for PR #27**;
 2. any stable-metadata/source changes receive fresh exact-head Android CI and API-35 verification;
-3. release APK/AAB/R8 integrity/hash evidence exists;
+3. release APK/AAB/R8 integrity/hash evidence exists — **completed for the unsigned RC verification artifacts; must be repeated for final signed stable artifacts**;
 4. required device/accessibility/lifecycle QA is recorded;
 5. measured release performance has no release-blocking defect;
 6. production signing is configured outside Git and signed artifacts are verified;
@@ -183,4 +197,4 @@ Promote to stable `1.0.0` only when:
 10. README, changelog, roadmap, release notes and `what_changed.md` match the final stable source commit;
 11. final decision in `V1_RELEASE_CANDIDATE.md` is `SHIP`.
 
-Until those conditions are satisfied, SudokuNova remains in release-candidate preparation rather than a stable-production claim.
+Until those remaining conditions are satisfied, SudokuNova remains a verified repository-side release candidate rather than a stable-production claim.
