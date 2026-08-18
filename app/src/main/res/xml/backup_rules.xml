@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <include domain="file" path="." />
-    <include domain="database" path="." />
-    <include domain="sharedpref" path="." />
+    <!--
+        Android 11 and lower use the legacy full-backup format. Restrict these
+        includes to device-to-device transfer transports so ordinary cloud
+        backup does not copy SudokuNova's local gameplay/learning data.
+    -->
+    <include
+        domain="file"
+        path="."
+        requireFlags="deviceToDeviceTransfer" />
+    <include
+        domain="database"
+        path="."
+        requireFlags="deviceToDeviceTransfer" />
+    <include
+        domain="sharedpref"
+        path="."
+        requireFlags="deviceToDeviceTransfer" />
 </full-backup-content>
