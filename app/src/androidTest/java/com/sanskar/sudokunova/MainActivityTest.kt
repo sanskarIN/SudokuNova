@@ -20,6 +20,7 @@ class MainActivityTest {
         composeRule.onNodeWithText("Daily Challenge").assertIsDisplayed()
         composeRule.onNodeWithText("Easy").assertIsDisplayed()
         composeRule.onNodeWithText("Custom").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Learn").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("History").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Saved Puzzles").performScrollTo().assertIsDisplayed()
     }
@@ -60,5 +61,22 @@ class MainActivityTest {
         composeRule.onNodeWithText("Validate").assertIsDisplayed()
         composeRule.onNodeWithText("Save puzzle").assertIsDisplayed()
         composeRule.onNodeWithText("Play puzzle").assertIsDisplayed()
+    }
+
+    @Test
+    fun learnCenterSupportsLessonAndPracticeFlow() {
+        composeRule.onNodeWithText("Learn").performScrollTo().performClick()
+        composeRule.onNodeWithText("Learning progress").assertIsDisplayed()
+        composeRule.onNodeWithText("Naked Single").performScrollTo().assertIsDisplayed()
+
+        composeRule.onAllNodesWithText("Study technique").onFirst().performScrollTo().performClick()
+        composeRule.onNodeWithText("Naked Single").assertIsDisplayed()
+        composeRule.onNodeWithText("Close practice").performClick()
+
+        composeRule.onAllNodesWithText("Practice").onFirst().performScrollTo().performClick()
+        composeRule.onNodeWithText("Technique practice").assertIsDisplayed()
+        composeRule.onNodeWithText("Which technique explains this vetted logical step?").assertIsDisplayed()
+        composeRule.onNodeWithText("Naked Single").performClick()
+        composeRule.onNodeWithText("Correct. This evidence matches Naked Single.").assertIsDisplayed()
     }
 }
