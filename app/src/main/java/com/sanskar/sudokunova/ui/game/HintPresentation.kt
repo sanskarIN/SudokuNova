@@ -8,13 +8,11 @@ import com.sanskar.sudokunova.engine.SudokuHint
 import com.sanskar.sudokunova.engine.SudokuUnitRef
 import com.sanskar.sudokunova.engine.SudokuUnitType
 
-@get:Composable
 val HintTechnique.displayName: String
-    get() = localizedHintTechnique(this)
+    @Composable get() = localizedHintTechnique(this)
 
-@get:Composable
 val SudokuHint.explanation: String
-    get() = localizedHintExplanation(this)
+    @Composable get() = localizedHintExplanation(this)
 
 @Composable
 fun localizedHintTechnique(technique: HintTechnique): String = stringResource(
