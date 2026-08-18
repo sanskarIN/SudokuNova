@@ -18,6 +18,14 @@ class TeachingStepFinder {
         return CandidateState(board).nextStep()
     }
 
+    internal fun nextStepForCandidates(
+        board: SudokuBoard,
+        candidateOverrides: Map<Int, Set<Int>>,
+    ): TeachingStep? {
+        if (!board.isValid() || board.isComplete) return null
+        return CandidateState(board, candidateOverrides).nextStep()
+    }
+
     fun trace(board: SudokuBoard, maxSteps: Int = MAX_STEPS): TeachingTrace {
         require(board.isValid()) { "Teaching trace requires a valid Sudoku board." }
         require(maxSteps > 0) { "maxSteps must be positive." }
@@ -38,13 +46,32 @@ class TeachingStepFinder {
         )
     }
 
-    internal class CandidateState(initial: SudokuBoard) {
+    internal class CandidateState(
+        initial: SudokuBoard,
+        candidateOverrides: Map<Int, Set<Int>> = emptyMap(),
+    ) {
         var board: SudokuBoard = initial
             private set
 
+        init {
+            require(candidateOverrides.keys.all { index ->
+                index in 0 until SudokuBoard.CELL_COUNT && initial.valueAt(index) == SudokuBoard.EMPTY
+            }) { "Candidate overrides may target only empty cells on the Sudoku board." }
+        }
+
         private val candidates: Array<MutableSet<Int>> = Array(SudokuBoard.CELL_COUNT) { index ->
             if (initial.valueAt(index) == SudokuBoard.EMPTY) {
-                initial.candidates(index).toMutableSet()
+                val legal = initial.candidates(index)
+                val override = candidateOverrides[index]
+                if (override == null) {
+                    legal.toMutableSet()
+                } else {
+                    require(override.isNotEmpty()) { "Candidate override may not empty a cell." }
+                    require(override.all { it in legal }) {
+                        "Candidate overrides must remain a subset of legal Sudoku candidates."
+                    }
+                    override.toMutableSet()
+                }
             } else {
                 mutableSetOf()
             }
