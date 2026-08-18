@@ -10,6 +10,7 @@ import com.sanskar.sudokunova.engine.PuzzleCodeCodec
 import com.sanskar.sudokunova.engine.SharedPuzzleCode
 import com.sanskar.sudokunova.engine.SudokuSolver
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,19 +37,24 @@ class TransferViewModel(application: Application) : AndroidViewModel(application
     private val solver = SudokuSolver()
     private val _uiState = MutableStateFlow(TransferUiState())
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
+    private var puzzleValidationJob: Job? = null
 
     fun setPuzzleCode(value: String) {
         if (value.length > PuzzleCodeCodec.MAX_CODE_LENGTH) return
+        puzzleValidationJob?.cancel()
+        puzzleValidationJob = null
         _uiState.value = _uiState.value.copy(
             puzzleCodeInput = value,
             validatedPuzzle = null,
             status = TransferStatus.IDLE,
+            busy = false,
         )
     }
 
     fun validatePuzzleCode() {
         val raw = _uiState.value.puzzleCodeInput
-        viewModelScope.launch {
+        puzzleValidationJob?.cancel()
+        puzzleValidationJob = viewModelScope.launch {
             _uiState.value = _uiState.value.copy(busy = true, status = TransferStatus.IDLE)
             val decoded = withContext(Dispatchers.Default) {
                 PuzzleCodeCodec.decode(raw)?.takeIf { shared ->
@@ -56,11 +62,15 @@ class TransferViewModel(application: Application) : AndroidViewModel(application
                     analysis.solutionCount == 1 && analysis.solution != null
                 }
             }
-            _uiState.value = _uiState.value.copy(
+            val current = _uiState.value
+            if (current.puzzleCodeInput != raw) return@launch
+
+            _uiState.value = current.copy(
                 validatedPuzzle = decoded,
                 status = if (decoded == null) TransferStatus.PUZZLE_INVALID else TransferStatus.IDLE,
                 busy = false,
             )
+            puzzleValidationJob = null
         }
     }
 
