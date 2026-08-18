@@ -69,7 +69,7 @@ Focused v0.9 commits currently include:
 - `57a607251f9910f1207a53b40391aeee2b6f852e` — `docs(changelog): record implemented v0.9 hardening work`;
 - `ee089f7db9202593e1e572cee2bfaf64e9f1b186` — `docs(roadmap): track concrete v0.9 hardening progress`.
 
-PR #25 currently contains 15 focused commits before this `what_changed.md` refresh and remains draft. Earlier exact heads started Android CI and API-35 instrumentation runs, but subsequent commits intentionally superseded those heads. The final v0.9 workflow evidence must therefore come from the exact final head after this documentation update, not from an earlier successful/cancelled run.
+PR #25 currently contains the cumulative v0.9 implementation and remains draft. Earlier exact heads started Android CI and API-35 instrumentation runs, but subsequent commits intentionally superseded those heads. The final v0.9 workflow evidence must therefore come from the exact final head after all intended implementation/documentation updates, not from an earlier successful/cancelled run.
 
 ## Final v0.8 Verification — GREEN
 
@@ -914,6 +914,71 @@ The existing v0.1–v0.8 feature set already includes the intended core Classic 
 - Support: `supportramsandesh@gmail.com`
 - Credit: **Made by the Sanskar**
 - License: **MIT**
+
+## v0.9 Complete Documentation Pass — 2026-08-18
+
+A complete implementation-aligned documentation audit was performed on the v0.9 branch. The work preserved the existing historical documentation while adding missing current references and correcting stale pages that still described implemented v0.7/v0.8 functionality as planned.
+
+### New documentation added
+
+- `docs/FEATURES.md` — complete implemented product feature reference and explicit current non-features.
+- `docs/USER_GUIDE.md` — end-to-end player guide covering every current major screen/workflow.
+- `docs/PROJECT_STRUCTURE.md` — repository/module/package/test/schema/workflow map and change-placement rules.
+- `docs/CI_CD.md` — GitHub Actions gates, exact-head policy, scripts, release artifacts, and failure triage.
+- `docs/DATA_FORMATS.md` — board strings, `SNP1`, `SNB1`, DataStore, active-game, Room, Android backup, and compatibility rules.
+- `docs/PERFORMANCE.md` — main-thread, solver/generator/hints, parser, Room/DataStore, Compose, memory, measurement, and ANR hardening guide.
+- `docs/MAINTAINER_GUIDE.md` — maintainer priorities, review/triage, dependency/security/localization/accessibility/release maintenance, and handoff rules.
+- `docs/KEYBOARD_SHORTCUTS.md` — hardware keyboard behavior and release QA expectations.
+- `docs/GLOSSARY.md` — canonical Sudoku, logical-technique, data, Android, build, and repository terminology.
+- `docs/DOCUMENTATION_STANDARDS.md` — rules for implemented/planned/verified claims, links, security/privacy, persistent formats, and release documentation accuracy.
+
+### Existing documentation corrected/expanded
+
+- `docs/TESTING.md` now reflects the actual cumulative engine/JVM/Compose/Room/security/translation/lint/release/manual QA strategy rather than saying connected UI coverage is only planned.
+- `docs/SUDOKU_ENGINE.md` now documents all supported v0.8 techniques, teaching traces, practice catalog, HintEngine hardest-technique identity, Reveal fallback, `SNP1`, and current engine invariants rather than calling advanced techniques future work.
+- `docs/BACKUP_RESTORE.md` now documents the implemented `SNB1` user export/import path rather than describing it as planned.
+- `docs/PRIVACY.md` now reflects current Preferences DataStore plus Room History/Saved/Challenge storage, learning progress, explicit sharing/export actions, user backup behavior, Android backup rules, and permission surface.
+- `docs/SECURITY.md` now reflects actual `SNP1`/`SNB1` validation, bounded file I/O, Room/DataStore integrity, repository secret guard, signing, supply-chain review, release R8, logging, and privacy boundaries.
+- `docs/ACCESSIBILITY.md` now includes selected-cell semantics, advanced teaching evidence, connected semantics regression coverage, Learn/dialog/font/contrast/motion/keyboard/large-screen checks, and explicit automated-vs-manual evidence rules.
+- `docs/QA_MATRIX.md` now covers the complete current application, all supported logical hint techniques, Learn, Daily/Weekly Challenges, History/Saved, `SNP1`, `SNB1`, Room/DataStore, performance, release builds, accessibility, security/privacy, and store assets.
+- `docs/RELEASE_CHECKLIST.md` now matches v0.9 security/translation/debug+release lint/R8/AAB/API-35 exact-head gates plus complete manual release requirements.
+- `docs/RELEASING.md` now defines the end-to-end controlled release flow from scope freeze through exact-head verification, secure signing, R8 smoke QA, manual QA, tag/GitHub Release/store submission, monitoring, and fix-forward handling.
+- `docs/README.md` is now the categorized documentation hub with user, contributor, engine, data, accessibility, QA, maintainer, and release paths.
+- root `README.md` now exposes the complete documentation hub and high-value references directly from the repository landing page.
+
+### Documentation accuracy defect found and fixed
+
+During final cross-check, several new guides used the intended public command name `scripts/verify_no_secrets.py` while the existing implementation file was `scripts/verify_repository_security.py`.
+
+Rather than duplicating security logic, a stable compatibility entry point `scripts/verify_no_secrets.py` was added that delegates to the existing verifier `main()` function. Standard Android CI was then updated to call the documented entry point. The authoritative security checks remain implemented only once in `verify_repository_security.py`.
+
+### Focused documentation/consistency commits
+
+- `ebe3549b53ad31c24eee398a860c7a0ed1c54535` — `docs(features): add complete product feature reference`.
+- `b2d0a838adb48406d32079c0f3168cb12b476324` — `docs(user): add complete application user guide`.
+- `a664afaed6db2f51227d677f6feb1f66c875aedb` — `docs(structure): document repository and source layout`.
+- `1db2fe3109c6e815ad3ca09b9b3f1f422cb6c939` — `docs(ci): document automated quality and release gates`.
+- `1ef457c7a7b3a84604f47f9651368c53919f82e2` — `docs(data): document puzzle backup and persistence formats`.
+- `f799d13b6be0cdfde6a6992a4cdeae53880f9bb3` — `docs(perf): add performance and ANR hardening guide`.
+- `2e1805a2fae85ae868df6339428313383805aa06` — `docs(maintainers): add project maintenance handbook`.
+- `b7521465da008f3a3c269d57782e841b9f506f7f` — `docs(input): add hardware keyboard reference`.
+- `1f13f6ec765bce13785c86f6336ef628cff069e1` — `docs(reference): add SudokuNova terminology glossary`.
+- `fc5ee162a5c2aba065285f619c34f15612587551` — `docs(meta): define documentation maintenance standards`.
+- `91a15f9566ca83b55735df93fdc85f4c7192c24b` — `docs(testing): align test guide with cumulative v0.9 suite`.
+- `e5da0341d460358c0175ec7e73bd2889e516720e` — `docs(engine): document complete solver generator and teaching pipeline`.
+- `1e36c7aba80e61169487f682ab023d2365b7683a` — `docs(release): expand controlled release and signing process`.
+- `a8cd240107b6239daf609520ee8b7b575dbb509f` — `docs(index): build complete categorized documentation map`.
+- `ec8985ca6a48caed9a33788c56de0893218fcd21` — `docs(backup): replace obsolete planned backup guide`.
+- `717a60d6908ceacba828190f3802f3c252da02c6` — `docs(privacy): align policy with current local data features`.
+- `58e08795a780483401743c06372cecf78f03cc0f` — `docs(security): align technical security guide with v0.9`.
+- `cb067036687ce274d270f9fa4e5bedba64ef0c0d` — `docs(qa): align general QA matrix with current feature set`.
+- `dab469d50f28e726e5d16411e83fbe001ab5f6fb` — `docs(release): align checklist with v0.9 quality gates`.
+- `fa1ce632687e4985e152d3dc88d3ad6e0752e24b` — `docs(a11y): document v0.9 semantics and release checks`.
+- `c077f14518883e5b7784169f08a55956fcee7680` — `docs(readme): link complete SudokuNova documentation hub`.
+- `5b3739a678abffb9d18575d76666f346083e9acb` — `chore(scripts): add documented security verifier entry point`.
+- `c0b92433cbe772c0643f28a4e82be23cd71a297a` — `ci(security): use documented repository security command`.
+
+No manual device, TalkBack, signed-production, Play Store publication, or final v0.9 exact-head green workflow claim is made by this documentation pass. Because this log update itself creates a new head, required v0.9 final workflow evidence must still be taken from the later exact final head before PR #25 is promoted/merged.
 
 ## Commit Policy
 
