@@ -15,9 +15,9 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 **v0.8.0 — Learning and Advanced Hints is merged and verified on `main`.** Its final implementation head passed the repository's standard Android CI and API-35 connected instrumentation gates before PR #22 was merged.
 
-The current focused development line is **v0.9 — Release Hardening**, tracked in issue #23. v0.9 is intentionally focused on accessibility, performance, security/privacy, release-build verification, QA, and crash/ANR hardening rather than adding another large feature family.
+The current focused development line is **v0.9 — Release Hardening**, tracked in issue #23 and draft PR #25. v0.9 is intentionally focused on accessibility, performance, security/privacy, release-build verification, QA, crash/ANR-sensitive paths, documentation accuracy, and public-repository health rather than adding another large feature family.
 
-Features below are listed as implemented only when code exists in this repository.
+Features below are listed as implemented only when code exists in this repository. Manual device/TalkBack/font-scale/performance/signing/store checks are not treated as completed merely because source review or automated tests exist.
 
 ## Complete Documentation
 
@@ -48,6 +48,7 @@ High-value entry points:
 - [Release Checklist](docs/RELEASE_CHECKLIST.md)
 - [Release QA](docs/RELEASE_QA.md)
 - [Maintainer Guide](docs/MAINTAINER_GUIDE.md)
+- [v0.9 Hardening Audit](docs/V09_HARDENING_AUDIT.md)
 - [Documentation Standards](docs/DOCUMENTATION_STANDARDS.md)
 - [Glossary](docs/GLOSSARY.md)
 
@@ -140,34 +141,52 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - Translation parity verification in CI
 - Semantic Sudoku cell descriptions
 - Teaching evidence semantics
-- Selected-cell semantics in the v0.9 hardening line
+- Selected game/custom-cell semantics in the v0.9 hardening line
+- Number-first and Notes selected-state semantics
+- Large-text source hardening across primary action/filter surfaces
 - Adaptive layouts
 - Original launcher, monochrome, and splash vector assets
 - GitHub Actions unit-test/lint/build quality gate
 - Debug/release lint and release APK/AAB/R8 verification in v0.9
 - Repository secret/signing-material guard in v0.9 CI
-- API-35 connected Compose instrumentation gate
+- API-35 connected Compose/Room instrumentation gate
+- Structured bug/feature/accessibility/performance/documentation issue forms
+- Pull-request template and contributor policies
+- Weekly Dependabot checks for Gradle and GitHub Actions
+- `.github/CODEOWNERS` ownership routing
+- `.github/FUNDING.yml` with optional Buy Me a Coffee support metadata
 - Open-source repository policies, support documentation, and contributor guidance
 
 ## Current Milestone — v0.9 Release Hardening
 
-Issue #23 covers the current release-hardening line. Planned/ongoing work includes:
+Issue #23 covers the current release-hardening line. Source/automation work completed on the branch includes:
 
-- full regression-suite audit;
-- TalkBack/focus-order and large-font QA;
-- high-contrast/reduced-motion review;
-- performance and memory audit;
-- main-thread I/O/CPU audit;
-- Room/DataStore integrity and migration audit;
-- security/privacy and import/export/backup audit;
-- dependency/license audit;
+- regression-suite and bounded-backup review;
+- selected-state and large-text accessibility hardening;
+- main-thread CPU/I/O review and off-main-thread solver/hint fixes;
+- stale-result protection in Custom Puzzle and imported puzzle validation;
+- Room/DataStore integrity and migration review;
+- security/privacy and import/export/backup review;
+- dependency/license notice review;
+- repository secret/signing-material guard;
 - release R8/shrinking verification;
-- debug APK, release APK, and release AAB verification;
-- device QA matrix and manual release checklist;
-- crash/ANR/lifecycle restoration hardening;
-- final UI/store-asset and documentation polish.
+- debug APK, release APK, and release AAB verification in CI;
+- lifecycle/restoration source review;
+- English/Hindi localization cleanup;
+- complete release QA, build, maintenance, security, accessibility, and project documentation;
+- final public-repository tooling review, including CODEOWNERS and funding metadata.
 
-See [ROADMAP.md](ROADMAP.md) and issue #23 for complete milestone tracking.
+Still requiring real manual evidence before a stable production-quality claim where applicable:
+
+- TalkBack focus-order traversal;
+- representative 200% font and window/device QA;
+- high-contrast and reduced-motion device review;
+- measured startup/frame/memory/ANR traces;
+- process-death/lifecycle manual scenarios;
+- signed production artifact installation/signing verification;
+- real store screenshot/listing review.
+
+See [ROADMAP.md](ROADMAP.md), [docs/V09_HARDENING_AUDIT.md](docs/V09_HARDENING_AUDIT.md), and issue #23 for complete milestone tracking.
 
 ## Technology Stack
 
@@ -196,7 +215,7 @@ SudokuNova/
 ├── app/                    # Android UI, navigation, persistence and app state
 ├── sudoku-engine/          # Platform-independent Sudoku logic, teaching evidence and tests
 ├── docs/                   # Technical and contributor documentation
-├── .github/                # CI, instrumentation and community templates
+├── .github/                # CI, instrumentation, ownership, funding and community templates
 └── gradle/                 # Version catalog and Gradle wrapper
 ```
 
@@ -267,7 +286,8 @@ Important suites include:
 - practice-catalog completeness/determinism tests;
 - learning-progress JVM tests;
 - Compose/Room connected tests on API 35;
-- selected Sudoku-cell semantics regression coverage.
+- selected Sudoku-cell semantics regression coverage;
+- adaptive connected reachability checks for scrollable large-text layouts.
 
 GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the final clean head when those gates are required for the milestone.
 
@@ -287,13 +307,15 @@ See [docs/PRIVACY.md](docs/PRIVACY.md), [docs/DATA_STORAGE.md](docs/DATA_STORAGE
 
 The project uses semantic cell descriptions, selected-state semantics, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. Structured hints add semantics for sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
 
-Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests. v0.9 explicitly audits these release requirements.
+Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests. v0.9 explicitly separates source/automated evidence from manual device evidence.
 
 See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 
 ## Contributing
 
 Contributions to code, tests, documentation, accessibility, translations, and design are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/CONTRIBUTING_GUIDE.md](docs/CONTRIBUTING_GUIDE.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+The repository includes structured issue forms, a pull-request template, Dependabot, and CODEOWNERS to keep reports and reviews maintainable.
 
 Use Conventional Commits such as:
 
@@ -318,6 +340,8 @@ Technical design: [docs/SECURITY.md](docs/SECURITY.md)
 If SudokuNova helps you, you can support continued open-source development through Buy Me a Coffee:
 
 **☕ https://buymeacoffee.com/sanskarIN**
+
+The same optional link is exposed through `.github/FUNDING.yml` so supported GitHub surfaces can show project funding metadata.
 
 You can also support the project by starring the repository, reporting reproducible bugs, improving documentation, translating strings, and contributing code.
 
