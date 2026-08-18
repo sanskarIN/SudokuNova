@@ -1,18 +1,20 @@
 # SudokuNova Testing Guide
 
-SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, Compose/Room connected tests, static analysis, release builds, and manual release QA.
+SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, release tooling, Compose/Room connected tests, static analysis, release builds, artifact verification, and real manual/production release QA.
 
 ## Testing Layers
 
-The project uses several complementary layers:
+The project uses complementary layers:
 
 1. `sudoku-engine` JVM tests for Sudoku truth and deterministic domain behavior;
 2. Android app JVM tests for codecs/models/presentation-independent application logic;
-3. Android instrumentation tests for Compose, Room, lifecycle-adjacent and integrated flows;
-4. translation/security verification scripts;
-5. Android debug/release lint;
-6. debug/release APK and release AAB builds;
-7. manual accessibility/device/release QA.
+3. Python tests for release tooling and repository verification;
+4. Android instrumentation tests for Compose, Room, lifecycle-adjacent and integrated flows;
+5. translation/security/signing-configuration verification scripts;
+6. Android debug/release lint;
+7. debug/release APK and release AAB builds;
+8. release APK/AAB/R8 structural/version/checksum verification;
+9. real manual accessibility/device/performance/signing/store QA.
 
 No single layer replaces the others.
 
@@ -124,6 +126,41 @@ The Android app module is configured around JUnit4. Tests in this module should 
 
 This protects the pre-parser memory boundary in addition to `BackupCodec`'s structural validation.
 
+## Release-Output Verifier Tests
+
+The v1.0 RC line adds pure-Python regression coverage for `scripts/verify_release_outputs.py`.
+
+Run:
+
+```bash
+python -m unittest scripts.tests.test_verify_release_outputs
+```
+
+The tests verify:
+
+- minimum valid APK/AAB archive structures are accepted;
+- required archive entries are enforced;
+- APK release metadata requires exactly one element;
+- version code/name metadata is parsed correctly;
+- checksum-manifest output is deterministic and includes hash, byte size and path.
+
+The verifier itself runs later in CI against the actual Gradle-generated release outputs.
+
+## Partial Release-Signing Fail-Closed Regression
+
+`app/build.gradle.kts` permits production signing only when all four required environment values are supplied:
+
+- `SUDOKUNOVA_KEYSTORE_PATH`;
+- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
+- `SUDOKUNOVA_KEY_ALIAS`;
+- `SUDOKUNOVA_KEY_PASSWORD`.
+
+A partial configuration is an error. Standard CI deliberately invokes Gradle with only a harmless test alias and requires configuration to fail with the expected partial-signing message.
+
+This verifies a critical release invariant: an apparently configured signing environment must not silently fall back to an unsigned artifact.
+
+Do not place real signing secrets in test commands.
+
 ## Android Instrumentation Test Compilation
 
 Run:
@@ -148,16 +185,17 @@ Connected coverage includes important flows such as:
 
 - Home entry points;
 - Challenges/archive navigation;
-- Custom Puzzle reachability;
+- Custom Puzzle reachability and selected-state behavior;
 - History and Saved Puzzles;
 - Settings input controls;
 - Learn lesson/practice flow;
 - Room persistence/migration behavior;
 - transfer/backup integrated behavior;
 - selected Sudoku-cell accessibility semantics;
+- adaptive scroll reachability for hardened large-text layouts;
 - prior navigation/state regression paths preserved across milestones.
 
-The exact suite evolves with the codebase; use source under `app/src/androidTest/` as the authoritative list.
+The exact suite evolves with the codebase; source under `app/src/androidTest/` is authoritative.
 
 ## Stable Compose Test Selectors
 
@@ -168,9 +206,9 @@ Use stable test tags when:
 - multiple controls share the same label;
 - a LazyColumn item is off-screen/not composed;
 - a specific logical technique must be targeted deterministically;
-- a board cell needs stable coordinate identity.
+- a board/editor cell needs stable coordinate identity.
 
-Current examples include Learn list/technique tags and Sudoku board-cell tags.
+Current examples include Learn list/technique tags, Sudoku game-cell tags and Custom Puzzle editor-cell tags.
 
 Do not add test-only production APIs when normal semantics can provide a stable target.
 
@@ -181,11 +219,12 @@ Automated tests can reliably assert properties such as:
 - selected state;
 - content descriptions;
 - tagged element identity;
-- visible dialog/action state.
+- visible dialog/action state;
+- reachability after deliberate scrolling.
 
-They cannot replace manual TalkBack focus/gesture experience, font-scaling judgment, contrast review, or physical keyboard testing.
+They cannot replace real TalkBack focus/gesture experience, 200% font-layout judgment, high-contrast/reduced-motion device review, or physical keyboard testing.
 
-Use `ACCESSIBILITY.md` and `RELEASE_QA.md` for manual release expectations.
+Use `ACCESSIBILITY.md` and `V1_RELEASE_CANDIDATE.md` for stable-release manual evidence.
 
 ## Translation Verification
 
@@ -207,9 +246,9 @@ Run:
 python scripts/verify_no_secrets.py
 ```
 
-This catches committed signing/private-key material and obvious credential patterns covered by the v0.9 repository guard.
+This catches committed signing/private-key material and obvious credential patterns covered by the repository guard.
 
-It is not a replacement for manual review or platform secret scanning.
+It is not a replacement for manual review, GitHub secret scanning/push protection, or secure key storage.
 
 ## Android Lint
 
@@ -219,7 +258,7 @@ Debug and release lint:
 ./gradlew :app:lintDebug :app:lintRelease --stacktrace
 ```
 
-Release lint is part of v0.9 hardening because release-only configuration/resource behavior must be checked separately from debug.
+Release lint matters because release-only configuration/resource behavior can differ from debug.
 
 ## Build Verification
 
@@ -241,12 +280,42 @@ Release lint is part of v0.9 hardening because release-only configuration/resour
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-Successful release assembly verifies release compilation/shrinking but does not by itself prove production signing or device QA.
+Successful release assembly verifies release compilation/shrinking but does not by itself prove artifact structure/version metadata, production signing, certificate identity or device QA.
 
-## Recommended Broad Local Gate
+## Release Artifact Verification
+
+After the v1.0 RC unsigned release outputs exist, run:
+
+```bash
+python scripts/verify_release_outputs.py \
+  --apk app/build/outputs/apk/release/app-release-unsigned.apk \
+  --aab app/build/outputs/bundle/release/app-release.aab \
+  --mapping app/build/outputs/mapping/release/mapping.txt \
+  --metadata app/build/outputs/apk/release/output-metadata.json \
+  --expected-version-code 1000 \
+  --expected-version-name 1.0.0-rc.1 \
+  --output app/build/outputs/release-evidence/sha256.txt
+```
+
+The verifier requires:
+
+- non-empty APK/AAB/mapping outputs;
+- ZIP-valid APK/AAB archives;
+- core expected archive entries;
+- exactly one APK release metadata element;
+- exact RC `versionCode` / `versionName`;
+- a non-empty R8 mapping;
+- SHA-256/byte-size evidence for APK, AAB and mapping.
+
+CI uploads the checksum evidence with the short-lived release build outputs after success.
+
+This does **not** prove production signing or store acceptance.
+
+## Recommended Broad v1.0 RC Local Gate
 
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_release_outputs
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test \
   :app:testDebugUnitTest \
@@ -257,22 +326,31 @@ python scripts/verify_translations.py
   :app:assembleRelease \
   :app:bundleRelease \
   --stacktrace
+python scripts/verify_release_outputs.py \
+  --apk app/build/outputs/apk/release/app-release-unsigned.apk \
+  --aab app/build/outputs/bundle/release/app-release.aab \
+  --mapping app/build/outputs/mapping/release/mapping.txt \
+  --metadata app/build/outputs/apk/release/output-metadata.json \
+  --expected-version-code 1000 \
+  --expected-version-name 1.0.0-rc.1 \
+  --output app/build/outputs/release-evidence/sha256.txt
 ```
 
-Windows can use `gradlew.bat` with the same Gradle tasks.
+Windows can use `gradlew.bat` with the same Gradle tasks and PowerShell line continuation for the verifier command.
 
 Connected instrumentation should be run separately on a supported emulator/device.
 
 ## Determinism Rules
 
-Deterministic tests are strongly preferred for correctness-critical Sudoku logic.
+Deterministic tests are strongly preferred for correctness-critical Sudoku logic and release tooling.
 
 Use:
 
 - fixed seeds for generation;
 - fixed known puzzles for solver/teaching tests;
 - deterministic candidate-state fixtures for advanced technique evidence;
-- fixed timestamps/keys when testing challenge/history formats where practical.
+- fixed timestamps/keys when testing challenge/history formats where practical;
+- stable artifact manifest ordering and explicit expected version metadata.
 
 Avoid tests that depend on random global state, wall-clock timing, network availability, or iteration order that is not part of the contract.
 
@@ -293,7 +371,9 @@ Useful solver/generator evidence includes:
 
 Do not introduce an arbitrary millisecond threshold on shared CI without a measured baseline and variance analysis.
 
-See `PERFORMANCE.md`.
+Stable v1.0 still requires real measured startup/frame/memory/ANR evidence on representative target(s). Source-level review and deterministic corpus coverage do not satisfy that manual production gate.
+
+See `PERFORMANCE.md` and `V1_RELEASE_CANDIDATE.md`.
 
 ## Database Migration Tests
 
@@ -342,26 +422,39 @@ For an important defect:
 
 ## Exact-Head Rule
 
-A successful workflow run applies to the commit it tested.
+A successful workflow run applies only to the commit it tested.
 
 If the PR head changes, old success is historical evidence only. Before merge/release, verify the final exact head.
 
+For PR #27, both `Android CI` and `Android Instrumentation` must be green on the same final repository-side RC-preparation head before the PR leaves draft/merges.
+
 `what_changed.md` should record exact run IDs/head SHAs only after the runs complete.
 
-## Manual QA
+## Manual / Production QA
 
 Automated tests do not fully cover:
 
-- TalkBack experience;
+- TalkBack traversal/focus order;
 - 200% font scaling/layout judgment;
+- high-contrast/reduced-motion real-device behavior;
 - physical hardware keyboard behavior;
 - device-specific dynamic color;
 - install/update behavior across representative devices;
-- thermal/memory performance;
-- Play Store listing/asset correctness.
+- process-death/lifecycle behavior on real targets;
+- measured startup/frame/memory/ANR behavior;
+- production signing certificate identity;
+- signed production artifact installation;
+- distribution-platform AAB validation;
+- Play Store listing/privacy/assets correctness.
 
-Use `QA_MATRIX.md` and `RELEASE_QA.md`. Do not mark manual rows as passed until they were actually performed.
+Use `V1_RELEASE_CANDIDATE.md` as the authoritative v1.0 worksheet and `PLAY_STORE_RELEASE.md` for publication preparation. Do not mark any manual row passed until it was actually performed.
+
+## Stable v1.0 Evidence Boundary
+
+A green PR #27 can prove that repository-side RC preparation is correct and reproducible. It cannot by itself prove that stable `v1.0.0` is ready to ship.
+
+Stable promotion additionally requires the actual manual/production evidence described above plus a final exact stable source SHA, signed artifacts, certificate verification, release hashes and a deliberate `SHIP` decision.
 
 ## CI Reference
 
-See `CI_CD.md` for the complete GitHub Actions gate and artifact policy.
+See `CI_CD.md` for the complete GitHub Actions gate and artifact policy, `PRODUCTION_SIGNING.md` for signing, and `RELEASING.md` for the RC-to-stable process.

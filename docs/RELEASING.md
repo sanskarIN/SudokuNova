@@ -1,6 +1,6 @@
 # Releasing SudokuNova
 
-SudokuNova is currently pre-1.0. This document defines the controlled release process. It does not imply that a production package has already been signed, published, Play-listed, or manually device-verified.
+SudokuNova is currently preparing its first v1.0 release candidate. This document defines the controlled release process. It does not imply that a production package has already been signed, Play-listed, manually device-verified, or published.
 
 ## Release Principles
 
@@ -11,36 +11,51 @@ A release is acceptable only when:
 - privacy/security documentation matches the binary;
 - required automated gates pass on the exact release commit;
 - release APK/AAB/R8 processing succeeds;
+- release artifacts match expected version metadata and checksum evidence exists;
 - required manual QA is performed and recorded;
 - signing material stays outside version control;
+- signed artifact identity is verified;
 - release notes describe actual shipped behavior.
 
 Do not lower these requirements to meet an arbitrary date.
+
+## Current v1.0 RC line
+
+The active candidate is:
+
+- branch: `release/v1.0-rc1-prep`;
+- draft PR: `#27`;
+- `versionCode = 1000`;
+- `versionName = 1.0.0-rc.1`.
+
+If version code `1000` is accepted by a distribution track during RC testing, the final stable build must use a strictly higher version code.
+
+Stable `v1.0.0` must not be tagged simply because RC1 compiles. Use [v1.0 RC Preparation](V1_RELEASE_PREP.md) and [v1.0 RC Evidence](V1_RELEASE_CANDIDATE.md) as the promotion gates.
 
 ## Versioning
 
 Use Semantic Versioning where practical:
 
 - `0.x.y` — pre-1.0 development;
+- `1.0.0-rc.N` — stable-release candidate;
 - `1.0.0` — first stable Classic Sudoku release;
 - `1.x.0` — backward-compatible feature release;
 - `1.x.y` — bug/security/maintenance fix;
 - `2.0.0` — intentional incompatible product/data/API change when justified.
 
-Android `versionCode` must increase monotonically for distributed builds.
-
-The current v0.9 development line uses `versionCode 900` / `versionName 0.9.0` on its branch. Verify build configuration immediately before release rather than relying on this sentence indefinitely.
+Android `versionCode` must increase monotonically for distributed builds and must not reuse a code already accepted by a store/distribution track.
 
 ## 1. Freeze Scope
 
-Before creating a release candidate:
+Before creating or refreshing a release candidate:
 
 - stop adding unrelated features;
-- identify the intended release commit/branch;
+- identify the intended release branch/commit;
 - ensure root `ROADMAP.md` matches included/deferred scope;
 - resolve release-blocking issues;
 - review open PRs/issues for known blockers;
-- avoid dependency/toolchain churn unless required for release correctness/security.
+- avoid dependency/toolchain churn unless required for release correctness/security;
+- keep the Classic 9×9 product contract stable.
 
 ## 2. Documentation Audit
 
@@ -64,16 +79,34 @@ Review at minimum:
 - `ROADMAP.md`;
 - `RELEASE_CHECKLIST.md`;
 - `RELEASE_QA.md`;
+- `V1_RELEASE_PREP.md`;
+- `V1_RELEASE_CANDIDATE.md`;
+- `PRODUCTION_SIGNING.md`;
+- `PLAY_STORE_RELEASE.md`;
+- `GITHUB_REPOSITORY_SETTINGS.md`;
 - `what_changed.md`.
 
 Remove stale “planned” statements for implemented work and stale “implemented” statements for removed work.
 
-## 3. Local/CI Verification
+## 3. Repository Security and Release-Verifier Tests
 
-Recommended broad local verification:
+Run:
 
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_release_outputs
+python scripts/verify_translations.py
+```
+
+The normal CI also verifies that a partial release-signing environment fails closed.
+
+## 4. Local/CI Verification
+
+Recommended broad local non-connected verification:
+
+```bash
+python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_release_outputs
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test \
   :app:testDebugUnitTest \
@@ -88,42 +121,48 @@ python scripts/verify_translations.py
 
 Windows can use `gradlew.bat` with the same Gradle tasks.
 
-The pull request must then pass the repository's GitHub Actions gates on the exact final head:
+The pull request must then pass on the exact final head:
 
 - Android CI;
-- Android Instrumentation (API 35 connected suite).
+- Android Instrumentation (API-35 connected suite).
 
-See `CI_CD.md`.
+No earlier-head run counts after the candidate changes.
 
-## 4. Release Build Outputs
+## 5. Verify Release Outputs
 
-### Debug APK
-
-```bash
-./gradlew :app:assembleDebug
-```
-
-Used for development/testing only.
-
-### Release APK
+For the unsigned RC verification path, after release APK/AAB/mapping are built:
 
 ```bash
-./gradlew :app:assembleRelease
+python scripts/verify_release_outputs.py \
+  --apk app/build/outputs/apk/release/app-release-unsigned.apk \
+  --aab app/build/outputs/bundle/release/app-release.aab \
+  --mapping app/build/outputs/mapping/release/mapping.txt \
+  --metadata app/build/outputs/apk/release/output-metadata.json \
+  --expected-version-code 1000 \
+  --expected-version-name 1.0.0-rc.1 \
+  --output app/build/outputs/release-evidence/sha256.txt
 ```
 
-The release build enables minification and resource shrinking. It should produce R8 mapping output.
+The verifier checks archive structure, exact APK output version metadata, a non-empty R8 mapping and SHA-256/size evidence.
 
-### Release AAB
+This is build/artifact evidence, not production-signing evidence.
 
-```bash
-./gradlew :app:bundleRelease
-```
+## 6. Production Signing
 
-AAB is the primary store-oriented Android bundle format.
+Follow [Production Signing](PRODUCTION_SIGNING.md).
 
-CI release outputs are verification artifacts unless production signing/provenance is explicitly configured and reviewed.
+The release build supports four secret-backed environment variables:
 
-## 5. Production Signing
+- `SUDOKUNOVA_KEYSTORE_PATH`;
+- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
+- `SUDOKUNOVA_KEY_ALIAS`;
+- `SUDOKUNOVA_KEY_PASSWORD`.
+
+Rules:
+
+- none supplied → unsigned CI-safe release verification;
+- all supplied → signing enabled;
+- partial configuration → Gradle fails closed.
 
 Never commit production signing material.
 
@@ -136,19 +175,23 @@ Do not commit:
 - service-account credentials;
 - signing tokens.
 
-Production signing should come from a controlled local/CI secret environment.
+Production signing must come from a controlled local/CI secret environment with least privilege, masked logs and secure key recovery/backup.
 
-Requirements:
+## 7. Verify Signed Artifact Identity
 
-- least-privilege access;
-- secrets masked from logs;
-- no secrets in Gradle source/version control;
-- keystore backup/recovery handled securely outside the public repository;
-- final signed artifact verified after signing.
+After producing the actual signed APK, verify it with Android SDK Build Tools:
 
-The repository's secret guard is defense-in-depth, not a signing system.
+```bash
+apksigner verify --verbose --print-certs app-release.apk
+```
 
-## 6. R8 / Resource-Shrinking Validation
+Record the expected certificate digest/fingerprint outside sensitive logs and compare it against the intended production/upload certificate.
+
+For the AAB, complete the validation required by the selected distribution workflow/platform and record the result.
+
+A successful Gradle build alone is not proof that the intended key was used.
+
+## 8. R8 / Resource-Shrinking Validation
 
 Release smoke testing must use the release build because R8/resource shrinking can expose defects not present in debug.
 
@@ -168,11 +211,11 @@ Verify at least:
 
 If a release-only defect occurs, add the narrowest correct keep/consumer rule or code fix. Do not globally disable shrinking as a first response.
 
-## 7. Manual Release QA
+## 9. Manual Release QA
 
-Execute `RELEASE_QA.md` / `QA_MATRIX.md` on actual targets available to the release process.
+Use [v1.0 Release Candidate Evidence](V1_RELEASE_CANDIDATE.md) as the authoritative worksheet. `RELEASE_QA.md` and `QA_MATRIX.md` remain useful supporting matrices.
 
-Important manual categories:
+Manual categories include:
 
 - install/upgrade/startup;
 - new game/completion/resume;
@@ -183,17 +226,18 @@ Important manual categories:
 - Settings/statistics;
 - backup/transfer;
 - orientation/window sizing;
+- 200% font scaling;
 - high contrast;
 - reduced motion;
-- large font scaling;
-- TalkBack;
+- TalkBack/focus order;
 - hardware keyboard;
-- performance/ANR smoke;
-- release APK/AAB behavior.
+- process death/lifecycle;
+- measured performance/ANR/memory;
+- signed release APK/AAB behavior.
 
 Do not mark a device row as passed because CI passed on an emulator.
 
-## 8. Data/Privacy/Security Review
+## 10. Data/Privacy/Security Review
 
 Before release verify:
 
@@ -205,21 +249,37 @@ Before release verify:
 - unique-solution import/custom checks remain intact;
 - Room migrations are explicit and tested;
 - dependencies/licenses/notices are current;
-- no secrets/signing files are committed.
+- no secrets/signing files are committed;
+- current store privacy/data declarations match the exact stable binary.
 
-## 9. Store Metadata Preparation
+## 11. GitHub Repository Settings
 
-Before a Play Store submission, verify the **current** Play requirements at release time rather than relying on old documentation.
+Follow [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md).
+
+At v1.0 RC-prep start, GitHub reported `main` as unprotected. Before stable release, enable an appropriate branch-protection/ruleset configuration where repository administration permits it.
+
+Recommended required checks:
+
+- `Android CI` / `verify`;
+- `Android Instrumentation` / `connected-tests`.
+
+Do not claim repository protection until it has actually been enabled in GitHub settings.
+
+## 12. Store Metadata Preparation
+
+Use [Play Store Release Preparation](PLAY_STORE_RELEASE.md).
+
+Before a store submission, verify the **current** distribution-platform requirements at release time rather than relying on old documentation.
 
 Prepare and validate:
 
 - app name;
 - short/full description;
 - icon/feature graphic;
-- real screenshots from the released UI;
-- privacy policy;
-- Data Safety answers matching the binary;
-- content rating;
+- real screenshots from the release build;
+- privacy policy URL;
+- data/privacy declarations matching the binary;
+- current content/app-access/other required declarations;
 - target API compliance;
 - signed AAB;
 - release notes;
@@ -227,7 +287,7 @@ Prepare and validate:
 
 Do not use mock screenshots showing unimplemented features.
 
-## 10. Final Exact-Head Evidence
+## 13. Final Exact-Head Evidence
 
 Immediately before merge/tag/release record:
 
@@ -235,40 +295,56 @@ Immediately before merge/tag/release record:
 - versionCode/versionName;
 - Android CI run ID/status;
 - API-35 instrumentation run ID/status;
+- APK/AAB/mapping SHA-256 evidence;
 - release build outputs verified;
 - manual QA evidence actually completed;
-- known limitations/blockers (should be none classified release-blocking).
+- production certificate identity evidence;
+- known limitations/blockers.
 
-Record the evidence in `what_changed.md` and release notes as appropriate.
+Record exact repository history/evidence in `what_changed.md` and release notes as appropriate.
 
-If the head changes after recording evidence, rerun the required gates.
+If the head changes after recording evidence, rerun the required gates and determine which manual checks must be repeated.
 
-## 11. Merge
+## 14. Merge the RC Preparation PR
 
-For milestone PRs, merge only after the final intended PR head is verified.
+PR #27 can be merged after all repository-side work is complete and the exact final head passes both required automated workflows with no repository-blocking defect.
 
-Use the repository's chosen merge strategy and preserve enough history/evidence to trace the release implementation.
+Merging the RC-preparation PR does **not** automatically mean stable v1.0 is approved. Manual/production evidence may remain open in issue #5.
 
-Do not close the milestone issue as completed before the intended merge succeeds if the issue process states closure follows merge.
+## 15. Stable Promotion
 
-## 12. Tag
+Once the RC evidence worksheet reaches a real ship decision:
 
-After the exact release commit is final and verified:
+1. choose a stable version code strictly higher than every accepted distributed version code;
+2. set `versionName = "1.0.0"`;
+3. run all exact-head automated gates again;
+4. build and verify signed stable artifacts;
+5. repeat manual checks affected by any post-RC changes;
+6. update changelog/roadmap/README/what_changed with actual stable evidence;
+7. confirm no release blocker remains.
+
+Do not simply rename an unvalidated RC build to stable.
+
+## 16. Tag
+
+After the exact stable release commit is final and verified:
 
 ```bash
-git tag -a vX.Y.Z -m "SudokuNova vX.Y.Z"
-git push origin vX.Y.Z
+git tag -a v1.0.0 -m "SudokuNova v1.0.0"
+git push origin v1.0.0
 ```
 
 Do not tag an unverified intermediate commit.
 
-If the tag is wrong, correct the release process deliberately; avoid silently moving published tags without clear reason/communication.
+If a published tag is wrong, correct the release process deliberately; avoid silently moving published tags.
 
-## 13. GitHub Release
+## 17. GitHub Release
+
+`.github/release.yml` provides generated release-note categories, but generated notes are only a starting point.
 
 A GitHub Release should include:
 
-- tag/version;
+- exact tag/version;
 - release date;
 - concise notes derived from `CHANGELOG.md`;
 - minimum supported Android version;
@@ -280,21 +356,23 @@ A GitHub Release should include:
 
 If binary artifacts are attached, clearly state whether they are signed production artifacts or development/testing artifacts.
 
-## 14. Play Store Submission
+Never attach a keystore, secret, `local.properties`, private test data or internal-only log.
+
+## 18. Store Submission
 
 Submit the final signed AAB that was actually validated.
 
 After upload:
 
 - review automated store checks;
-- verify generated APK splits/device availability;
+- verify generated APK splits/device availability where the platform exposes them;
 - confirm listing/version text;
-- use staged rollout when appropriate;
+- use the safest appropriate testing/staged rollout path;
 - monitor crash/ANR/user reports during rollout.
 
 Do not claim store publication until the store actually accepts/publishes the release.
 
-## 15. Post-Release Monitoring
+## 19. Post-Release Monitoring
 
 After release:
 
@@ -337,11 +415,16 @@ For a vulnerability:
 
 Use these files together:
 
-- `BUILDING.md` — how to build outputs;
+- `V1_RELEASE_PREP.md` — current RC repository handoff;
+- `BUILDING.md` — build outputs and artifact verifier;
+- `PRODUCTION_SIGNING.md` — secret-backed signing and certificate checks;
+- `V1_RELEASE_CANDIDATE.md` — manual/production evidence worksheet;
+- `PLAY_STORE_RELEASE.md` — listing/privacy/store preparation;
+- `GITHUB_REPOSITORY_SETTINGS.md` — branch/repository protection checklist;
 - `CI_CD.md` — automated gates;
 - `TESTING.md` — test strategy;
-- `RELEASE_CHECKLIST.md` — checklist;
-- `RELEASE_QA.md` — evidence-oriented QA matrix;
+- `RELEASE_CHECKLIST.md` — general checklist;
+- `RELEASE_QA.md` — supporting evidence matrix;
 - `RELEASING.md` — process/order (this file);
-- root `CHANGELOG.md` — shipped changes;
+- root `CHANGELOG.md` — shipped/unreleased changes;
 - root `what_changed.md` — detailed exact evidence/history.
