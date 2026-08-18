@@ -13,7 +13,9 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 ## Current Development Status
 
-The current development line is **v0.8.0 — Learning and Advanced Hints**. v0.1 through v0.7 functionality is already integrated on `main`; v0.8 is being verified through the repository's standard Android CI and API-35 connected instrumentation gates before merge.
+**v0.8.0 — Learning and Advanced Hints is merged and verified on `main`.** Its final implementation head passed the repository's standard Android CI and API-35 connected instrumentation gates before PR #22 was merged.
+
+The current focused development line is **v0.9 — Release Hardening**, tracked in issue #23. v0.9 is intentionally focused on accessibility, performance, security/privacy, release-build verification, QA, and crash/ANR hardening rather than adding another large feature family.
 
 Features below are listed as implemented only when code exists in this repository.
 
@@ -112,20 +114,25 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - API-35 connected Compose instrumentation gate
 - Open-source repository policies, support documentation, and contributor guidance
 
-## Next Milestone
+## Current Milestone — v0.9 Release Hardening
 
-After v0.8 is merged, v0.9 focuses on release hardening:
+Issue #23 covers the current release-hardening line. Planned work includes:
 
 - full regression-suite audit;
 - TalkBack/focus-order and large-font QA;
+- high-contrast/reduced-motion review;
 - performance and memory audit;
-- security/privacy review;
+- main-thread I/O/CPU audit;
+- Room/DataStore integrity and migration audit;
+- security/privacy and import/export/backup audit;
 - dependency/license audit;
-- device QA matrix;
-- release shrinking/signing verification;
-- final UI/store-asset polish.
+- release R8/shrinking verification;
+- debug APK, release APK, and release AAB verification;
+- device QA matrix and manual release checklist;
+- crash/ANR/lifecycle restoration hardening;
+- final UI/store-asset and documentation polish.
 
-See [ROADMAP.md](ROADMAP.md) for complete milestone tracking.
+See [ROADMAP.md](ROADMAP.md) and issue #23 for complete milestone tracking.
 
 ## Technology Stack
 
@@ -222,9 +229,11 @@ Important suites include:
 
 GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the final clean head.
 
+The verified v0.8 merge gate used standard Android CI run `32121249242` and API-35 connected run `32121249202` on final PR head `b63c8019cfc2b6f606247af1543586a7ede1b3df`.
+
 ## Privacy
 
-SudokuNova is designed to work without an account, login, analytics, or advertising in the open-source base application. Gameplay settings, active-game state, statistics, structured local records, and v0.8 learning progress are stored locally. No sensitive Android permissions are requested for core play.
+SudokuNova is designed to work without an account, login, analytics, or advertising in the open-source base application. Gameplay settings, active-game state, statistics, structured local records, and learning progress are stored locally. No sensitive Android permissions are requested for core play.
 
 Sharing/export happens only through explicit user actions and Android system UI.
 
@@ -234,7 +243,7 @@ See [docs/PRIVACY.md](docs/PRIVACY.md) and [docs/DATA_STORAGE.md](docs/DATA_STOR
 
 The project uses semantic cell descriptions, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. v0.8 adds semantics for hint sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
 
-Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests.
+Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests. v0.9 explicitly audits these release requirements.
 
 See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 
