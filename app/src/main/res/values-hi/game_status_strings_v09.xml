@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v09_game_abandoned">खेल समाप्त हो गया। होम से नई पहेली शुरू करें।</string>
+    <string name="v09_game_custom_contradiction">कस्टम पहेली के संकेत आपस में टकराते हैं।</string>
+    <string name="v09_game_custom_not_unique">खेलने से पहले कस्टम पहेली का ठीक एक समाधान होना चाहिए।</string>
+    <string name="v09_game_creation_failed">पहेली तैयार नहीं की जा सकी। नई पहेली शुरू करके फिर प्रयास करें।</string>
+</resources>
