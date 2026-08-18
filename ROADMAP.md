@@ -141,6 +141,10 @@ Release-hardening work:
 
 - [x] Begin automated regression-suite audit and add bounded-backup edge coverage
 - [ ] Complete accessibility semantics and focus-order audit across every major screen
+- [x] Complete source-level selected-state/large-text accessibility hardening across the main current screens
+- [x] Make settings toggle rows single semantic switch targets and prevent chip-group large-text overflow
+- [x] Harden Game/History/Learn/Custom/Challenges/Saved/Share/Transfer action layouts against obvious large-text collisions
+- [x] Expose Number-first digit selection and Notes mode semantically
 - [ ] Complete large-font and adaptive-layout manual QA
 - [ ] Complete high-contrast and reduced-motion manual QA
 - [ ] Complete performance and memory audit
@@ -169,6 +173,7 @@ Release-hardening work:
 - [x] Move Custom Puzzle status/error presentation to paired English/Hindi resources
 - [x] Move game-load/abandon error presentation to typed localized resources
 - [x] Remove hardcoded English grammar from the game completion summary
+- [x] Align the in-app English/Hindi privacy summary with current DataStore, Room, and explicit transfer/backup behavior
 - [ ] Final standard CI green on exact clean head
 - [ ] Final API-35 connected gate green on exact clean head
 - [ ] Mark PR #25 ready only after release-blocking audits and exact-head gates are complete
