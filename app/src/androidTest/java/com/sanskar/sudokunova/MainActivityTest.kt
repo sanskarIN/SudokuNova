@@ -4,9 +4,16 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
+import com.sanskar.sudokunova.engine.LogicalTechnique
+import com.sanskar.sudokunova.ui.learn.LEARN_LIST_TEST_TAG
+import com.sanskar.sudokunova.ui.learn.practiceChoiceTestTag
+import com.sanskar.sudokunova.ui.learn.practiceTestTag
+import com.sanskar.sudokunova.ui.learn.studyTestTag
 import org.junit.Rule
 import org.junit.Test
 
@@ -65,18 +72,20 @@ class MainActivityTest {
 
     @Test
     fun learnCenterSupportsLessonAndPracticeFlow() {
+        val technique = LogicalTechnique.NAKED_SINGLE
+
         composeRule.onNodeWithText("Learn").performScrollTo().performClick()
         composeRule.onNodeWithText("Learning progress").assertIsDisplayed()
-        composeRule.onNodeWithText("Naked Single").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(LEARN_LIST_TEST_TAG).performScrollToIndex(5)
 
-        composeRule.onAllNodesWithText("Study technique").onFirst().performScrollTo().performClick()
-        composeRule.onNodeWithText("Naked Single").assertIsDisplayed()
+        composeRule.onNodeWithTag(studyTestTag(technique)).assertIsDisplayed().performClick()
+        composeRule.onAllNodesWithText("Naked Single").onFirst().assertIsDisplayed()
         composeRule.onNodeWithText("Close practice").performClick()
 
-        composeRule.onAllNodesWithText("Practice").onFirst().performScrollTo().performClick()
+        composeRule.onNodeWithTag(practiceTestTag(technique)).assertIsDisplayed().performClick()
         composeRule.onNodeWithText("Technique practice").assertIsDisplayed()
         composeRule.onNodeWithText("Which technique explains this vetted logical step?").assertIsDisplayed()
-        composeRule.onNodeWithText("Naked Single").performClick()
+        composeRule.onNodeWithTag(practiceChoiceTestTag(technique)).performClick()
         composeRule.onNodeWithText("Correct. This evidence matches Naked Single.").assertIsDisplayed()
     }
 }
