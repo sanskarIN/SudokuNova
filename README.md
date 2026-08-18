@@ -19,6 +19,38 @@ The current focused development line is **v0.9 — Release Hardening**, tracked 
 
 Features below are listed as implemented only when code exists in this repository.
 
+## Complete Documentation
+
+The complete categorized documentation hub is:
+
+**[docs/README.md](docs/README.md)**
+
+High-value entry points:
+
+- [User Guide](docs/USER_GUIDE.md)
+- [Complete Feature Reference](docs/FEATURES.md)
+- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Sudoku Engine](docs/SUDOKU_ENGINE.md)
+- [Learning and Advanced Hints](docs/LEARNING_AND_HINTS.md)
+- [Data Storage](docs/DATA_STORAGE.md)
+- [Data Formats](docs/DATA_FORMATS.md)
+- [Backup and Restore](docs/BACKUP_RESTORE.md)
+- [Testing](docs/TESTING.md)
+- [CI/CD](docs/CI_CD.md)
+- [Performance / ANR Hardening](docs/PERFORMANCE.md)
+- [Accessibility](docs/ACCESSIBILITY.md)
+- [Localization](docs/LOCALIZATION.md)
+- [Privacy](docs/PRIVACY.md)
+- [Security Design](docs/SECURITY.md)
+- [Building APK/AAB](docs/BUILDING.md)
+- [Releasing](docs/RELEASING.md)
+- [Release Checklist](docs/RELEASE_CHECKLIST.md)
+- [Release QA](docs/RELEASE_QA.md)
+- [Maintainer Guide](docs/MAINTAINER_GUIDE.md)
+- [Documentation Standards](docs/DOCUMENTATION_STANDARDS.md)
+- [Glossary](docs/GLOSSARY.md)
+
 ## Implemented
 
 ### Core Sudoku
@@ -108,15 +140,18 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - Translation parity verification in CI
 - Semantic Sudoku cell descriptions
 - Teaching evidence semantics
+- Selected-cell semantics in the v0.9 hardening line
 - Adaptive layouts
 - Original launcher, monochrome, and splash vector assets
 - GitHub Actions unit-test/lint/build quality gate
+- Debug/release lint and release APK/AAB/R8 verification in v0.9
+- Repository secret/signing-material guard in v0.9 CI
 - API-35 connected Compose instrumentation gate
 - Open-source repository policies, support documentation, and contributor guidance
 
 ## Current Milestone — v0.9 Release Hardening
 
-Issue #23 covers the current release-hardening line. Planned work includes:
+Issue #23 covers the current release-hardening line. Planned/ongoing work includes:
 
 - full regression-suite audit;
 - TalkBack/focus-order and large-font QA;
@@ -169,6 +204,8 @@ The Sudoku engine deliberately has no Android dependency so it can be tested qui
 
 Detailed design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
+Repository map: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
+
 ## Requirements
 
 - Android Studio compatible with AGP 9.3.1
@@ -201,12 +238,15 @@ gradlew.bat :app:assembleDebug
 Run the standard local verification tasks:
 
 ```bash
+python scripts/verify_no_secrets.py
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test --stacktrace
 ./gradlew :app:testDebugUnitTest --stacktrace
 ./gradlew :app:assembleDebugAndroidTest --stacktrace
-./gradlew :app:lintDebug --stacktrace
+./gradlew :app:lintDebug :app:lintRelease --stacktrace
 ./gradlew :app:assembleDebug --stacktrace
+./gradlew :app:assembleRelease --stacktrace
+./gradlew :app:bundleRelease --stacktrace
 ```
 
 More build types, executable outputs, tooling requirements, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md).
@@ -221,27 +261,31 @@ Important suites include:
 - uniqueness and difficulty corpus tests;
 - game-state codec and persistence model tests;
 - transfer/import/backup tests;
+- bounded backup file-I/O tests;
 - teaching-trace solution-safety tests;
 - controlled Hidden Pair, Naked Triple, Hidden Triple, and X-Wing evidence tests;
 - practice-catalog completeness/determinism tests;
 - learning-progress JVM tests;
-- Compose connected smoke tests on API 35.
+- Compose/Room connected tests on API 35;
+- selected Sudoku-cell semantics regression coverage.
 
-GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the final clean head.
+GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the final clean head when those gates are required for the milestone.
 
 The verified v0.8 merge gate used standard Android CI run `32121249242` and API-35 connected run `32121249202` on final PR head `b63c8019cfc2b6f606247af1543586a7ede1b3df`.
 
+See [docs/TESTING.md](docs/TESTING.md) and [docs/CI_CD.md](docs/CI_CD.md).
+
 ## Privacy
 
-SudokuNova is designed to work without an account, login, analytics, or advertising in the open-source base application. Gameplay settings, active-game state, statistics, structured local records, and learning progress are stored locally. No sensitive Android permissions are requested for core play.
+SudokuNova is designed to work without an account, login, analytics, advertising, or SudokuNova-operated cloud backend in the open-source base application. Gameplay settings, active-game state, statistics, structured local records, challenges, saved puzzles, History, and learning progress are stored locally according to the current DataStore/Room model.
 
-Sharing/export happens only through explicit user actions and Android system UI.
+Sharing/export happens only through explicit user actions and Android system/platform surfaces. The user-controlled `SNB1` backup is integrity-checked but is not encrypted.
 
-See [docs/PRIVACY.md](docs/PRIVACY.md) and [docs/DATA_STORAGE.md](docs/DATA_STORAGE.md).
+See [docs/PRIVACY.md](docs/PRIVACY.md), [docs/DATA_STORAGE.md](docs/DATA_STORAGE.md), and [docs/DATA_FORMATS.md](docs/DATA_FORMATS.md).
 
 ## Accessibility
 
-The project uses semantic cell descriptions, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. v0.8 adds semantics for hint sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
+The project uses semantic cell descriptions, selected-state semantics, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. Structured hints add semantics for sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
 
 Accessibility remains a release quality gate and requires manual TalkBack/large-font verification in addition to automated tests. v0.9 explicitly audits these release requirements.
 
@@ -249,7 +293,7 @@ See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 
 ## Contributing
 
-Contributions to code, tests, documentation, accessibility, translations, and design are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and read the [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions to code, tests, documentation, accessibility, translations, and design are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/CONTRIBUTING_GUIDE.md](docs/CONTRIBUTING_GUIDE.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 Use Conventional Commits such as:
 
@@ -261,11 +305,13 @@ a11y: improve board focus descriptions
 docs: document release verification
 ```
 
-For a new advanced Sudoku technique, implementation, structured evidence, deterministic correctness tests, localized explanation resources, and learning/practice representation should land together.
+For a new advanced Sudoku technique, implementation, structured evidence, deterministic correctness tests, localized explanation resources, accessibility presentation, and learning/practice representation should land together.
 
 ## Security
 
 Do not report exploitable vulnerabilities in public issues. Follow [SECURITY.md](SECURITY.md) for responsible disclosure guidance.
+
+Technical design: [docs/SECURITY.md](docs/SECURITY.md)
 
 ## Support SudokuNova
 
