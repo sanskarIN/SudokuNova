@@ -37,6 +37,9 @@ jobs:
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
 
+      - name: Verify release and security hygiene
+        run: python scripts/verify_release_hygiene.py
+
       - name: Verify engine tests
         run: ./gradlew :sudoku-engine:test --stacktrace
 
