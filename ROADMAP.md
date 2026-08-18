@@ -185,22 +185,51 @@ v0.9 deliberately completes **source, automated, documentation, and repository h
 
 ## v1.0 — Stable Classic Sudoku Release
 
-Status: **Next — issue #5**
+Status: **In progress — issue #5 / draft PR #27 / RC1 preparation**
 
-The remaining v1.0 work is evidence-driven production validation, not another uncontrolled feature-expansion phase.
+The v1.0 line is evidence-driven production validation, not another uncontrolled feature-expansion phase.
 
-Required stable-release validation includes:
+### Repository-side RC1 preparation
+
+- [x] Create `release/v1.0-rc1-prep` from verified post-v0.9 `main`
+- [x] Open draft PR #27 for the authoritative v1.0 RC preparation path
+- [x] Advance candidate metadata to `versionCode 1000` / `versionName 1.0.0-rc.1`
+- [x] Add deterministic release APK/AAB/R8 structural/version verifier
+- [x] Add SHA-256/byte-size release evidence generation
+- [x] Add direct unit coverage for the release verifier
+- [x] Add optional secret-backed release signing through four environment variables
+- [x] Fail closed when release signing is partially configured
+- [x] Add CI regression proving partial signing fails closed
+- [x] Add CI release-output verification/checksum gate and artifact retention
+- [x] Add production signing handbook
+- [x] Add Play Store/listing/privacy/release preparation guide
+- [x] Add v1.0 manual release-candidate evidence worksheet
+- [x] Add generated GitHub release-note configuration
+- [x] Add repository-settings/branch-protection checklist
+- [x] Add v1.0 RC repository handoff documentation
+- [ ] Enable `main` protection/ruleset and required checks in GitHub repository settings; current connected GitHub tool does not expose this write action
+- [ ] Final exact-head Android CI green for PR #27
+- [ ] Final exact-head API-35 connected gate green for PR #27
+- [ ] Record final RC repository-side verification evidence in `what_changed.md`
+- [ ] Promote/merge PR #27 only after repository-side exact-head gates are green and no repository-blocking defect remains
+
+### Required stable-release manual/production validation
 
 - [ ] real TalkBack traversal/focus-order QA on representative target(s)
 - [ ] representative 200% font-scale, narrow-phone, tablet/large-window, resize/orientation QA
 - [ ] high-contrast and reduced-motion manual verification
 - [ ] measured startup/frame/memory/ANR evidence on representative targets
 - [ ] process-death and lifecycle-restoration manual scenarios
-- [ ] secure production signing outside Git
-- [ ] signed release APK/AAB installation/signature verification
+- [ ] secure production signing outside Git using the intended production/upload key
+- [ ] signed release APK certificate/signature verification
+- [ ] signed production/production-equivalent APK installation smoke QA
+- [ ] AAB distribution-platform validation
 - [ ] final R8 release-variant smoke QA on signed artifacts
 - [ ] real store/repository screenshots and listing/privacy disclosure review
-- [ ] final release notes, immutable tag, GitHub Release, and Android publication only after evidence exists
+- [ ] final stable version-code decision after any RC store-track uploads
+- [ ] final release notes, immutable `v1.0.0` tag, GitHub Release, and Android publication only after evidence exists
+
+### Stable v1.0 product contract
 
 Stable v1.0 must preserve:
 
@@ -218,6 +247,10 @@ Stable v1.0 must preserve:
 - Settings, About, Support, privacy/security documentation
 - complete CI/tests/build/release documentation
 - secure production-ready APK/AAB release process
+
+### Stable promotion rule
+
+Do not tag `v1.0.0` until the exact source commit has both automated and required manual/production evidence. If RC version code `1000` is accepted by a store/distribution track, the final stable build must use a strictly higher version code.
 
 ## v1.x — Carefully Selected Extensions
 
