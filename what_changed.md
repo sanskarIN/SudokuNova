@@ -1030,6 +1030,53 @@ Paired v0.9 resources were added for all validation/solve states:
 
 Manual TalkBack traversal/focus-order, representative 200% font/device layout checks, high-contrast/reduced-motion device QA, measured memory/frame/ANR traces, signed-production artifact checks, and store-readiness checks remain unclaimed. Final exact-head Android CI/API-35 evidence is also still pending for the final verification candidate after this implementation-log correction.
 
+## v0.9 Large-Text, Control-State, and Privacy Source Audit — 2026-08-18
+
+The accessibility source pass continued across the currently shipped screens. The purpose was to remove obvious fixed-width layout pressure and semantics gaps before manual large-font/TalkBack QA, without treating source inspection as device evidence.
+
+### Settings
+
+- Whole toggle rows now form a single merged `Role.Switch` interaction target; the trailing switch displays state without creating a second click target.
+- Theme, input-mode, and mistake-limit chips can horizontally scroll rather than overflow a single row at larger text sizes.
+
+### Game controls
+
+- Number-first persistent digit selection exposes semantic selected state.
+- Notes mode exposes semantic selected state.
+- One-shot actions such as Undo/Redo/Erase/Hint/Pause/Restart do not falsely expose toggle selection semantics.
+- Game action rows can horizontally scroll so longer localized labels remain reachable at large font scales.
+
+### Custom Puzzle
+
+- Text actions (Erase, Clear, Validate, Solve, Save, Play) are stacked at full width; the compact numeric pad remains a digit-only grid.
+- Existing editor-cell selected/conflict/coordinate semantics and connected coverage remain intact.
+
+### History, Challenges, Saved Puzzles, Learn
+
+- History scope/difficulty filters, metric rows, and badge rows can horizontally scroll instead of forcing long content into narrow columns.
+- Challenge title, difficulty, and completion state are vertically stacked rather than sharing a cramped status row.
+- Learn Study/Practice actions are full-width stacked controls.
+- Empty `Text("")` layout placeholders found in History, Challenges, Saved Puzzles, and Learn were replaced with non-semantic spacing.
+
+### Sharing and Backup & Transfer
+
+- Puzzle-code Copy/Share actions are full-width stacked buttons.
+- Backup & Transfer Copy/Share/Export/Import actions are full-width stacked buttons, preserving the existing explicit-user-action and bounded file-I/O behavior.
+
+### Home / in-app privacy
+
+- Home uses the maintained `v04_made_by` resource instead of duplicating the credit as hardcoded UI text.
+- English and Hindi in-app privacy summaries were corrected from the obsolete DataStore-only description. They now describe local settings, active game, statistics, learning progress, History, Saved Puzzles, and challenge records through DataStore + Room, and explicitly state that sharing/document import/export/backup/restore occur only after user actions through Android system surfaces.
+
+### Documentation synchronization
+
+- `CHANGELOG.md` records these source-level large-text/semantics/privacy changes while keeping manual QA pending.
+- `ROADMAP.md` distinguishes completed source-level hardening from still-unchecked full accessibility/focus-order and manual 200% font QA.
+- `docs/ACCESSIBILITY.md` now documents Settings switch semantics, Number-first/Notes selected state, source-level large-text defenses, and the remaining manual release checklist.
+- `docs/V09_HARDENING_AUDIT.md` records the concrete findings, fixes, navigation/restoration source review, and explicit evidence exclusions.
+
+This source audit does **not** claim that TalkBack, 200% font scaling, high contrast, reduced motion, physical devices, measured performance traces, signed production artifacts, or store assets have been manually verified. Those gates remain pending until real evidence exists.
+
 ## Commit Policy
 
 Project-authored work continues to use focused Conventional Commit-style messages (`feat:`, `fix:`, `test:`, `testability:`, `a11y:`, `perf:`, `docs:`, `build:`, `ci:`, `chore:`, `refactor:`) rather than one giant implementation commit.
