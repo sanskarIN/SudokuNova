@@ -88,7 +88,7 @@ jobs:
       - name: Build release Android App Bundle
         run: ./gradlew :app:bundleRelease --stacktrace
 
-      - name: Upload verification reports
+      - name: Upload verification reports and Room schemas
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -96,6 +96,7 @@ jobs:
           path: |
             **/build/reports/**
             **/build/test-results/**
+            app/schemas/**
           if-no-files-found: ignore
           retention-days: 14
 
