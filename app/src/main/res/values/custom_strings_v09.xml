@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v09_custom_enter_clues">Enter the given clues, then validate the puzzle.</string>
+    <string name="v09_custom_changed">Puzzle changed. Validate again before playing.</string>
+    <string name="v09_custom_contradiction">The clues contain a row, column, or box contradiction.</string>
+    <string name="v09_custom_need_more_clues">Add more clues before uniqueness validation. Standard 9×9 Sudoku needs at least 17 clues for a unique puzzle.</string>
+    <string name="v09_custom_validating">Validating puzzle…</string>
+    <string name="v09_custom_no_solution">This puzzle has no valid solution.</string>
+    <string name="v09_custom_unique_ready">Valid puzzle with exactly one solution. Ready to play.</string>
+    <string name="v09_custom_multiple_solutions">This puzzle has multiple solutions. Add more clues for a unique Sudoku.</string>
+    <string name="v09_custom_solving">Solving puzzle…</string>
+    <string name="v09_custom_no_solution_available">No solution is available for this puzzle.</string>
+    <string name="v09_custom_solved_preview">Solved-grid preview. The original puzzle is preserved for Play puzzle.</string>
+</resources>
