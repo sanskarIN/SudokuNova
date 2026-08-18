@@ -133,29 +133,25 @@ Status: **Completed**
 
 ## v0.9 — Release Hardening
 
-Status: **In progress — issue #23 / draft PR #25**
+Status: **Completed and merged**
 
 Focused issue: `#23` — `v0.9: release hardening, accessibility, performance, security, and production QA`.
 
-Release-hardening work:
+Completed release-hardening work:
 
 - [x] Audit automated regression suites and add bounded-backup edge coverage
-- [x] Complete source-level accessibility semantics review across the current major screens
-- [x] Complete source-level selected-state/large-text accessibility hardening across the main current screens
-- [x] Make settings toggle rows single semantic switch targets and prevent chip-group large-text overflow
-- [x] Harden Game/History/Learn/Custom/Challenges/Saved/Share/Transfer action layouts against obvious large-text collisions
+- [x] Complete source-level accessibility semantics review across current major screens
+- [x] Complete source-level selected-state/large-text accessibility hardening
+- [x] Make Settings toggle rows single semantic switch targets and prevent chip-group large-text overflow
+- [x] Harden Game/History/Learn/Custom/Challenges/Saved/Share/Transfer layouts against obvious large-text collisions
 - [x] Expose Number-first digit selection and Notes mode semantically
-- [ ] Complete manual TalkBack focus-order traversal on representative device/emulator
-- [ ] Complete large-font and adaptive-layout manual QA
-- [ ] Complete high-contrast and reduced-motion manual QA
 - [x] Complete source-level main-thread/performance review and preserve deterministic engine benchmark/corpus coverage
-- [ ] Complete measured startup/frame/memory/ANR device audit
 - [x] Move game hint computation off the main thread with stale-result protection
 - [x] Move Custom Puzzle uniqueness/solve work off the main thread with cancellation and stale-board protection
 - [x] Harden puzzle-code validation against stale asynchronous results
-- [x] Preserve existing solver/generator/teaching deterministic regression coverage
-- [x] Re-audit backup file I/O boundary and preserve bounded off-main-thread architecture
-- [x] Audit Room schema/index/migration configuration without adding a speculative migration
+- [x] Preserve solver/generator/teaching deterministic regression coverage
+- [x] Re-audit backup file-I/O boundary and preserve bounded off-main-thread architecture
+- [x] Audit Room schema/index/migration configuration without speculative migration
 - [x] Audit import/export/backup security and privacy boundaries
 - [x] Audit manifest runtime permission/export surface
 - [x] Add repository secret/signing-material CI guard
@@ -163,49 +159,65 @@ Release-hardening work:
 - [x] Add release R8/shrinking verification to CI
 - [x] Add debug APK, release APK, and release AAB verification tasks to CI
 - [x] Add release-signing guidance that keeps production credentials outside Git
-- [x] Add device QA matrix and manual release checklist without fabricating device results
+- [x] Add device QA matrix/manual release checklist without fabricating device results
 - [x] Complete source-level navigation/lifecycle/restoration and crash/ANR-sensitive path review
-- [ ] Complete manual process-death/lifecycle restoration QA
 - [x] Add UI/store screenshot-readiness checklist
-- [x] Add CODEOWNERS and GitHub funding metadata to complete public repository governance/support surfaces
+- [x] Add CODEOWNERS and GitHub funding metadata
 - [x] Audit final repository for TODO/FIXME/NotImplemented/debug-print placeholders
-- [x] Complete documentation accuracy audit for implemented v0.9 source/tooling changes
-- [x] Expose selected Sudoku game-cell state through accessibility semantics
-- [x] Add stable Sudoku game-cell semantic tags
-- [x] Add connected regression coverage for selected game-cell semantics
-- [x] Expose Custom Puzzle editor cell descriptions/selected/conflict semantics
-- [x] Add stable Custom Puzzle editor cell semantic tags and connected selected-state regression
+- [x] Complete documentation accuracy audit for v0.9 source/tooling changes
+- [x] Add game/custom-cell selected semantics and stable connected test targeting
+- [x] Add connected selected-state regressions
 - [x] Move Custom Puzzle status/error presentation to paired English/Hindi resources
 - [x] Move game-load/abandon error presentation to typed localized resources
-- [x] Remove hardcoded English grammar from the game completion summary
-- [x] Align the in-app English/Hindi privacy summary with current DataStore, Room, and explicit transfer/backup behavior
-- [x] Repair connected Custom Puzzle visibility coverage for the intentional adaptive full-width action layout
-- [x] Migrate connected Compose activity rule usage to the non-deprecated v2 API
-- [ ] Final standard CI green on exact clean head
-- [ ] Final API-35 connected gate green on exact clean head
-- [ ] Mark PR #25 ready only after release-blocking audits and exact-head gates are complete
-- [ ] Merge PR #25 and close issue #23 only after verified evidence exists
+- [x] Remove hardcoded English grammar from game completion summary
+- [x] Align in-app English/Hindi privacy summary with current DataStore, Room, and transfer/backup behavior
+- [x] Repair API-35 Custom Puzzle visibility coverage for the intentional adaptive full-width action layout
+- [x] Migrate connected Compose activity rule usage to non-deprecated v2 API
+- [x] Final exact-head Android CI green — run #583 / `32139568718`
+- [x] Final exact-head API-35 connected gate green — run #155 / `32139568591`
+- [x] Final verified PR head — `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`
+- [x] PR #25 merged — `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`
+- [x] Stale v0.5–v0.7 issue #4 closed and stale alternate PRs #11/#15/#24 closed as superseded
 
-Manual/device rows intentionally remain unchecked until those checks are actually performed; the repository must not treat source review as equivalent to physical-device or assistive-technology evidence.
+### v0.9 evidence boundary
+
+v0.9 deliberately completes **source, automated, documentation, and repository hardening**. It does not fabricate manual production evidence. Real-device/assistive-technology/signing/store validation remains a v1.0 gate and is tracked in issue #5.
 
 ## v1.0 — Stable Classic Sudoku Release
 
-Target scope:
+Status: **Next — issue #5**
 
-- Polished Classic 9×9 gameplay
-- Reliable generator/solver and unique solutions
-- Seven supported difficulty levels with calibrated scoring
+The remaining v1.0 work is evidence-driven production validation, not another uncontrolled feature-expansion phase.
+
+Required stable-release validation includes:
+
+- [ ] real TalkBack traversal/focus-order QA on representative target(s)
+- [ ] representative 200% font-scale, narrow-phone, tablet/large-window, resize/orientation QA
+- [ ] high-contrast and reduced-motion manual verification
+- [ ] measured startup/frame/memory/ANR evidence on representative targets
+- [ ] process-death and lifecycle-restoration manual scenarios
+- [ ] secure production signing outside Git
+- [ ] signed release APK/AAB installation/signature verification
+- [ ] final R8 release-variant smoke QA on signed artifacts
+- [ ] real store/repository screenshots and listing/privacy disclosure review
+- [ ] final release notes, immutable tag, GitHub Release, and Android publication only after evidence exists
+
+Stable v1.0 must preserve:
+
+- polished Classic 9×9 gameplay
+- reliable generator/solver and unique solutions
+- seven supported difficulty levels with calibrated scoring
 - Quick Play and Daily/Weekly Challenges
 - Custom Puzzle and safe sharing/import/export
 - Notes, undo/redo, advanced hints, timer, mistake modes
-- Autosave/resume
-- Statistics/history/achievements
-- Interactive learning center and local practice progress
+- autosave/resume
+- statistics/history/achievements
+- interactive learning center and local practice progress
 - Light/Dark/System/Dynamic Color
-- Accessibility and English/Hindi localization
+- accessibility and English/Hindi localization
 - Settings, About, Support, privacy/security documentation
-- Complete CI/tests/build/release documentation
-- Production-ready APK/AAB release process
+- complete CI/tests/build/release documentation
+- secure production-ready APK/AAB release process
 
 ## v1.x — Carefully Selected Extensions
 
