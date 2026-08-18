@@ -1,6 +1,8 @@
 package com.sanskar.sudokunova
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -10,6 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
 import com.sanskar.sudokunova.engine.LogicalTechnique
+import com.sanskar.sudokunova.ui.game.sudokuCellTestTag
 import com.sanskar.sudokunova.ui.learn.LEARN_LIST_TEST_TAG
 import com.sanskar.sudokunova.ui.learn.practiceChoiceTestTag
 import com.sanskar.sudokunova.ui.learn.practiceTestTag
@@ -30,6 +33,18 @@ class MainActivityTest {
         composeRule.onNodeWithText("Learn").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("History").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Saved Puzzles").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun gameBoardExposesSelectedCellSemantics() {
+        composeRule.onNodeWithText("Easy").performClick()
+
+        val firstCell = composeRule.onNodeWithTag(sudokuCellTestTag(0, 0))
+        val secondCell = composeRule.onNodeWithTag(sudokuCellTestTag(0, 1))
+
+        firstCell.assertIsDisplayed().performClick().assertIsSelected()
+        secondCell.assertIsDisplayed().performClick().assertIsSelected()
+        firstCell.assertIsNotSelected()
     }
 
     @Test
