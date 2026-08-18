@@ -100,13 +100,65 @@ class GameStateCodecTest {
     fun malformedStateIsRejected() {
         assertNull(GameStateCodec.decode("not-a-valid-save"))
 
-        val corrupt = GameStateCodec.encode(GameState(puzzle(), solution(), puzzle()))
-            .split('|')
-            .toMutableList()
-            .also { it[5] = "-5" }
-            .joinToString("|")
+        val corrupt = mutableEncodedState().also { it[5] = "-5" }.joinToString("|")
         assertNull(GameStateCodec.decode(corrupt))
     }
+
+    @Test
+    fun corruptedSolutionThatDoesNotMatchOriginalCluesIsRejected() {
+        val permutedSolution = solution().toPuzzleString().map { digit ->
+            when (digit) {
+                '1' -> '2'
+                '2' -> '1'
+                else -> digit
+            }
+        }.joinToString("")
+        val parts = mutableEncodedState().also { it[2] = permutedSolution }
+
+        assertNull(GameStateCodec.decode(parts.joinToString("|")))
+    }
+
+    @Test
+    fun currentBoardCannotModifyAnOriginalClue() {
+        val tamperedBoard = puzzle().withValue(0, 4).toPuzzleString()
+        val parts = mutableEncodedState().also { it[3] = tamperedBoard }
+
+        assertNull(GameStateCodec.decode(parts.joinToString("|")))
+    }
+
+    @Test
+    fun extremePersistedCountersAreRejectedBeforeTheyCanOverflowLiveState() {
+        val elapsed = mutableEncodedState().also { it[8] = Long.MAX_VALUE.toString() }
+        val mistakes = mutableEncodedState().also { it[9] = Int.MAX_VALUE.toString() }
+        val hints = mutableEncodedState().also { it[10] = Int.MAX_VALUE.toString() }
+
+        assertNull(GameStateCodec.decode(elapsed.joinToString("|")))
+        assertNull(GameStateCodec.decode(mistakes.joinToString("|")))
+        assertNull(GameStateCodec.decode(hints.joinToString("|")))
+    }
+
+    @Test
+    fun unsupportedChallengeMetadataIsRejected() {
+        val unknownType = mutableEncodedState().also {
+            it[17] = "MONTHLY"
+            it[18] = "202608"
+        }
+        val invalidKey = mutableEncodedState().also {
+            it[17] = ChallengeType.DAILY.name
+            it[18] = "0"
+        }
+
+        assertNull(GameStateCodec.decode(unknownType.joinToString("|")))
+        assertNull(GameStateCodec.decode(invalidKey.joinToString("|")))
+    }
+
+    private fun mutableEncodedState(): MutableList<String> = GameStateCodec.encode(
+        GameState(
+            puzzle = puzzle(),
+            solution = solution(),
+            board = puzzle(),
+        ),
+    ).split('|').toMutableList()
 
     private fun puzzle() = SudokuBoard.parse(
         "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
