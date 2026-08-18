@@ -10,25 +10,42 @@ Focused development is tracked in issue #23 and draft PR #25. v0.9 is limited to
 
 #### Added
 - CI repository-security guard that rejects committed Android signing/private-key file types, known credential-config filenames, PEM private-key material, and obvious GitHub token patterns.
+- Stable `scripts/verify_no_secrets.py` entry point for the repository security verifier used by CI and documentation.
 - Direct JVM regression coverage for bounded backup-file reads, including UTF-8 decoding, empty/oversized rejection, exact-limit acceptance, and invalid-limit rejection.
 - Release QA matrix in `docs/RELEASE_QA.md` covering automated gates, lifecycle, every major app area, accessibility, font/window sizes, performance smoke checks, security/privacy, artifacts, and store-screenshot readiness.
-- Stable semantic test tags for individual Sudoku cells.
-- Connected Compose coverage for selected Sudoku-cell accessibility semantics.
+- Stable semantic test tags for individual game-board and Custom Puzzle editor cells.
+- Connected Compose coverage for selected Sudoku-cell accessibility semantics on both the game board and Custom Puzzle editor.
+- English/Hindi v0.9 resources for Custom Puzzle validation/solver statuses and typed game-load error states.
+- Complete categorized documentation set covering end-user workflows, features, project structure, engine internals, data formats, testing, CI/CD, performance, maintenance, release operations, keyboard input, glossary, privacy, security, accessibility, and documentation standards.
 
 #### Changed
 - Android development metadata advanced to `versionCode 900` / `versionName 0.9.0` on the v0.9 branch.
 - Standard Android CI now verifies both debug and release lint.
 - Standard Android CI now assembles the minified/resource-shrunk release APK and release AAB.
 - Successful CI release verification retains short-lived APK/AAB/R8 mapping outputs as build evidence.
-- Sudoku cells now expose selected state through Compose accessibility semantics in addition to the existing localized content description.
+- Sudoku game cells now expose selected state through Compose accessibility semantics in addition to the existing localized content description.
+- Custom Puzzle editor cells now expose localized row/column/value descriptions, conflict descriptions, selected semantics, and stable test tags.
+- Hint computation runs on `Dispatchers.Default` and discards results when the requested board is no longer current.
+- Custom Puzzle uniqueness validation and solution preview now run on `Dispatchers.Default`, cancel superseded solver work, and discard stale-board results.
+- Puzzle-code validation cancels superseded work and refuses to publish a result for input that changed while uniqueness analysis was running.
+- Transfer text edits no longer clear an unrelated backup/restore busy state.
+- Custom Puzzle ViewModel state now uses typed statuses rather than player-facing English prose; Compose resolves those statuses through locale resources.
+- Game load/abandon errors now use typed state with a separate localized presentation mapping rather than exposing exception prose.
+- Game completion summary now uses the maintained localized completion resource instead of concatenated English `mistake(s)` / `hint(s)` text.
+- Room migration override naming now matches the Room API without changing schema behavior.
 - `docs/BUILDING.md` now documents debug/release APK, AAB, R8 mapping, Windows/Unix verification commands, release signing boundaries, reproducibility evidence, and release-quality claim rules.
 - `SECURITY.md` now documents Android permission/export rules, bounded/fail-closed backup expectations, signing/secret rules, privacy expectations, dependency/supply-chain review, and v0.9 security gates.
 - `THIRD_PARTY_NOTICES.md` now maps the direct AndroidX/Compose/Room/KSP/build/test tooling families and identifies the version catalog as the dependency source of truth.
+- Stale documentation that still described connected testing, advanced hints, backup/restore, or current storage/security behavior as future work has been corrected to match the implemented repository.
 
 #### Audited
 - Current Android manifest declares no runtime permissions; the launcher activity is exported only for its launcher intent filter.
 - Room uses explicit schema versioning and `MIGRATION_1_2`; destructive migration fallback is not enabled.
 - Current history/saved-puzzle entities already define indexes for their principal filtering/identity fields, so no speculative schema migration was added merely for hardening.
+- Main-thread review covered the game, custom-puzzle, transfer, challenge, history, saved-puzzle, learning, settings, home, and statistics state layers; blocking solver work found in Game/Custom/Transfer paths is now dispatched off the UI thread where applicable.
+
+#### Regression fixes found during v0.9 verification
+- API-35 run `32129482037` exposed a race in the selected-game-cell semantics test: Easy puzzle generation is asynchronous, so the test attempted to assert a board node before the generated board was composed. The test now waits for the stable first-cell semantic tag before performing the same selected/unselected assertions.
 
 #### Verification in progress
 - Final exact-head standard Android CI and API-35 connected instrumentation evidence will be recorded only after both workflows complete successfully.
