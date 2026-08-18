@@ -3,23 +3,29 @@
 ## Current Development State
 
 **Repository:** `https://github.com/sanskarIN/SudokuNova`  
-**Latest merged milestone on `main`:** `v0.9.0 — Release Hardening`  
+**Latest merged release-preparation milestone on `main`:** `v1.0 RC1 — Repository-Side Stable Release Preparation`  
+**Latest completed product hardening release:** `v0.9.0 — Release Hardening`  
 **v0.9 focused issue:** `#23` — completed after verified merge  
 **v0.9 pull request:** `#25` — merged  
 **Final verified v0.9 PR head:** `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`  
 **v0.9 merge commit:** `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`  
 **Final v0.9 Android CI:** run `32139568718` — GREEN  
 **Final v0.9 API-35 instrumentation:** run `32139568591` — GREEN  
+**v1.0 RC1 pull request:** `#27` — verified and merged  
+**Final verified v1.0 RC1 PR head:** `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`  
+**v1.0 RC1 merge commit:** `2329881aff8dabaf8d040918e16b6113e3900245`  
+**Final RC1 Android CI:** run `32151771317` — GREEN  
+**Final RC1 API-35 instrumentation:** run `32151771297` — GREEN  
 **Current focused milestone:** `v1.0 — Stable Release Validation and Production Readiness`  
-**Current focused issue:** `#5` — `v1.0: stable release validation and production readiness`  
+**Current focused issue:** `#5` — `v1.0: stable release validation and production readiness` — OPEN  
 **Android application ID:** `in.sanskar.sudokunova`  
 **Kotlin source namespace:** `com.sanskar.sudokunova`  
-**Android versionCode:** `900`  
-**Android versionName:** `0.9.0`  
+**Android versionCode on current merged RC line:** `1000`  
+**Android versionName on current merged RC line:** `1.0.0-rc.1`  
 **License:** MIT  
 **Project commit email:** `sanskarin@outlook.in`
 
-SudokuNova now has one cumulative verified v0.1–v0.9 line on `main`. v0.9 was merged only after the exact final PR head passed both required workflows. The remaining work is not another uncontrolled feature-expansion phase: issue #5 now tracks real manual/production evidence required before a credible v1.0 stable release.
+SudokuNova now has one cumulative verified v0.1–v0.9 product line plus a verified/merged repository-side v1.0 RC1 preparation line on `main`. PR #27 was merged only after the exact final RC head passed both required workflows and the new release-artifact/signing-configuration gates. Stable `v1.0.0` is deliberately not claimed: issue #5 remains open for real TalkBack/device/font-scale/performance/process-death, GitHub repository-admin protection, production signing, signed-artifact, store, final stable metadata, SHIP, tag, and publication evidence.
 
 ## v0.9 Release-Hardening Work In Progress
 
@@ -856,6 +862,247 @@ The following are **not** claimed as completed and remain issue #5 / v1.0 work:
 - v1.0 tag/GitHub Release/Android publication.
 
 This separation is intentional: v0.9 completed source, automation, documentation, security/privacy, accessibility semantics, data-integrity, build, and public-repository hardening; v1.0 must earn the remaining production claims with real evidence.
+
+## v1.0 RC1 Repository-Side Release Preparation — 2026-08-18
+
+The next phase continued every remaining task that could be completed truthfully inside the repository without physical-device access, production signing secrets, GitHub branch-protection mutation capability, or live store publication access.
+
+### Authoritative RC line
+
+- Branch: `release/v1.0-rc1-prep`.
+- PR: `#27` — `release: prepare SudokuNova v1.0 rc1`.
+- Candidate versionCode: `1000`.
+- Candidate versionName: `1.0.0-rc.1`.
+- Stable `v1.0.0`: not claimed.
+
+If code `1000` is accepted/reserved by a distribution track during RC testing, the stable build must use a strictly higher versionCode.
+
+### Release artifact verifier
+
+Added `scripts/verify_release_outputs.py` with fail-closed validation for:
+
+- non-empty release APK;
+- valid ZIP-based APK structure;
+- required `AndroidManifest.xml` and primary `classes.dex`;
+- non-empty release AAB;
+- valid ZIP-based AAB structure;
+- required `BundleConfig.pb`, base manifest, and base DEX;
+- non-empty R8 `mapping.txt`;
+- exactly one APK `output-metadata.json` release element;
+- exact expected versionCode/versionName;
+- deterministic SHA-256 and byte-size evidence for APK/AAB/R8 mapping.
+
+A protected signed-release validation mode `--require-signatures` was also added:
+
+- APK must pass `apksigner verify --verbose --print-certs`;
+- AAB must pass `jarsigner -verify -certs` with explicit `jar verified` output;
+- missing signature tools fail rather than silently skipping;
+- unsigned AAB output is rejected even if `jarsigner` exits zero.
+
+The verifier does not own signing secrets. Maintainers must still compare the APK certificate digest/fingerprint to the expected production/upload certificate; a cryptographically valid signature from the wrong key is not acceptable release evidence.
+
+### Release verifier tests
+
+Added `scripts/tests/test_verify_release_outputs.py` covering:
+
+- minimal valid APK/AAB archive fixtures;
+- missing required entry rejection;
+- valid single APK metadata parsing;
+- multiple release element rejection;
+- stable checksum-manifest generation;
+- missing `apksigner` failure;
+- successful APK signature verification path;
+- missing `jarsigner` failure;
+- unsigned-AAB rejection even on zero exit code;
+- explicit verified-AAB success.
+
+### Secret-backed release signing
+
+`app/build.gradle.kts` now supports optional production signing through:
+
+- `SUDOKUNOVA_KEYSTORE_PATH`;
+- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
+- `SUDOKUNOVA_KEY_ALIAS`;
+- `SUDOKUNOVA_KEY_PASSWORD`.
+
+The configuration is all-or-nothing:
+
+- zero configured values → unsigned CI-safe release build;
+- all four configured values → release signing enabled;
+- one to three configured values → Gradle configuration fails immediately.
+
+No production keystore/password/private key was committed.
+
+### New v1.0 CI gates
+
+Standard Android CI was expanded to verify:
+
+1. repository secret/signing-material guard;
+2. release-verifier Python tests;
+3. partial release-signing fail-closed regression;
+4. English/Hindi translation parity;
+5. engine tests;
+6. Android JVM tests;
+7. AndroidTest compilation;
+8. debug and release lint;
+9. debug APK;
+10. R8/resource-shrunk release APK;
+11. release AAB;
+12. actual APK/AAB/R8 structure and exact `1000 / 1.0.0-rc.1` output metadata;
+13. SHA-256/size evidence generation;
+14. reports and release outputs/evidence upload.
+
+Ordinary PR CI intentionally receives no production signing secrets and does not falsely require production signatures.
+
+### Release/publication documentation
+
+Added:
+
+- `.github/release.yml` — generated release-note categories;
+- `docs/PRODUCTION_SIGNING.md` — secret-backed signing, key handling, direct verification, integrated mandatory-signature verifier mode, certificate-identity requirement, version-code rules;
+- `docs/PLAY_STORE_RELEASE.md` — truthful store title/description preparation, screenshots/assets, privacy/data facts, artifact checklist, rollout discipline, and instruction to recheck current store requirements at actual publication time;
+- `docs/V1_RELEASE_CANDIDATE.md` — detailed real-target evidence worksheet for install/gameplay/challenges/custom/Learn/history/transfer/TalkBack/font/adaptive/contrast/motion/keyboard/lifecycle/performance/signing/store/final SHIP decision;
+- `docs/V1_RELEASE_EVIDENCE.md` — concise exact run/artifact/signature/manual/store evidence ledger;
+- `docs/V1_RELEASE_NOTES.md` — canonical stable release-notes source with pending exact stable evidence fields;
+- `docs/GITHUB_REPOSITORY_SETTINGS.md` — recommended `main` protection/ruleset, required checks, Actions/security settings, and explicit admin-setting evidence rule;
+- `docs/V1_RELEASE_PREP.md` — authoritative RC repository handoff and stable promotion rules.
+
+Updated/synchronized:
+
+- `README.md`;
+- `CHANGELOG.md`;
+- `ROADMAP.md`;
+- root `SECURITY.md`;
+- `docs/SECURITY.md`;
+- `docs/BUILDING.md`;
+- `docs/TESTING.md`;
+- `docs/CI_CD.md`;
+- `docs/RELEASING.md`;
+- `docs/README.md`.
+
+The build guide also corrected stale toolchain text to Gradle `9.5` / AGP `9.3.1`.
+
+### Duplicate alternate RC audit/cleanup
+
+Older PR #26 (`release/v1.0-readiness`) used version code `990` and a different helper/docs set. It was audited before closure rather than discarded blindly.
+
+Useful stronger work absorbed into PR #27:
+
+- mandatory `apksigner` APK verification concept;
+- `jarsigner` AAB verification concept;
+- concise evidence-ledger concept;
+- canonical stable release-notes concept.
+
+PR #27 retained these inside the stricter exact-version/archive/mapping/hash verifier and current `docs/V1_RELEASE_EVIDENCE.md` / `docs/V1_RELEASE_NOTES.md`. `PLAY_STORE_RELEASE.md` supersedes the narrower old store-listing draft. PR #26 was commented and closed as superseded so the repository has one authoritative RC path.
+
+### GitHub repository protection boundary
+
+At RC-prep start, GitHub reported `main` as unprotected. The connected GitHub repository tool does not expose a branch-protection/ruleset mutation action, so this remains a real admin-setting task documented in `docs/GITHUB_REPOSITORY_SETTINGS.md` and issue #5.
+
+No false protection-enabled claim was made.
+
+## Final v1.0 RC1 Repository Verification — GREEN
+
+The exact final PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` passed every repository-side RC merge gate.
+
+### Android CI — GREEN
+
+**Run number:** `635`  
+**Run ID:** `32151771317`
+
+Passed on the exact final head:
+
+1. checkout;
+2. Java 17 setup;
+3. Gradle wrapper/cache validation;
+4. repository security guard;
+5. release verifier Python tests;
+6. partial release-signing fail-closed regression;
+7. English/Hindi parity;
+8. `:sudoku-engine:test`;
+9. `:app:testDebugUnitTest`;
+10. `:app:assembleDebugAndroidTest`;
+11. `:app:lintDebug` + `:app:lintRelease`;
+12. debug APK;
+13. R8/resource-shrunk release APK;
+14. release AAB;
+15. release APK/AAB/R8 structural verification and exact `1000 / 1.0.0-rc.1` metadata validation;
+16. SHA-256/size evidence generation;
+17. verification report upload;
+18. release output/evidence upload;
+19. cleanup.
+
+### API-35 Connected Instrumentation — GREEN
+
+**Run number:** `188`  
+**Run ID:** `32151771297`
+
+The API-35 x86_64 connected Compose/Room suite passed on the same exact final head.
+
+No branch commit was added after this successful workflow pair before merge.
+
+### Exact CI artifact evidence
+
+Workflow artifact:
+
+- name: `unsigned-release-builds`;
+- artifact ID: `9330415157`;
+- artifact size: `12,793,995` bytes;
+- GitHub artifact digest: `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`;
+- recorded retention expiry: `2026-09-01`.
+
+Generated `release-evidence/sha256.txt`:
+
+- unsigned APK: `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7` — `1,849,599` bytes;
+- release AAB: `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd` — `4,349,513` bytes;
+- R8 mapping: `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac` — `39,198,732` bytes.
+
+A separate `verification-reports` artifact also existed for the successful run; these CI artifacts are short-lived evidence, not production-signed publication packages.
+
+## v1.0 RC1 Merge Record
+
+PR #27 was moved out of draft only after both exact-final-head workflows were green.
+
+Merge used:
+
+- expected head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`;
+- merge method: merge commit;
+- merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`.
+
+Issue #5 was intentionally kept open and rewritten to mark every repository-side RC gate complete while leaving all genuine stable-production/admin/manual gates pending.
+
+Post-merge documentation commits on `main` include:
+
+- `2880402104bbc142d366d717b316c6864596ec0f` — `docs(readme): record verified v1.0 rc1 preparation merge`;
+- `2d22ced5e9e1d29ef788eada58c304148bb387af` — `docs(changelog): record verified v1.0 rc1 preparation merge`;
+- `2517d79b6ba2732459f15ae1a88b8665c05e3362` — `docs(roadmap): record verified v1.0 rc1 preparation merge`.
+
+### Stable v1.0 evidence still pending
+
+The following are intentionally **not** claimed complete:
+
+- GitHub `main` protection/ruleset enablement and required-check administration;
+- real TalkBack traversal/focus-order QA;
+- representative 200% font-scale and narrow/large/tablet/window/orientation QA;
+- high-contrast/reduced-motion manual verification;
+- measured startup/frame/memory/ANR evidence;
+- process-death/lifecycle real-target scenarios;
+- actual production/upload signing key configuration outside Git;
+- final signed APK verification with expected production/upload certificate identity;
+- final signed AAB signature/distribution-platform validation;
+- signed production/production-equivalent APK installation smoke;
+- final release-only R8 smoke QA on signed artifacts;
+- real store/repository screenshots/listing/privacy/data/content/target-API review against current requirements;
+- final stable versionCode decision after any RC distribution-track uploads;
+- stable `versionName = 1.0.0` promotion;
+- fresh exact-head stable Android CI/API-35 verification after final stable changes;
+- final signed artifact hashes/signature evidence;
+- final `SHIP` decision;
+- immutable `v1.0.0` tag;
+- GitHub Release;
+- Android/store publication.
+
+This boundary is deliberate. Repository-side RC preparation is verified and merged; stable production readiness remains issue #5 work until real evidence exists.
 
 ## Commit Policy
 
