@@ -6,6 +6,10 @@ small, ordered coverage taxonomy. A new file that does not match a rule fails cl
 Each rule also names one or more canonical documents; those documents must themselves be
 tracked so a coverage rule cannot point at a missing guide.
 
+Every tracked Markdown guide below ``docs/`` must also be discoverable from
+``docs/README.md``. This keeps the documentation hub complete instead of allowing a guide
+to be technically owned but effectively hidden from contributors.
+
 Use ``--verbose`` to print the resolved documentation owner for every tracked file. Use
 ``--markdown`` when a Markdown per-file report is useful during an audit.
 """
@@ -15,6 +19,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import re
 import subprocess
 import sys
 from typing import Iterable, Sequence
@@ -37,6 +42,9 @@ class CoverageRule:
 class CoverageResult:
     path: str
     rule: CoverageRule
+
+
+DOC_INDEX_LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)")
 
 
 COVERAGE_RULES: tuple[CoverageRule, ...] = (
@@ -233,6 +241,25 @@ def validate_coverage(paths: Iterable[str], tracked_paths: Iterable[str]) -> tup
     return results, errors
 
 
+def validate_documentation_index(tracked_paths: Iterable[str], index_text: str) -> list[str]:
+    """Require every tracked detailed Markdown guide to be linked by ``docs/README.md``."""
+
+    linked_targets = {
+        target.split("#", maxsplit=1)[0].removeprefix("./")
+        for target in DOC_INDEX_LINK_RE.findall(index_text)
+    }
+    detailed_guides = sorted(
+        path.removeprefix("docs/")
+        for path in set(tracked_paths)
+        if path.startswith("docs/") and path.endswith(".md") and path != "docs/README.md"
+    )
+    return [
+        f"Detailed documentation file is not linked from docs/README.md: docs/{guide}"
+        for guide in detailed_guides
+        if guide not in linked_targets
+    ]
+
+
 def render_markdown(results: Sequence[CoverageResult]) -> str:
     """Render a deterministic per-file audit table."""
 
@@ -260,11 +287,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         tracked = list_tracked_files(repository_root)
+        index_text = (repository_root / "docs" / "README.md").read_text(encoding="utf-8")
     except (OSError, subprocess.CalledProcessError, UnicodeDecodeError) as exc:
-        print(f"Documentation coverage verification failed while reading tracked files: {exc}", file=sys.stderr)
+        print(f"Documentation coverage verification failed while reading repository state: {exc}", file=sys.stderr)
         return 1
 
     results, errors = validate_coverage(tracked, tracked)
+    errors.extend(validate_documentation_index(tracked, index_text))
     if errors:
         print("Documentation coverage verification failed:", file=sys.stderr)
         for error in errors:
@@ -279,7 +308,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"[{result.rule.name}] {result.path} -> {documents}")
 
     area_count = len({result.rule.name for result in results})
-    print(f"Documentation coverage verified for {len(results)} tracked files across {area_count} areas.")
+    detailed_guide_count = sum(
+        1
+        for path in tracked
+        if path.startswith("docs/") and path.endswith(".md") and path != "docs/README.md"
+    )
+    print(
+        f"Documentation coverage verified for {len(results)} tracked files across {area_count} areas; "
+        f"{detailed_guide_count} detailed guides are indexed."
+    )
     return 0
 
 
