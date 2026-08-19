@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Macrobenchmark results use the instrumentation additional-test-output directory.
+        The compatibility flag is confined to this benchmark test APK and is needed only
+        for API 29 output handling; it never changes the production SudokuNova manifest.
+    -->
+    <application android:requestLegacyExternalStorage="true" />
+
+    <!-- Make the release-like SudokuNova benchmark target explicitly visible to this test APK. -->
+    <queries>
+        <package android:name="in.sanskar.sudokunova" />
+    </queries>
+
+</manifest>
