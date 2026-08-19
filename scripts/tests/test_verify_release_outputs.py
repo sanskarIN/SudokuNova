@@ -9,7 +9,9 @@ import zipfile
 from scripts.verify_release_outputs import (
     AAB_REQUIRED_ENTRIES,
     APK_REQUIRED_ENTRIES,
+    load_apk_application_id,
     load_apk_metadata,
+    main,
     normalize_cert_sha256,
     parse_apksigner_cert_sha256,
     parse_keytool_cert_sha256,
@@ -23,6 +25,7 @@ from scripts.verify_release_outputs import (
 TEST_DIGEST = "11" * 32
 OTHER_DIGEST = "22" * 32
 COLON_DIGEST = ":".join(TEST_DIGEST[i : i + 2] for i in range(0, len(TEST_DIGEST), 2)).upper()
+APPLICATION_ID = "in.sanskar.sudokunova"
 
 
 class ReleaseOutputVerifierTest(unittest.TestCase):
@@ -30,6 +33,26 @@ class ReleaseOutputVerifierTest(unittest.TestCase):
         with zipfile.ZipFile(path, "w") as archive:
             for entry in sorted(entries):
                 archive.writestr(entry, b"test")
+
+    def write_metadata(
+        self,
+        path: Path,
+        *,
+        application_id: str | None = APPLICATION_ID,
+        version_code: int = 1000,
+        version_name: str = "1.0.0-rc.1",
+    ) -> None:
+        payload: dict[str, object] = {
+            "elements": [
+                {
+                    "versionCode": version_code,
+                    "versionName": version_name,
+                }
+            ]
+        }
+        if application_id is not None:
+            payload["applicationId"] = application_id
+        path.write_text(json.dumps(payload), encoding="utf-8")
 
     def test_accepts_minimal_valid_apk_and_aab_structures(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -53,21 +76,21 @@ class ReleaseOutputVerifierTest(unittest.TestCase):
     def test_reads_single_apk_metadata_element(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             metadata = Path(temp_dir) / "output-metadata.json"
-            metadata.write_text(
-                json.dumps(
-                    {
-                        "elements": [
-                            {
-                                "versionCode": 1000,
-                                "versionName": "1.0.0-rc.1",
-                            }
-                        ]
-                    }
-                ),
-                encoding="utf-8",
-            )
-
+            self.write_metadata(metadata)
             self.assertEqual((1000, "1.0.0-rc.1"), load_apk_metadata(metadata))
+
+    def test_reads_apk_application_id(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            metadata = Path(temp_dir) / "output-metadata.json"
+            self.write_metadata(metadata)
+            self.assertEqual(APPLICATION_ID, load_apk_application_id(metadata))
+
+    def test_rejects_missing_apk_application_id(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            metadata = Path(temp_dir) / "output-metadata.json"
+            self.write_metadata(metadata, application_id=None)
+            with self.assertRaisesRegex(ValueError, "applicationId"):
+                load_apk_application_id(metadata)
 
     def test_rejects_multiple_apk_metadata_elements(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -75,10 +98,11 @@ class ReleaseOutputVerifierTest(unittest.TestCase):
             metadata.write_text(
                 json.dumps(
                     {
+                        "applicationId": APPLICATION_ID,
                         "elements": [
                             {"versionCode": 1000, "versionName": "1.0.0-rc.1"},
                             {"versionCode": 1001, "versionName": "1.0.0"},
-                        ]
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -86,6 +110,43 @@ class ReleaseOutputVerifierTest(unittest.TestCase):
 
             with self.assertRaisesRegex(ValueError, "exactly one release element"):
                 load_apk_metadata(metadata)
+
+    def test_main_rejects_wrong_application_id(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            apk = root / "app-release-unsigned.apk"
+            aab = root / "app-release.aab"
+            mapping = root / "mapping.txt"
+            metadata = root / "output-metadata.json"
+            output = root / "sha256.txt"
+            self.make_zip(apk, APK_REQUIRED_ENTRIES)
+            self.make_zip(aab, AAB_REQUIRED_ENTRIES)
+            mapping.write_text("mapping", encoding="utf-8")
+            self.write_metadata(metadata, application_id="example.wrong.application")
+
+            exit_code = main(
+                [
+                    "--apk",
+                    str(apk),
+                    "--aab",
+                    str(aab),
+                    "--mapping",
+                    str(mapping),
+                    "--metadata",
+                    str(metadata),
+                    "--expected-version-code",
+                    "1000",
+                    "--expected-version-name",
+                    "1.0.0-rc.1",
+                    "--expected-application-id",
+                    APPLICATION_ID,
+                    "--output",
+                    str(output),
+                ]
+            )
+
+            self.assertEqual(1, exit_code)
+            self.assertFalse(output.exists())
 
     def test_manifest_is_stable_and_contains_hash_size_and_path(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
