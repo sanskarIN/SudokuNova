@@ -8,9 +8,9 @@ Current workflows live under `.github/workflows/`.
 
 ### Android CI — `ci.yml`
 
-The standard pull-request gate verifies source integrity, repository/documentation consistency, tests, lint, release compilation, performance-harness compilation and RC artifact evidence.
+The standard pull-request gate verifies source integrity, repository/documentation consistency, tests, lint, release compilation, performance-harness compilation and release artifact evidence.
 
-Current v1.0 RC stages include:
+Current **2.0.12** stages include:
 
 1. checkout;
 2. Java 17 setup;
@@ -56,11 +56,13 @@ This is a separate manually dispatched workflow for trusted signed-release valid
 
 It requires protected signing secrets, validates the operator-supplied version inputs, reconstructs the keystore only in `$RUNNER_TEMP`, builds signed R8 APK/AAB outputs, requires production `applicationId = in.sanskar.sudokunova`, binds the expected `minSdk`/`targetSdk` values to the source release contract, independently inspects those identity values plus `debuggable=false` from the built APK, verifies signatures, requires a verified v2-or-newer APK signature scheme, binds both artifacts to protected expected signer-certificate SHA-256 fingerprints, records hashes/sizes/identity/signature fingerprints/exact workflow context, and removes the temporary keystore in cleanup.
 
+The workflow currently defaults to `versionCode 2012` / `versionName 2.0.12`. Those defaults are verified against `app/build.gradle.kts` and ordinary CI by `scripts/verify_release_contract.py`.
+
 The workflow uploads non-secret production validation evidence after success. Signed APK/AAB upload is opt-in and short-lived rather than automatic.
 
 A successful protected run is still not a substitute for physical-device, accessibility, performance, Play Console, listing/privacy, branch-protection, or publication evidence.
 
-See `PRODUCTION_RELEASE_VALIDATION.md` and `PRODUCTION_SIGNING.md`.
+See `V2_0_12_RELEASE.md`, `PRODUCTION_RELEASE_VALIDATION.md` and `PRODUCTION_SIGNING.md`.
 
 ## Pull-Request Gate Policy
 
@@ -70,7 +72,7 @@ If a code/documentation commit that triggers the pull-request workflows is added
 
 Do not cite a workflow run from an older head as evidence for a newer head.
 
-PR #27 completed and merged the verified RC1 repository-preparation line. PR #28 completed and merged the verified post-RC validation/performance-tooling line. Any later hardening/documentation/stable-promotion pull request must independently satisfy the same exact-final-head rule before merge.
+PR #27 completed and merged the verified v1 RC1 repository-preparation line. PR #28 completed and merged the verified post-RC validation/performance-tooling line. Those runs remain historical evidence; the current 2.0.12 line must independently satisfy the same exact-final-head rule before merge or release claims.
 
 ## Repository Security Guard
 
@@ -137,7 +139,7 @@ These repository-contract gates are deliberately cheap and run before the Gradle
 
 ## Release-Verifier Unit Gate
 
-The RC line runs:
+The current release line runs:
 
 ```bash
 python -m unittest scripts.tests.test_verify_release_outputs
@@ -248,13 +250,13 @@ The benchmark path intentionally differs from the normal debug/instrumentation p
 - the benchmark test APK explicitly declares visibility of `in.sanskar.sudokunova`;
 - current benchmark methods cover cold startup, warm startup and cold-start frame timing.
 
-A successful hosted CI compile does **not** satisfy the v1.0 performance evidence row. Representative timing evidence must come from the connected Macrobenchmark suite on physical hardware and be recorded with the exact release commit, device/OS and raw output/traces:
+A successful hosted CI compile does **not** satisfy the 2.0.12 performance evidence requirement. Representative timing evidence must come from the connected Macrobenchmark suite on physical hardware and be recorded with the exact release commit, device/OS and raw output/traces:
 
 ```bash
 ./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
 ```
 
-See `PERFORMANCE_BENCHMARKING.md`.
+See `PERFORMANCE_BENCHMARKING.md` and `V2_0_12_RELEASE.md`.
 
 ## Lint Gates
 
@@ -294,11 +296,11 @@ The AAB is the expected store-oriented Android bundle format. Final production d
 
 ## Release-Output Verification Gate
 
-After release APK/AAB/R8 mapping generation, ordinary CI runs `scripts/verify_release_outputs.py` with the exact expected RC identity:
+After release APK/AAB/R8 mapping generation, ordinary CI runs `scripts/verify_release_outputs.py` with the exact expected **2.0.12** identity:
 
 - `applicationId in.sanskar.sudokunova`;
-- `versionCode 1000`;
-- `versionName 1.0.0-rc.1`;
+- `versionCode 2012`;
+- `versionName 2.0.12`;
 - `minSdk 26`;
 - `targetSdk 37`.
 
@@ -397,14 +399,15 @@ The protected workflow additionally requires a base64 keystore secret and expect
 
 See:
 
+- `V2_0_12_RELEASE.md`;
 - `REPOSITORY_GUARDS.md`;
 - `REPOSITORY_FILE_REFERENCE.md`;
 - `PRODUCTION_SIGNING.md`;
 - `PRODUCTION_RELEASE_VALIDATION.md`;
 - `PERFORMANCE_BENCHMARKING.md`;
-- `V1_RELEASE_CANDIDATE.md`;
-- `V1_RELEASE_EVIDENCE.md`;
 - `RELEASING.md`.
+
+The older `V1_RELEASE_CANDIDATE.md` and `V1_RELEASE_EVIDENCE.md` files remain historical v1 evidence rather than current 2.0.12 release authorities.
 
 ## No Automatic Production Deployment
 
@@ -412,7 +415,7 @@ A green ordinary CI run does not authorize the system to:
 
 - create a Play Store release;
 - publish an APK/AAB publicly;
-- create a stable production tag automatically;
+- create a production tag automatically;
 - expose signing secrets;
 - claim physical-device QA;
 - claim TalkBack/200% font/process-death validation;
