@@ -1,14 +1,20 @@
 # Play Store Release Preparation
 
-This document prepares SudokuNova for a future stable Android store release. It intentionally avoids claiming that Play Console submission, policy review, production signing, device QA, or publication has already happened.
+This document prepares SudokuNova **2.0.12** for a future Android store release. It intentionally avoids claiming that Play Console submission, policy review, production signing, device QA, or publication has already happened.
 
 Always review the current Play Console requirements at release time because store policies, declarations, screenshots, target-API requirements, and form wording can change independently of this repository.
+
+Current release authority: `V2_0_12_RELEASE.md`.
 
 ## Product identity
 
 - App name: **SudokuNova**
 - Tagline: **Think. Solve. Master the Grid.**
 - Application ID: `in.sanskar.sudokunova`
+- Current source version: `2.0.12`
+- Android versionCode: `2012`
+- Minimum Android API: `26`
+- Target Android API: `37`
 - Developer credit: **Made by the Sanskar**
 - Support email: `supportramsandesh@gmail.com`
 - Business email: `sanskarin@outlook.in`
@@ -55,7 +61,7 @@ SudokuNova's open-source base app does not include advertising, analytics, a Sud
 Do not mark an item complete until the exact asset has been reviewed at the required current Play Console dimensions.
 
 - [ ] high-resolution app icon exported from the canonical launcher artwork;
-- [ ] phone screenshots from a release/production-equivalent build;
+- [ ] phone screenshots captured from the exact 2.0.12 release/production-equivalent build;
 - [ ] tablet/large-screen screenshots if required or supported by the chosen listing;
 - [ ] feature graphic if required/desired;
 - [ ] screenshots show only implemented features;
@@ -90,7 +96,7 @@ The repository contains the canonical policy at `docs/PRIVACY.md`. Before produc
 
 - publicly accessible without authentication;
 - stable enough for long-term distribution;
-- consistent with the exact release build;
+- consistent with the exact 2.0.12 release build;
 - free from draft/internal-only language;
 - updated if telemetry/accounts/cloud behavior ever changes.
 
@@ -100,37 +106,75 @@ A repository-hosted page may be used as an interim public reference, but store a
 
 Before uploading an AAB:
 
-- [ ] stable version metadata finalized;
-- [ ] stable `versionCode` is strictly greater than any previously accepted store version code;
-- [ ] production/upload signing configured through secrets outside Git;
+- [ ] source metadata is exactly `versionCode 2012` / `versionName 2.0.12`;
+- [ ] Android `versionCode 2012` is strictly greater than every previously accepted distributed version code;
+- [ ] `python scripts/verify_release_contract.py` confirms source/ordinary-CI/protected-workflow identity synchronization;
+- [ ] production/upload signing is configured through secrets outside Git;
 - [ ] `clean :app:bundleRelease` succeeds;
 - [ ] R8 mapping is preserved;
-- [ ] signed artifact/certificate identity verified;
-- [ ] SHA-256 artifact evidence saved;
-- [ ] exact source commit/tag recorded;
-- [ ] API-35 connected suite and standard CI are green on the candidate source;
-- [ ] manual RC checklist in `V1_RELEASE_CANDIDATE.md` is complete;
+- [ ] release-output verifier confirms exact application/version/SDK identity;
+- [ ] embedded APK identity evidence reports `debuggable=false`;
+- [ ] signed artifact/certificate identity is verified;
+- [ ] APK validation reports a verified v2-or-newer signature scheme;
+- [ ] SHA-256 artifact evidence is saved;
+- [ ] exact source commit/tag is recorded;
+- [ ] API-35 connected suite and standard CI are green on the exact final 2.0.12 source head;
+- [ ] current manual evidence requirements in `V2_0_12_RELEASE.md` are complete;
 - [ ] release notes match the actual code;
 - [ ] backup/restore migration compatibility has been smoke-tested against existing user data where practical.
 
-## Suggested release notes for v1.0
+## Suggested release notes for 2.0.12
 
-Use only after the final stable candidate has passed all required evidence:
+Use only after the final 2.0.12 candidate has passed all mandatory evidence and received a `SHIP` decision:
 
-> SudokuNova 1.0 delivers polished Classic 9×9 Sudoku with seven difficulty levels, Daily and Weekly Challenges, custom puzzles, advanced logical hints, interactive learning, local history/statistics, safe sharing and backup, English/Hindi support, accessibility features, and an offline-first privacy model. This release also includes extensive correctness, migration, security, performance, accessibility, R8 and API-35 verification work.
+> SudokuNova 2.0.12 delivers polished Classic 9×9 Sudoku with seven difficulty levels, Daily and Weekly Challenges, custom puzzles, advanced logical hints, interactive learning, local history/statistics, safe sharing and backup, English/Hindi support, accessibility features, and an offline-first privacy model. This release also includes extensive correctness, migration, security, performance, accessibility, R8, release-identity and API-35 verification work.
 
-Do not publish these notes while the build is still `1.0.0-rc.1` or while mandatory manual validation remains incomplete.
+Do not publish these notes while mandatory exact-head, production-signing, manual accessibility/device/performance, or store validation remains incomplete.
+
+## Final distribution identity
+
+Before submission, record and verify:
+
+- exact final source SHA;
+- `versionCode 2012` / `versionName 2.0.12`;
+- production application ID `in.sanskar.sudokunova`;
+- `minSdk 26` / `targetSdk 37`;
+- final AAB SHA-256 and size;
+- final APK SHA-256 and size if direct APK distribution is used;
+- R8 mapping SHA-256 and size;
+- APK embedded identity evidence;
+- APK signer certificate SHA-256;
+- AAB upload signer certificate SHA-256;
+- distribution-platform app-signing certificate identity where applicable;
+- protected workflow run ID/result;
+- current store validation results.
+
+If Play App Signing is used, do not confuse the local upload-key certificate with the app-signing certificate used for APKs delivered to users.
 
 ## Rollout discipline
 
-For the stable release:
+For the 2.0.12 release:
 
 1. preserve the exact source SHA and production artifact hashes;
 2. use the safest staged/testing track appropriate to the distribution plan before full rollout;
 3. review crash/ANR/store feedback during rollout;
 4. stop or reduce rollout if a release-blocking defect appears;
 5. fix forward from the exact released tag/commit rather than mixing unrelated feature work;
-6. update `CHANGELOG.md`, `ROADMAP.md`, `what_changed.md`, the GitHub Release and store notes with the actual final evidence.
+6. update `CHANGELOG.md`, `ROADMAP.md`, `what_changed.md`, the GitHub Release and store notes with actual final evidence.
+
+## Tag and publication boundary
+
+Do not create or advertise `v2.0.12` as released merely because the source metadata uses 2.0.12.
+
+The tag/GitHub Release/store publication must wait until:
+
+- exact-final-head Android CI is green;
+- exact-final-head API-35 instrumentation is green;
+- required production signing/certificate evidence exists;
+- required real-device/accessibility/performance QA exists;
+- current store validation is complete;
+- no critical/high release blocker remains;
+- final decision is explicitly `SHIP`.
 
 ## Not yet evidence
 
@@ -141,6 +185,9 @@ This document is preparation only. It does not prove:
 - signed artifact identity;
 - device compatibility;
 - screenshot quality;
-- production rollout success.
+- representative physical-device performance;
+- repository-admin configuration;
+- production rollout success;
+- creation of the `v2.0.12` tag or GitHub Release.
 
 Those claims require the real release workflow and must be recorded only after they happen.
