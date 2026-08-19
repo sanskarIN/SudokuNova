@@ -160,7 +160,7 @@ jobs:
 
           apksigner_path="$(command -v apksigner || true)"
           if [ -z "$apksigner_path" ]; then
-            apksigner_path="$(find "$ANDROID_SDK_ROOT/build-tools" -maxdepth 2 -type f -name apksigner -print | sort -V | tail -n 1)"
+            apksigner_path="$(find "$ANDROID_SDK_ROOT/build-tools" -maxdepth 2 -type f -name apksigner -print 2>/dev/null | sort -V | tail -n 1 || true)"
           fi
           if [ -z "$apksigner_path" ]; then
             echo 'Unable to locate Android SDK apksigner.' >&2
@@ -169,7 +169,7 @@ jobs:
 
           apkanalyzer_path="$(command -v apkanalyzer || true)"
           if [ -z "$apkanalyzer_path" ]; then
-            apkanalyzer_path="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name apkanalyzer -print | sort -V | tail -n 1)"
+            apkanalyzer_path="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name apkanalyzer -print 2>/dev/null | sort -V | tail -n 1 || true)"
           fi
           if [ -z "$apkanalyzer_path" ]; then
             echo 'Unable to locate Android SDK apkanalyzer.' >&2
