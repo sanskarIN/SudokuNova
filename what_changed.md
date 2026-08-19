@@ -185,6 +185,12 @@ Both ordinary Android CI and protected production validation execute this new mo
 
 Ordinary CI still does **not** receive production signing credentials and therefore does not claim production certificate identity.
 
+### Tool-discovery fail-closed review
+
+A final patch review found that the first version of the `apkanalyzer` fallback ran `find` under `set -euo pipefail`. If the expected SDK subdirectory itself were missing, that pipeline could terminate the step before the intended explicit “Unable to locate Android SDK apkanalyzer” error branch.
+
+The fallback now suppresses the expected missing-directory diagnostic and terminates the discovery pipeline successfully so the explicit empty-result guard owns the failure message. This does not weaken verification: a missing tool still fails the job, but now through the deliberate fail-closed branch.
+
 ---
 
 ## Protected Production Release Validation Changes
@@ -211,6 +217,8 @@ The protected workflow now:
 - continues to keep production signing values step-scoped;
 - continues to materialize the keystore only under `$RUNNER_TEMP`;
 - continues to remove the materialized keystore in an `always()` cleanup step.
+
+The same final patch review hardened fallback discovery for both `apksigner` and `apkanalyzer`, so absent SDK tool directories produce the workflow's intentional explicit failure instead of an incidental `find`/pipefail termination.
 
 No production secrets were added to repository source.
 
@@ -281,8 +289,11 @@ The branch was intentionally developed through small commits rather than one lar
 12. `62679b98ab71f197e61e9d22459874c4a687b7d2` — `docs(ci): record embedded APK and SDK contract gates`
 13. `5f030f8d2eed96a0be3f789e7f09ae538f6b41d3` — `docs(release): add embedded identity release checks`
 14. `e1e7af6da0eed77e2accd3fe7241ba412217ce5e` — `docs(progress): archive cumulative development ledger`
+15. `fc8c0b7a5b18ca3dff55e619ed8b5ffdf0fc6871` — `docs(progress): refresh v1.0 release hardening ledger`
+16. `a2a29514a95d90f29409059d79f962114e4730f0` — `ci(release): fail clearly when APK Analyzer is absent`
+17. `71026852cd5b497a576c55ba7e82c81a428fd5a6` — `ci(release): harden Android tool discovery`
 
-This active-ledger refresh is itself a separate follow-up commit so the progress record does not collapse the implementation history into one commit.
+This final active-ledger update is intentionally another separate documentation commit so the implementation, test, workflow, review-fix, and progress-record changes remain individually traceable.
 
 GitHub's Git commit objects for this continuation report author/committer `Sanskar <sanskarin@outlook.in>`, matching the requested commit email configuration.
 
@@ -302,7 +313,7 @@ The PR is linked to issue `#5` and explicitly preserves the stable-release evide
 
 ### Merge policy for PR #29
 
-Do **not** merge merely because the source diff looks correct.
+Do **not** merge merely because GitHub reports the PR as mergeable or because an older branch head passed checks.
 
 The required repository-side merge condition remains:
 
@@ -311,7 +322,7 @@ The required repository-side merge condition remains:
 - no later branch commit after those successful runs;
 - no unresolved regression found in the PR diff/review.
 
-The workflow evidence for the exact final head is intentionally pending until this progress-ledger commit lands and the final-head checks execute.
+Before this ledger refresh, Android CI run `#723 / 32240224413` and API-35 instrumentation run `#233 / 32240224396` had been created for head `71026852cd5b497a576c55ba7e82c81a428fd5a6`. Because this ledger refresh creates a newer PR head, those older-head runs must **not** be used as final merge evidence even if they later pass. The new ledger head requires its own exact-head checks.
 
 ---
 
