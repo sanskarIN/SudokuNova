@@ -28,8 +28,9 @@ Start with:
 4. [Building](BUILDING.md)
 5. [Testing](TESTING.md)
 6. [CI/CD](CI_CD.md)
-7. [Contributing Guide](CONTRIBUTING_GUIDE.md)
-8. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+7. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+8. [Contributing Guide](CONTRIBUTING_GUIDE.md)
+9. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 ### I am changing Sudoku logic
 
@@ -41,7 +42,8 @@ Read:
 4. [Learning and Advanced Hints](LEARNING_AND_HINTS.md)
 5. [Testing](TESTING.md)
 6. [Performance](PERFORMANCE.md)
-7. [Glossary](GLOSSARY.md)
+7. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+8. [Glossary](GLOSSARY.md)
 
 ### I am changing persistence/import/backup
 
@@ -64,24 +66,25 @@ Read in this order:
 2. [Building](BUILDING.md)
 3. [Production Signing](PRODUCTION_SIGNING.md)
 4. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
-5. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
-6. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
-7. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
-8. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
-9. [Releasing](RELEASING.md)
-10. [Release Checklist](RELEASE_CHECKLIST.md)
-11. [Release QA](RELEASE_QA.md)
-12. [QA Matrix](QA_MATRIX.md)
-13. [CI/CD](CI_CD.md)
-14. [Testing](TESTING.md)
-15. [Performance](PERFORMANCE.md)
-16. [Accessibility](ACCESSIBILITY.md)
-17. [Privacy](PRIVACY.md)
-18. [`../SECURITY.md`](../SECURITY.md)
-19. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-20. [`../CHANGELOG.md`](../CHANGELOG.md)
-21. [`../ROADMAP.md`](../ROADMAP.md)
-22. [`../what_changed.md`](../what_changed.md)
+5. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+6. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
+7. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
+8. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+9. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+10. [Releasing](RELEASING.md)
+11. [Release Checklist](RELEASE_CHECKLIST.md)
+12. [Release QA](RELEASE_QA.md)
+13. [QA Matrix](QA_MATRIX.md)
+14. [CI/CD](CI_CD.md)
+15. [Testing](TESTING.md)
+16. [Performance](PERFORMANCE.md)
+17. [Accessibility](ACCESSIBILITY.md)
+18. [Privacy](PRIVACY.md)
+19. [`../SECURITY.md`](../SECURITY.md)
+20. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+21. [`../CHANGELOG.md`](../CHANGELOG.md)
+22. [`../ROADMAP.md`](../ROADMAP.md)
+23. [`../what_changed.md`](../what_changed.md)
 
 For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md).
 
@@ -127,7 +130,7 @@ System-level boundaries between the Android app, engine, persistence, teaching p
 
 ### [Project Structure](PROJECT_STRUCTURE.md)
 
-Repository tree, packages, major source files, test locations, Room schemas, workflows and change-placement rules.
+Repository tree, three Gradle modules, packages, major source files, test locations, Room schemas, workflows and change-placement rules.
 
 ### [Sudoku Engine](SUDOKU_ENGINE.md)
 
@@ -209,19 +212,23 @@ Environment/tooling setup for contributors.
 
 ### [Building](BUILDING.md)
 
-Current JDK/Gradle/AGP/Kotlin/SDK requirements, debug/release APK, release AAB, R8 mapping, secret-backed signing, release artifact verifier, SHA-256 evidence, lint/tests and output locations.
+Current JDK/Gradle/AGP/Kotlin/SDK requirements, debug/release APK, release AAB, R8 mapping, benchmark build/harness, secret-backed signing, release artifact verifier, SHA-256 evidence, lint/tests and output locations.
 
 ### [Testing](TESTING.md)
 
-Complete engine/JVM/instrumentation/lint/release/manual QA strategy. v1.0 RC adds artifact-verifier and signing fail-closed checks on top of the verified v0.9 suites.
+Complete engine/JVM/instrumentation/release-tooling/Macrobenchmark/lint/release/manual QA strategy. v1.0 RC adds artifact-verifier, package/certificate identity, signing fail-closed and benchmark-compilation checks on top of the verified v0.9 suites.
 
 ### [CI/CD](CI_CD.md)
 
-GitHub Actions quality gates, exact-head verification, security/translation scripts, unsigned release evidence, and the separate protected signed-release validation path.
+GitHub Actions quality gates, exact-head verification, security/translation scripts, Macrobenchmark compilation, unsigned release evidence, and the separate protected signed-release validation path.
 
 ### [Performance](PERFORMANCE.md)
 
 Main-thread/ANR rules, solver/generator/hint/import/Room/DataStore/Compose performance guidance and measurement policy.
+
+### [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+
+Release-like Macrobenchmark architecture, ProfileInstaller boundary, cold/warm startup and frame benchmarks, physical-device execution, retained evidence, comparison discipline, CI boundary and Baseline Profile non-claim.
 
 ## Contribution and Maintenance
 
@@ -235,7 +242,7 @@ Branch/PR discipline, issue triage, review checklists, dependency/security/local
 
 ### [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
 
-Recommended `main` protection/ruleset, required CI checks, merge/review policy, Actions permissions and security settings. This file distinguishes settings that must be enabled in GitHub administration from source-controlled configuration.
+Recommended `main` protection/ruleset, required CI checks, protected release environment, merge/review policy, Actions permissions and security settings. This file distinguishes settings that must be enabled in GitHub administration from source-controlled configuration.
 
 ### [Documentation Standards](DOCUMENTATION_STANDARDS.md)
 
@@ -277,7 +284,7 @@ Authoritative real-target worksheet for installation, gameplay, TalkBack, 200% f
 
 ### [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
 
-Concise exact-evidence ledger separating already verified repository-side RC evidence from still-pending signed, manual, administrative and store evidence.
+Concise exact-evidence ledger separating verified RC1 repository evidence, post-RC validation/performance tooling, and still-pending signed, physical-device, administrative and store evidence.
 
 ### [Accessibility](ACCESSIBILITY.md)
 
@@ -286,6 +293,10 @@ Accessibility-specific QA requirements.
 ### [Performance](PERFORMANCE.md)
 
 Performance/ANR review and measurement guidance.
+
+### [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+
+Authoritative source for representative physical-device startup/frame measurement and retained Macrobenchmark evidence.
 
 ## Release and Planning
 
@@ -311,7 +322,7 @@ Repository-admin settings that cannot be guaranteed merely by committed source f
 
 ### [Releasing](RELEASING.md)
 
-End-to-end RC/stable process from scope freeze through package/version/artifact verification, production signing, certificate identity, manual QA, exact-head evidence, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
+End-to-end RC/stable process from scope freeze through package/version/artifact verification, production signing, certificate identity, physical/manual QA and performance evidence, exact-head verification, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
 
 ### [Release Checklist](RELEASE_CHECKLIST.md)
 
@@ -356,7 +367,7 @@ Detailed implementation/verification/handoff history.
 
 ## Historical vs Current Documents
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `V1_RELEASE_PREP.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
 
 ## Documentation Maintenance Rule
 
