@@ -15,7 +15,9 @@ A successful run on an exact selected ref proves all of the following for the ar
 - exactly one signed release APK and one release AAB are selected;
 - APK archive structure is valid;
 - AAB archive structure is valid;
+- APK `output-metadata.json` has production `applicationId = in.sanskar.sudokunova`;
 - APK `output-metadata.json` has the requested `versionCode` and `versionName`;
+- operator-supplied version metadata is validated before use;
 - R8 `mapping.txt` exists and is non-empty;
 - APK signature passes `apksigner verify --verbose --print-certs`;
 - AAB signature passes `jarsigner -verify -certs`;
@@ -24,7 +26,7 @@ A successful run on an exact selected ref proves all of the following for the ar
 - AAB signer/upload certificate SHA-256 matches the protected expected fingerprint;
 - artifact SHA-256 hashes and byte sizes are written to evidence;
 - normalized signer certificate fingerprints are written to evidence;
-- repository/ref/commit/workflow-run context is written to evidence.
+- repository/ref/commit/workflow-run/application/version context is written to evidence.
 
 A successful run does **not** prove device QA, Play Console acceptance, final store declarations, branch protection, rollout safety, or other manual evidence.
 
@@ -43,6 +45,8 @@ Recommended controls:
 - review environment access before every stable release.
 
 The workflow intentionally fails when any required secret is missing.
+
+Environment ref restrictions are important because the workflow checks out the selected ref before running repository scripts/build logic. Only trusted release refs should be allowed to receive production signing secrets.
 
 ## Required protected secrets
 
@@ -69,11 +73,13 @@ The repository itself never requires a committed keystore.
 
 From GitHub Actions, choose **Production Release Validation**, select the exact branch/tag/ref intended for validation, then provide:
 
-- `expected_version_code` — exact Android version code for that ref;
-- `expected_version_name` — exact Android version name for that ref;
+- `expected_version_code` — exact positive decimal Android version code for that ref;
+- `expected_version_name` — exact non-empty, single-line Android version name for that ref;
 - `upload_signed_artifacts` — normally leave `false`; set `true` only when intentionally retaining the signed APK/AAB as short-lived workflow artifacts.
 
-For the current RC1 source metadata the defaults are `1000` and `1.0.0-rc.1`. Stable publication must use the final values actually committed for the stable ref.
+The production application ID is intentionally not an operator input. The workflow pins it to `in.sanskar.sudokunova` so a manual dispatch cannot accidentally validate a different package as SudokuNova.
+
+For the current RC1 source metadata the version defaults are `1000` and `1.0.0-rc.1`. Stable publication must use the final values actually committed for the stable ref.
 
 ## Evidence artifacts
 
@@ -81,14 +87,14 @@ Every successful run uploads `production-release-validation-evidence` for 30 day
 
 - `sha256.txt` — release APK/AAB/R8 mapping SHA-256 and byte-size evidence;
 - `signatures.txt` — normalized APK/AAB signer certificate SHA-256 evidence;
-- `verification.txt` — verifier summary for the run;
-- `workflow-context.txt` — repository, commit SHA, ref, run ID/attempt, and expected version metadata.
+- `verification.txt` — verifier summary including the validated application/version identity;
+- `workflow-context.txt` — repository, commit SHA, ref, run ID/attempt, expected application ID, and expected version metadata.
 
 When `upload_signed_artifacts=true`, the workflow separately uploads `signed-production-release-artifacts` for 7 days containing the signed APK, AAB, and R8 mapping. This is opt-in to reduce unnecessary retention of production binaries.
 
-## Certificate identity rule
+## Package and certificate identity rule
 
-A signature being cryptographically valid is insufficient. The release must also be signed by the intended certificate.
+A signature being cryptographically valid is insufficient. The release must also belong to the intended Android package and be signed by the intended certificate.
 
 `scripts/verify_release_outputs.py` supports:
 
@@ -100,6 +106,7 @@ python scripts/verify_release_outputs.py \
   --metadata path/to/output-metadata.json \
   --expected-version-code <final-code> \
   --expected-version-name <final-name> \
+  --expected-application-id in.sanskar.sudokunova \
   --require-signatures \
   --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
   --expected-aab-cert-sha256 <expected-aab-cert-sha256> \
@@ -107,7 +114,7 @@ python scripts/verify_release_outputs.py \
   --signature-output path/to/signatures.txt
 ```
 
-The verifier fails closed when an expected fingerprint does not match any reported signer fingerprint.
+The verifier fails closed when the expected application ID is missing/different or when an expected fingerprint does not match any reported signer fingerprint.
 
 For Play App Signing, distinguish the local upload-key certificate from the app-signing certificate used by Google Play for distributed APKs. Record the correct certificate identity for each stage and validate the Play-distributed artifact separately where required.
 
@@ -117,6 +124,7 @@ After a real successful protected run, copy only non-secret evidence into `V1_RE
 
 - exact commit/ref;
 - workflow run ID/attempt;
+- application ID;
 - version code/name;
 - APK/AAB/R8 hashes and sizes;
 - non-secret certificate SHA-256 fingerprints;
