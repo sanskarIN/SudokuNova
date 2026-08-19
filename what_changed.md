@@ -115,11 +115,21 @@ This is the current release-version authority and documents:
 - `v2.0.12` tag/publication boundary;
 - historical v1 documentation boundary.
 
-`docs/README.md` now indexes this file as the first current release entry and explicitly classifies v1 release documents as historical release-line evidence.
+The complete active release-documentation set is now synchronized around 2.0.12:
 
-`docs/PRODUCTION_RELEASE_VALIDATION.md` now documents the 2012/2.0.12 workflow defaults and points current evidence capture to the 2.0.12 release authority.
+- `README.md` identifies 2.0.12 as the current source target and keeps v1 runs historical;
+- `docs/README.md` indexes `V2_0_12_RELEASE.md` as the current release authority;
+- `docs/CI_CD.md` documents the 2012/2.0.12 artifact contract and all current repository guards;
+- `docs/PRODUCTION_RELEASE_VALIDATION.md` documents protected workflow defaults and current evidence capture;
+- `docs/BUILDING.md` uses the 2.0.12 build/verifier commands;
+- `docs/TESTING.md` uses the 2.0.12 verification commands/evidence boundary;
+- `docs/RELEASING.md` uses the current 2.0.12 end-to-end release process and `v2.0.12` tag rule;
+- `docs/RELEASE_CHECKLIST.md` includes the explicit 2012/2.0.12 identity and current repository/manual/production gates;
+- `docs/PLAY_STORE_RELEASE.md` uses 2.0.12 identity, assets, evidence and release-note preparation;
+- `ROADMAP.md` classifies v1 as historical release-engineering foundation and makes 2.0.12 the active release milestone;
+- `CHANGELOG.md` makes 2.0.12 the current Unreleased line.
 
-`docs/CI_CD.md` now describes the current 2.0.12 CI/release-artifact contract rather than referring to the v1 RC identity as current.
+Historical v1 release files remain unchanged as evidence where appropriate rather than being rewritten as if they were 2.0.12 work.
 
 ---
 
@@ -274,7 +284,7 @@ Final consolidation commits before the version promotion included:
 - `2ed4ab9ad63a0a9a709c1ee2324d6b738b991bfb` — `docs(progress): record final consolidated hardening state`;
 - `6ea987c7548a4b4e0f427b7486d4ad6465304932` — `docs(changelog): record final repository hardening line`.
 
-2.0.12 promotion commits include:
+2.0.12 promotion and documentation commits include:
 
 - `b804c50d318b5af84751fe188d188526cd4ae4d7` — `chore(release): promote Android metadata to 2.0.12`;
 - `df3529de7dc1f43156fe7af4a49f5b6c036a4831` — `ci(release): verify version 2.0.12 artifacts`;
@@ -282,9 +292,20 @@ Final consolidation commits before the version promotion included:
 - `d1c80e73fa791fb68bb0b984cfb649ea2327e04f` — `docs(release): add 2.0.12 release authority`;
 - `9655d4f91e5312aad0369ad6b9ef029359994a9b` — `docs(index): make 2.0.12 the current release authority`;
 - `7548168328fa8321e5261a4a99f7932a3f98eee4` — `docs(release): align protected validation with 2.0.12`;
-- `351aa8ba47796e16145d5c0ab91367beb4bd79ee` — `docs(ci): align quality gates with 2.0.12`.
+- `351aa8ba47796e16145d5c0ab91367beb4bd79ee` — `docs(ci): align quality gates with 2.0.12`;
+- `2f2a4c6f5c587469c60396bfb80ef0b36dd7a821` — `docs(progress): promote final ledger to 2.0.12`;
+- `b269a98f5fa607e30df1c2b405673363b0f982f8` — `docs(readme): present 2.0.12 as current release line`;
+- `81e05383395dd35d6d75d3cd14cf27a63bdbaf91` — `docs(changelog): promote unreleased line to 2.0.12`;
+- `10467ea1ec9a255a0f9487b51d572f6f2718235f` — `docs(roadmap): make 2.0.12 the active release milestone`;
+- `6feca7e8bec97aa155ba91710951d11c20764c94` — `docs(release): make 2.0.12 the active release procedure`;
+- `4c7d0165e10510d77175fc8cbeaf282c1254d831` — `docs(store): align release preparation with 2.0.12`;
+- `48e9800816c478206a30405a5a71da612d08561a` — `docs(release): align checklist with 2.0.12 evidence`;
+- `a859f62a2257d348c4e28638450dad1718b213e9` — `docs(build): align build and verifier commands with 2.0.12`;
+- `6a8a96048baae217ad8873cfda1be7dab2ebf5ed` — `docs(testing): align verification strategy with 2.0.12`.
 
-This update is another focused documentation commit and therefore changes the exact pull-request head again. Workflow results from any earlier head are historical only.
+The pre-ledger head `6a8a96048baae217ad8873cfda1be7dab2ebf5ed` created Android CI run #774 / `32255133419` and Android Instrumentation run #273 / `32255133412`; they were queued/pending when observed. This ledger update itself changes the PR head, so those runs become historical and **must not** be used as final evidence for the new head.
+
+No further branch edits are intended after this ledger commit unless a fresh exact-head gate reveals a concrete defect.
 
 ---
 
@@ -298,6 +319,13 @@ Before PR #30 can merge as the 2.0.12 source line, its exact final head must pas
 The standard CI run must include the current version contract and all repository guards. The connected run must exercise the maintained Compose/Room integration suite.
 
 No merge should occur from an older successful SHA after a later documentation or source commit changes the head.
+
+After the final workflow pair completes, record:
+
+- exact final head SHA;
+- Android CI run number/ID/result;
+- API-35 instrumentation run number/ID/result;
+- merge commit only if the exact final head is green and actually merged.
 
 ---
 
