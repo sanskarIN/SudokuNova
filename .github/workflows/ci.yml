@@ -107,6 +107,7 @@ jobs:
             --metadata app/build/outputs/apk/release/output-metadata.json \
             --expected-version-code 1000 \
             --expected-version-name 1.0.0-rc.1 \
+            --expected-application-id in.sanskar.sudokunova \
             --output app/build/outputs/release-evidence/sha256.txt
 
       - name: Upload verification reports
