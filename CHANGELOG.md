@@ -4,6 +4,37 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ## [Unreleased]
 
+### v1.0 Final Repository Verification and Documentation Coverage — Pending Exact-Head Verification
+
+PR #30 is the consolidated final repository-side hardening line for the current RC checkpoint. It combines complete Git-tracked documentation ownership/discoverability enforcement with the embedded APK/release-verifier hardening originally developed on PR #29. Stable `v1.0.0` remains unclaimed until the real manual, physical-device, production-signing, repository-admin, store, stable-metadata, and publication evidence in issue #5 is completed.
+
+#### Added
+- `scripts/verify_documentation_coverage.py` using `git ls-files -z` to fail closed when any tracked path lacks a maintained documentation owner or a coverage rule points to an untracked canonical document.
+- Documentation-index enforcement requiring tracked detailed `docs/*.md` guides to remain discoverable from `docs/README.md`.
+- Deterministic documentation-coverage regression tests across Android source/resources/tests/schemas, engine, Macrobenchmark, scripts, GitHub metadata/workflows, Gradle/root/editor files, docs, unknown paths, missing canonical documents, index omissions, and path normalization.
+- `docs/REPOSITORY_FILE_REFERENCE.md` as the path-oriented ownership/change reference for the complete repository tree.
+- Embedded APK manifest identity inspection for application ID, version code, version name, minimum SDK, target SDK, and debuggable state.
+- Deterministic `apk-identity.txt` release evidence.
+- Release-verifier CLI-boundary regression tests.
+- APK signature-scheme parsing that requires a verified v2-or-newer scheme in mandatory signed-release validation.
+
+#### Changed
+- `scripts/verify_release_contract.py` now synchronizes minSdk/targetSdk in addition to production application ID and version identity.
+- Standard Android CI combines documentation-link, complete documentation-coverage, release-contract, security, translation, release-verifier, engine/JVM/instrumentation-compilation/Macrobenchmark-compilation, lint, build, and embedded APK identity gates.
+- Protected production validation binds SDK expectations to the source release contract, independently verifies the signed APK is non-debuggable, and records embedded identity evidence alongside signature/certificate/hash/workflow context.
+- `docs/CI_CD.md`, repository-guard/testing/maintainer/contributor documentation, the documentation hub, project-structure references, exact-head policy, quality gates, and release-candidate evidence guidance were synchronized with the combined final repository contract.
+- The cumulative historical development ledger is preserved under `docs/archive/what_changed_through_2026-08-19.md`; the root `what_changed.md` is the active final-hardening ledger.
+
+#### Integration defect found and fixed
+- PR #29 and the original PR #30 both changed CI/documentation from the same earlier `main` checkpoint, so independent green results would not have proven their combined tree.
+- The release-hardening line added an archived Markdown ledger while the documentation-coverage line requires tracked detailed guides to be indexed.
+- The branches were consolidated on PR #30, the archived ledger was explicitly indexed, and CI/CD documentation was reconciled without weakening either guard.
+
+#### Verification boundary
+- PR #30 must pass both `Android CI` and API-35 `Android Instrumentation` on its exact final head after all final documentation commits.
+- Workflow results from PR #29, earlier PR #30 heads, or intermediate consolidation commits are historical only.
+- Repository hardening does not by itself prove physical-device accessibility/lifecycle/performance QA, production signing/certificate identity, repository-admin configuration, Play Console/store correctness, final stable metadata, tagging, release publication, or rollout.
+
 ### v1.0 Post-RC Validation Hardening — Verified and Merged
 
 PR #28 hardened the repository-side release-validation and performance-evidence path after RC1. The exact final head `c3e0e3fc217062e374a434cfea46235fd6595f83` passed Android CI run #706 / `32211246803` and API-35 connected instrumentation run #229 / `32211246802`, then merged as `27640cb9089ddae4a9242bb84a8927c3761201f4`.
@@ -117,7 +148,7 @@ Current work remains tracked in issue #5 until stable-production/manual/admin re
 
 ### Release Hardening
 
-v0.9 hardened the cumulative Classic Sudoku implementation for release-quality engineering without adding an unrelated Sudoku variant or cloud/analytics dependency.
+v0.9 is the final source-hardening milestone before stable release validation. This release intentionally improves correctness, accessibility, performance safety, security/release evidence, documentation, and repository hygiene rather than adding an unrelated Sudoku variant or online service.
 
 #### Added
 - CI repository-security guard that rejects committed Android signing/private-key file types, known credential-config filenames, PEM private-key material, and obvious GitHub token patterns.
