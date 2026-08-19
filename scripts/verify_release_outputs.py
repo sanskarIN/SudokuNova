@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Validate SudokuNova Android release outputs and write SHA-256 evidence.
 
-The normal CI path proves archive structure, expected APK metadata, a non-empty
-R8 mapping file, and deterministic SHA-256/size evidence. A protected release
-environment can additionally require APK/AAB signature verification and bind
-those artifacts to expected signing-certificate SHA-256 fingerprints without
+The normal CI path proves archive structure, expected APK identity/version metadata,
+a non-empty R8 mapping file, and deterministic SHA-256/size evidence. A protected
+release environment can additionally require APK/AAB signature verification and
+bind those artifacts to expected signing-certificate SHA-256 fingerprints without
 putting signing credentials in this tool or the repository.
 """
 
@@ -56,13 +56,19 @@ def validate_zip(path: Path, label: str, required_entries: set[str]) -> None:
         raise ValueError(f"{label} is missing required entries: {', '.join(missing)}")
 
 
-def load_apk_metadata(path: Path) -> tuple[int, str]:
+def _load_apk_metadata_payload(path: Path) -> dict[str, object]:
     require_file(path, "APK output metadata")
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"APK output metadata is not valid UTF-8 JSON: {path}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("APK output metadata root must be an object")
+    return payload
 
+
+def load_apk_metadata(path: Path) -> tuple[int, str]:
+    payload = _load_apk_metadata_payload(path)
     elements = payload.get("elements")
     if not isinstance(elements, list) or len(elements) != 1:
         raise ValueError("APK output metadata must contain exactly one release element")
@@ -77,6 +83,14 @@ def load_apk_metadata(path: Path) -> tuple[int, str]:
     if not isinstance(version_name, str) or not version_name:
         raise ValueError("APK output metadata is missing a non-empty versionName")
     return version_code, version_name
+
+
+def load_apk_application_id(path: Path) -> str:
+    payload = _load_apk_metadata_payload(path)
+    application_id = payload.get("applicationId")
+    if not isinstance(application_id, str) or not application_id.strip():
+        raise ValueError("APK output metadata is missing a non-empty applicationId")
+    return application_id
 
 
 def normalize_cert_sha256(value: str) -> str:
@@ -227,6 +241,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--metadata", required=True, type=Path)
     parser.add_argument("--expected-version-code", required=True, type=int)
     parser.add_argument("--expected-version-name", required=True)
+    parser.add_argument(
+        "--expected-application-id",
+        help="expected Android applicationId from APK output metadata",
+    )
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument(
         "--require-signatures",
@@ -270,6 +288,15 @@ def main(argv: list[str] | None = None) -> int:
                 f"Unexpected APK versionName: expected {args.expected_version_name!r}, got {actual_name!r}"
             )
 
+        actual_application_id: str | None = None
+        if args.expected_application_id is not None:
+            actual_application_id = load_apk_application_id(args.metadata)
+            if actual_application_id != args.expected_application_id:
+                raise ValueError(
+                    "Unexpected APK applicationId: "
+                    f"expected {args.expected_application_id!r}, got {actual_application_id!r}"
+                )
+
         apk_digests: list[str] = []
         aab_digests: list[str] = []
         if args.require_signatures:
@@ -283,9 +310,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Release output verification failed: {exc}", file=sys.stderr)
         return 1
 
+    identity = ""
+    if actual_application_id is not None:
+        identity = f", applicationId={actual_application_id}"
     print(
         "Release outputs verified: "
-        f"versionCode={actual_code}, versionName={actual_name}, evidence={args.output}"
+        f"versionCode={actual_code}, versionName={actual_name}{identity}, evidence={args.output}"
     )
     if args.require_signatures:
         print(f"Signature: APK verified; signer SHA-256={','.join(apk_digests)}")
