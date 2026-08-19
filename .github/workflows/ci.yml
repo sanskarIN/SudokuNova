@@ -136,8 +136,8 @@ jobs:
             --aab app/build/outputs/bundle/release/app-release.aab \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code 1000 \
-            --expected-version-name 1.0.0-rc.1 \
+            --expected-version-code 2012 \
+            --expected-version-name 2.0.12 \
             --expected-application-id in.sanskar.sudokunova \
             --require-apk-manifest \
             --expected-min-sdk 26 \
