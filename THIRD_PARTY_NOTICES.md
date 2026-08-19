@@ -16,13 +16,15 @@ SudokuNova uses Android and AndroidX libraries, including:
 - ProfileInstaller;
 - AndroidX Benchmark Macrobenchmark JUnit4 tooling;
 - Jetpack Compose UI, tooling preview, Material 3, Material Icons Extended, and Compose UI testing;
-- AndroidX Test JUnit and Espresso.
+- AndroidX Test JUnit, Test Runner, and Espresso.
 
 These projects are provided by the Android Open Source Project / AndroidX and are generally distributed under the Apache License 2.0. Project information and license texts are available from the official Android Open Source Project and AndroidX source distributions.
 
 `ProfileInstaller` is included in the target app to support Android runtime-profile installation and Macrobenchmark profile/reset operations. The presence of this library does not by itself mean SudokuNova ships a project-generated Baseline Profile.
 
 The `androidx.benchmark:benchmark-macro-junit4` dependency is used only by the dedicated `:macrobenchmark` test module for release-like performance measurement and is not evidence that physical-device benchmark results have already passed.
+
+`androidx.test:runner` is a direct dependency of the Macrobenchmark test module so the instrumentation runner and AndroidX test-size annotations used by the benchmark source are available explicitly rather than relying on an incidental transitive dependency.
 
 ## Kotlin
 
