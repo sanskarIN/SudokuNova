@@ -95,9 +95,11 @@ From GitHub Actions, choose **Production Release Validation**, select the exact 
 - `expected_version_name` — exact release-safe Android version name beginning with an alphanumeric character and then using only alphanumeric characters, `.`, `_`, `+`, or `-`;
 - `upload_signed_artifacts` — normally leave `false`; set `true` only when intentionally retaining the signed APK/AAB as short-lived workflow artifacts.
 
-The production application ID and SDK expectations are intentionally not operator inputs. The workflow pins the application ID to `in.sanskar.sudokunova`, `minSdk` to `26`, and `targetSdk` to `37` for the current RC source contract. `scripts/verify_release_contract.py` fails when those workflow expectations drift from `app/build.gradle.kts` or ordinary CI.
+The production application ID and SDK expectations are intentionally not operator inputs. The workflow pins the application ID to `in.sanskar.sudokunova`, `minSdk` to `26`, and `targetSdk` to `37` for the current source contract. `scripts/verify_release_contract.py` fails when those workflow expectations drift from `app/build.gradle.kts` or ordinary CI.
 
-For the current RC1 source metadata the version defaults are `1000` and `1.0.0-rc.1`. Stable publication must use the final values actually committed for the stable ref.
+For the current **2.0.12** source metadata, the workflow defaults are `versionCode 2012` and `versionName 2.0.12`. Publication must use the exact values committed on the release ref; any later store-accepted build must use a strictly higher version code.
+
+See `V2_0_12_RELEASE.md` for the current release-line evidence requirements. Older v1 release documents remain historical evidence only.
 
 ## Embedded APK manifest verification
 
@@ -156,9 +158,9 @@ The verifier fails closed when the expected application ID is missing/different 
 
 For Play App Signing, distinguish the local upload-key certificate from the app-signing certificate used by Google Play for distributed APKs. Record the correct certificate identity for each stage and validate the Play-distributed artifact separately where required.
 
-## Stable-release evidence boundary
+## Release evidence boundary
 
-After a real successful protected run, copy only non-secret evidence into `V1_RELEASE_EVIDENCE.md`:
+After a real successful protected run, copy only non-secret evidence into the current release ledger defined by `V2_0_12_RELEASE.md` and `what_changed.md`:
 
 - exact commit/ref;
 - workflow run ID/attempt;
