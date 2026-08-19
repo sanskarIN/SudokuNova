@@ -1089,3 +1089,164 @@ The following remain deliberately unclaimed and keep issue #5 open:
 - Android/store publication.
 
 Repository-side RC1 preparation is complete, verified, and merged. Stable production readiness is not complete until the evidence above actually exists.
+
+## Post-RC v1.0 Release Validation and Performance Tooling — 2026-08-19
+
+A focused post-RC branch was created from the merged RC1 line to reduce the remaining stable-release risk without manufacturing production, device, repository-admin, or store evidence.
+
+### Working line
+
+- Branch: `release/v1.0-validation-hardening`.
+- Pull request: `#28` — `release: harden SudokuNova v1.0 validation`.
+- Base at branch creation: `90fa0388d1f90a04adcde617fc8f3a765db32509`.
+- Pre-history-update implementation/documentation head: `9d3665390440f1d4fb219ca9b78b4a530b327f30`.
+- Candidate identity remains `applicationId = in.sanskar.sudokunova`, `versionCode = 1000`, `versionName = 1.0.0-rc.1`.
+- Stable `v1.0.0` remains unclaimed.
+
+This `what_changed.md` append is itself a new branch commit. Therefore the workflow runs attached to `9d3665390440f1d4fb219ca9b78b4a530b327f30` become historical evidence only; the new exact final head must independently pass Android CI and API-35 instrumentation before PR #28 can merge.
+
+### Certificate-bound release output verification
+
+`scripts/verify_release_outputs.py` was extended so a signed release can be validated against the intended package and certificate identities rather than merely checking that some cryptographic signature is valid.
+
+New fail-closed capabilities include:
+
+- production APK `applicationId` validation through `--expected-application-id`;
+- normalized SHA-256 certificate fingerprints accepting hexadecimal with optional colon separators;
+- APK signer-certificate extraction from `apksigner verify --verbose --print-certs`;
+- AAB signature verification through `jarsigner -verify -certs`;
+- explicit rejection of unsigned-AAB output;
+- AAB signer-certificate inspection through `keytool -printcert -jarfile`;
+- expected APK signer certificate identity through `--expected-apk-cert-sha256`;
+- expected AAB signer/upload certificate identity through `--expected-aab-cert-sha256`;
+- deterministic non-secret signer evidence output through `--signature-output`;
+- certificate mismatch failure even when the underlying artifact signature is otherwise valid.
+
+The release-verifier regression suite was expanded for application-ID parsing/rejection, certificate normalization/parsing, missing verifier tools, expected-certificate success/mismatch paths, unsigned-AAB rejection, and deterministic signer-evidence output.
+
+Ordinary Android CI now pins `--expected-application-id in.sanskar.sudokunova` while continuing to verify the unsigned RC APK/AAB/R8/version/hash contract.
+
+### Protected production release validation workflow
+
+Added `.github/workflows/release-validation.yml` as a manually dispatched signed-release validation workflow using a GitHub Environment named `production-release`.
+
+The source-controlled workflow:
+
+- requires expected versionCode/versionName inputs and pins the production application ID rather than accepting package identity as an operator input;
+- validates versionCode/versionName input shape before release work;
+- requires all production signing and expected-certificate secrets before the signed build;
+- validates expected certificate fingerprint shape before release work;
+- does not expose signing secrets as job-wide environment variables;
+- scopes keystore bytes, signing passwords/alias, and certificate fingerprints to the minimum practical steps that need them;
+- reconstructs the keystore only under `$RUNNER_TEMP` with restrictive permissions;
+- passes the temporary keystore path into the existing fail-closed Gradle signing contract;
+- runs repository security, release-verifier tests, and translation parity before signed release assembly;
+- builds signed R8/resource-shrunk APK and AAB outputs;
+- selects exactly one signed APK and one AAB;
+- discovers Android SDK `apksigner`;
+- verifies package/version/signature/certificate identities and artifact hashes;
+- records non-secret SHA-256, signer fingerprint, commit/ref/run, and requested identity metadata evidence;
+- uploads non-secret production-validation evidence with finite retention;
+- uploads signed binaries only after an explicit opt-in and with shorter retention;
+- removes the materialized keystore in an `always()` cleanup step.
+
+The workflow source does not prove that the `production-release` GitHub Environment, reviewers, allowed refs, secrets, or real signing key have actually been configured. `docs/GITHUB_REPOSITORY_SETTINGS.md`, `docs/PRODUCTION_SIGNING.md`, and `docs/PRODUCTION_RELEASE_VALIDATION.md` keep that repository-admin/secret-management boundary explicit.
+
+### Reproducible Android performance harness
+
+A separate `:macrobenchmark` module was added so stable-release startup/frame evidence can be collected reproducibly instead of relying on subjective observations.
+
+Build/tooling changes include:
+
+- stable AndroidX Macrobenchmark dependency `1.4.1` in the version catalog;
+- `com.android.test` plugin alias registered through the existing AGP version;
+- `:macrobenchmark` included in Gradle settings;
+- a release-like app `benchmark` build type initialized from `release`;
+- benchmark app variant inherits release R8/resource shrinking behavior;
+- benchmark app variant remains non-debuggable;
+- benchmark app variant uses debug signing so local performance measurement does not need production signing material;
+- benchmark-only `app/src/benchmark/AndroidManifest.xml` adds `<profileable android:shell="true">` without adding that declaration to the production release manifest;
+- benchmark test module targets API 29+ and `in.sanskar.sudokunova` explicitly;
+- self-instrumenting Macrobenchmark configuration keeps the benchmark runner outside the target app process contract.
+
+`StartupBenchmark.kt` adds three real benchmark methods with ten iterations each and a defined `CompilationMode.None()` starting state:
+
+1. cold startup timing with `StartupTimingMetric`;
+2. warm startup timing with `StartupTimingMetric`;
+3. cold-start frame timing with `FrameTimingMetric`.
+
+Each benchmark returns Home during setup and launches the real target app through `startActivityAndWait()` in the measured block.
+
+Standard Android CI now compiles the harness through:
+
+```bash
+./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+```
+
+This compilation gate proves only that the benchmark module/variant remains buildable. Stable production performance evidence still requires the connected benchmark on representative physical hardware, with the exact commit/device/OS/raw outputs/traces recorded. Emulator timing is not converted into a production claim.
+
+`docs/PERFORMANCE_BENCHMARKING.md` records the physical-device command:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+It also records evidence fields, repeatability rules, threshold discipline, and the explicit decision not to claim a Baseline Profile optimization until one is separately generated, packaged, benchmarked, and reviewed.
+
+### Documentation synchronized in PR #28
+
+The post-RC hardening line updated or added:
+
+- root `README.md`;
+- `docs/README.md`;
+- `docs/CI_CD.md`;
+- `docs/GITHUB_REPOSITORY_SETTINGS.md`;
+- `docs/PERFORMANCE.md`;
+- `docs/PERFORMANCE_BENCHMARKING.md`;
+- `docs/PRODUCTION_RELEASE_VALIDATION.md`;
+- `docs/PRODUCTION_SIGNING.md`;
+- `docs/RELEASING.md`;
+- `docs/TESTING.md`;
+- `docs/V1_RELEASE_EVIDENCE.md`;
+- issue #5 release tracker metadata;
+- PR #28 release-hardening description.
+
+Documentation consistently distinguishes source-controlled tooling from actual production evidence.
+
+### Exact-head verification state at this append
+
+Before this cumulative-history commit, the latest implementation/documentation head `9d3665390440f1d4fb219ca9b78b4a530b327f30` had triggered:
+
+- Android CI run #670 / ID `32206670964` — queued when last observed;
+- Android Instrumentation run #204 / ID `32206670963` — queued when last observed.
+
+Those runs must not be reused after this `what_changed.md` commit changes the PR head. PR #28 remains open until the new exact head receives its own green required workflow pair.
+
+### Stable production evidence still pending
+
+The following are deliberately still unclaimed:
+
+- PR #28 exact-final-head Android CI success;
+- PR #28 exact-final-head API-35 connected instrumentation success;
+- PR #28 merge from the exact verified head;
+- actual `main` branch/ruleset protection and required-check administration;
+- actual `production-release` GitHub Environment configuration, allowed-ref restrictions, reviewer/access controls, and protected secrets;
+- real production/upload signing key material and recovery process;
+- real protected Production Release Validation workflow execution on the exact intended release ref;
+- signed artifact expected-certificate evidence from that real run;
+- signed APK install/launch smoke;
+- distribution-platform AAB validation;
+- TalkBack focus/traversal QA;
+- representative 200% font, phone/tablet/window/orientation QA;
+- high-contrast/reduced-motion device QA;
+- representative physical-device Macrobenchmark startup/frame results and traces;
+- memory and ANR evidence;
+- process-death/lifecycle real-target evidence;
+- final signed-artifact R8 smoke QA;
+- real store screenshots/listing/privacy/data/content/current target-API evidence;
+- final stable versionCode decision and `versionName = 1.0.0` source change;
+- fresh exact-head stable CI/API-35 verification after any stable changes;
+- final `SHIP` decision;
+- immutable `v1.0.0` tag, GitHub Release, and Android/store publication.
+
+The post-RC branch materially reduces the work required to produce trustworthy signing and performance evidence, but it intentionally does not convert tooling existence into a stable-production claim.
