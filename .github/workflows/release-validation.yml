@@ -127,7 +127,9 @@ jobs:
         run: python scripts/verify_no_secrets.py
 
       - name: Verify release verifier regression suite
-        run: python -m unittest scripts.tests.test_verify_release_outputs
+        run: |
+          python -m unittest scripts.tests.test_verify_release_outputs
+          python -m unittest scripts.tests.test_verify_release_cli_validation
 
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
