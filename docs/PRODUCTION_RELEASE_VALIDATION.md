@@ -59,9 +59,21 @@ Configure these secrets in the `production-release` environment:
 - `SUDOKUNOVA_APK_CERT_SHA256` — expected APK signer certificate SHA-256 fingerprint;
 - `SUDOKUNOVA_AAB_CERT_SHA256` — expected AAB signer/upload certificate SHA-256 fingerprint.
 
-Certificate fingerprints may use hexadecimal with or without colon separators. They are normalized by the verifier before comparison.
+Certificate fingerprints may use hexadecimal with or without colon separators. The workflow checks their format before the signed build, and the verifier normalizes them before comparison.
 
 Do not commit these values. Do not place keystore bytes, passwords, tokens, or private keys in issues, pull requests, documentation, screenshots, workflow inputs, or ordinary CI configuration.
+
+### Least-privilege secret exposure
+
+The protected workflow deliberately does **not** place production secrets in job-wide environment variables. Secrets are scoped to the minimum steps that require them:
+
+- the preflight secret/format check receives all required protected values only to confirm presence and certificate-fingerprint shape;
+- the keystore-materialization step receives only the base64 keystore value;
+- the Gradle signed-build step receives only the keystore password, key alias, and key password, while the temporary keystore path comes from `$GITHUB_ENV`;
+- the artifact-verification step receives only the expected certificate SHA-256 values;
+- repository security tests, release-verifier unit tests, translation checks, artifact discovery, evidence recording, and artifact-upload steps do not receive signing passwords or keystore bytes.
+
+This reduces accidental exposure surface but does not make an untrusted ref safe. The signed build necessarily runs repository-controlled Gradle logic while signing credentials are available, so GitHub Environment ref restrictions and reviewer/access controls remain mandatory.
 
 ## Preparing the keystore secret
 
@@ -74,7 +86,7 @@ The repository itself never requires a committed keystore.
 From GitHub Actions, choose **Production Release Validation**, select the exact branch/tag/ref intended for validation, then provide:
 
 - `expected_version_code` — exact positive decimal Android version code for that ref;
-- `expected_version_name` — exact non-empty, single-line Android version name for that ref;
+- `expected_version_name` — exact release-safe Android version name beginning with an alphanumeric character and then using only alphanumeric characters, `.`, `_`, `+`, or `-`;
 - `upload_signed_artifacts` — normally leave `false`; set `true` only when intentionally retaining the signed APK/AAB as short-lived workflow artifacts.
 
 The production application ID is intentionally not an operator input. The workflow pins it to `in.sanskar.sudokunova` so a manual dispatch cannot accidentally validate a different package as SudokuNova.
