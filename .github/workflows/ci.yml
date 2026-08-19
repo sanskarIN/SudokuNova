@@ -52,7 +52,9 @@ jobs:
         run: python scripts/verify_no_secrets.py
 
       - name: Verify release artifact verifier tests
-        run: python -m unittest scripts.tests.test_verify_release_outputs
+        run: |
+          python -m unittest scripts.tests.test_verify_release_outputs
+          python -m unittest scripts.tests.test_verify_release_cli_validation
 
       - name: Verify repository guard regression tests
         run: |
