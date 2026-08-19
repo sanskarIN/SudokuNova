@@ -24,13 +24,15 @@ Start with:
 
 1. [Development Setup](DEVELOPMENT_SETUP.md)
 2. [Project Structure](PROJECT_STRUCTURE.md)
-3. [Architecture](ARCHITECTURE.md)
-4. [Building](BUILDING.md)
-5. [Testing](TESTING.md)
-6. [CI/CD](CI_CD.md)
-7. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-8. [Contributing Guide](CONTRIBUTING_GUIDE.md)
-9. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+3. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+4. [Architecture](ARCHITECTURE.md)
+5. [Building](BUILDING.md)
+6. [Testing](TESTING.md)
+7. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+8. [CI/CD](CI_CD.md)
+9. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+10. [Contributing Guide](CONTRIBUTING_GUIDE.md)
+11. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 ### I am changing Sudoku logic
 
@@ -76,16 +78,18 @@ Read in this order:
 12. [Release Checklist](RELEASE_CHECKLIST.md)
 13. [Release QA](RELEASE_QA.md)
 14. [QA Matrix](QA_MATRIX.md)
-15. [CI/CD](CI_CD.md)
-16. [Testing](TESTING.md)
-17. [Performance](PERFORMANCE.md)
-18. [Accessibility](ACCESSIBILITY.md)
-19. [Privacy](PRIVACY.md)
-20. [`../SECURITY.md`](../SECURITY.md)
-21. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-22. [`../CHANGELOG.md`](../CHANGELOG.md)
-23. [`../ROADMAP.md`](../ROADMAP.md)
-24. [`../what_changed.md`](../what_changed.md)
+15. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+16. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+17. [CI/CD](CI_CD.md)
+18. [Testing](TESTING.md)
+19. [Performance](PERFORMANCE.md)
+20. [Accessibility](ACCESSIBILITY.md)
+21. [Privacy](PRIVACY.md)
+22. [`../SECURITY.md`](../SECURITY.md)
+23. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+24. [`../CHANGELOG.md`](../CHANGELOG.md)
+25. [`../ROADMAP.md`](../ROADMAP.md)
+26. [`../what_changed.md`](../what_changed.md)
 
 For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md).
 
@@ -132,6 +136,10 @@ System-level boundaries between the Android app, engine, persistence, teaching p
 ### [Project Structure](PROJECT_STRUCTURE.md)
 
 Repository tree, three Gradle modules, packages, major source files, test locations, Room schemas, workflows and change-placement rules.
+
+### [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+
+Path-by-path ownership model for every Git-tracked file family, with canonical documentation, change rules, audit commands, and the fail-closed `git ls-files` coverage contract.
 
 ### [Sudoku Engine](SUDOKU_ENGINE.md)
 
@@ -219,9 +227,13 @@ Current JDK/Gradle/AGP/Kotlin/SDK requirements, debug/release APK, release AAB, 
 
 Complete engine/JVM/instrumentation/release-tooling/Macrobenchmark/lint/release/manual QA strategy. v1.0 RC adds artifact-verifier, package/certificate identity, signing fail-closed and benchmark-compilation checks on top of the verified v0.9 suites.
 
+### [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+
+Deterministic local/CI guards for documentation links, complete tracked-file documentation ownership, release source/workflow identity, repository security, translation parity, and release-output validation.
+
 ### [CI/CD](CI_CD.md)
 
-GitHub Actions quality gates, exact-head verification, security/translation scripts, Macrobenchmark compilation, unsigned release evidence, and the separate protected signed-release validation path.
+GitHub Actions quality gates, exact-head verification, repository guards, Macrobenchmark compilation, unsigned release evidence, and the separate protected signed-release validation path.
 
 ### [Performance](PERFORMANCE.md)
 
@@ -247,7 +259,11 @@ Recommended `main` protection/ruleset, required CI checks, protected release env
 
 ### [Documentation Standards](DOCUMENTATION_STANDARDS.md)
 
-Rules for implementation status, verification claims, persistent format docs, privacy/security accuracy, links, style and release documentation audits.
+Rules for implementation status, verification claims, tracked-file documentation ownership, persistent format docs, privacy/security accuracy, links, style and release documentation audits.
+
+### [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+
+Complete repository ownership map. The accompanying verifier obtains every current tracked path from Git and fails when a path has no documented area.
 
 ### [Changelog Guide](CHANGELOG_GUIDE.md)
 
@@ -370,6 +386,8 @@ Detailed implementation/verification/handoff history.
 - [Changelog](../CHANGELOG.md)
 - [Roadmap](../ROADMAP.md)
 - [Implementation Log](../what_changed.md)
+- [Repository File Reference](REPOSITORY_FILE_REFERENCE.md)
+- [Repository Consistency Guards](REPOSITORY_GUARDS.md)
 - [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
 - [CODEOWNERS](../.github/CODEOWNERS)
 - [Funding metadata](../.github/FUNDING.yml)
@@ -377,11 +395,21 @@ Detailed implementation/verification/handoff history.
 
 ## Historical vs Current Documents
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `REPOSITORY_FILE_REFERENCE.md`, `REPOSITORY_GUARDS.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
 
 ## Documentation Maintenance Rule
 
 When code changes, update the narrowest relevant guide in the same work. See [Documentation Standards](DOCUMENTATION_STANDARDS.md).
+
+Every tracked file must retain documentation ownership. Run:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python scripts/verify_documentation_coverage.py
+python scripts/verify_documentation_links.py
+```
+
+before merging structural documentation/repository changes. See [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md) and [Repository Consistency Guards](REPOSITORY_GUARDS.md).
 
 The root `README.md` should remain a concise landing page; this file is the detailed navigation hub.
 
