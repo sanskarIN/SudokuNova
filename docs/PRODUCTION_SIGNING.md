@@ -50,23 +50,25 @@ unset SUDOKUNOVA_KEYSTORE_PATH SUDOKUNOVA_KEYSTORE_PASSWORD \
 
 ## GitHub Actions / protected release validation
 
-The normal repository CI intentionally does not receive production signing secrets. It verifies an unsigned release APK/AAB, R8 mapping, version metadata, archive structure, and SHA-256 evidence.
+The normal repository CI intentionally does not receive production signing secrets. It verifies an unsigned release APK/AAB, R8 mapping, production application ID, version metadata, archive structure, and SHA-256 evidence.
 
 The repository also contains a separate manual workflow, `.github/workflows/release-validation.yml`, named **Production Release Validation**. It is designed to run through a protected GitHub Environment named `production-release` and must not be exposed to untrusted pull-request code.
 
 The protected workflow:
 
 1. requires every configured release secret before doing release work;
-2. reconstructs the keystore only under `$RUNNER_TEMP` with restrictive permissions;
-3. exports the temporary keystore path to the existing Gradle release-signing contract;
-4. runs the repository security guard, release-verifier tests, and translation parity check;
-5. builds the signed release APK and AAB with R8/resource shrinking;
-6. verifies APK and AAB cryptographic signatures;
-7. compares APK and AAB signer certificate SHA-256 fingerprints with protected expected values;
-8. records hashes, sizes, signer fingerprints, exact commit/ref, and workflow-run context;
-9. uploads non-secret verification evidence for 30 days;
-10. uploads signed release binaries only when the workflow operator explicitly opts in;
-11. removes the materialized keystore in an `always()` cleanup step.
+2. validates operator-supplied version metadata before using it;
+3. reconstructs the keystore only under `$RUNNER_TEMP` with restrictive permissions;
+4. exports the temporary keystore path to the existing Gradle release-signing contract;
+5. runs the repository security guard, release-verifier tests, and translation parity check;
+6. builds the signed release APK and AAB with R8/resource shrinking;
+7. verifies the exact production application ID and requested version metadata;
+8. verifies APK and AAB cryptographic signatures;
+9. compares APK and AAB signer certificate SHA-256 fingerprints with protected expected values;
+10. records hashes, sizes, signer fingerprints, exact commit/ref, application ID/version expectations, and workflow-run context;
+11. uploads non-secret verification evidence for 30 days;
+12. uploads signed release binaries only when the workflow operator explicitly opts in;
+13. removes the materialized keystore in an `always()` cleanup step.
 
 See [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md) for environment configuration, secret names, evidence files, and operation rules.
 
@@ -95,7 +97,7 @@ Record the certificate digest/fingerprint and confirm it matches the expected pr
 
 For AABs, verify JAR-signature integrity with the JDK tooling and inspect the signer certificate with `keytool`. Complete the distribution platform's own bundle validation before upload. A successful Gradle build alone is not evidence that the intended production key was used.
 
-The v1.0 release verifier can require both signature checks, bind them to expected certificate identities, and retain the stricter structure/version/mapping/hash checks:
+The v1.0 release verifier can require both signature checks, bind them to expected certificate identities, verify the production Android application ID, and retain the stricter structure/version/mapping/hash checks:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -105,6 +107,7 @@ python scripts/verify_release_outputs.py \
   --metadata path/to/output-metadata.json \
   --expected-version-code <final-version-code> \
   --expected-version-name 1.0.0 \
+  --expected-application-id in.sanskar.sudokunova \
   --output path/to/sha256.txt \
   --require-signatures \
   --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
@@ -112,8 +115,9 @@ python scripts/verify_release_outputs.py \
   --signature-output path/to/signatures.txt
 ```
 
-With `--require-signatures`:
+Metadata/signature behavior:
 
+- `--expected-application-id` requires the APK output metadata to identify `in.sanskar.sudokunova` and fails if the package identity differs or is missing;
 - APK verification requires `apksigner` on `PATH`, requires a reported signer certificate SHA-256 digest, and fails if signature verification fails;
 - AAB verification requires `jarsigner` on `PATH`, requires explicit `jar verified` output, and rejects unsigned output;
 - AAB signer-certificate evidence additionally requires `keytool` on `PATH`;
@@ -123,7 +127,7 @@ With `--require-signatures`:
 - `--signature-output` writes normalized non-secret signer fingerprint evidence;
 - missing verifier tools fail the command rather than silently skipping signature checks.
 
-A cryptographically valid signature from the wrong key is not acceptable release evidence. The expected certificate fingerprint must come from a trusted release record, not from the artifact being validated.
+A cryptographically valid signature from the wrong key or a valid artifact from the wrong Android package is not acceptable release evidence. Expected package/certificate identity must come from the source-controlled product contract and trusted release records, not from the artifact being validated.
 
 ### Play App Signing distinction
 
@@ -147,12 +151,13 @@ Repository CI can prove:
 - release compilation succeeds;
 - R8/resource shrinking succeeds;
 - APK/AAB archives have expected structural entries;
-- APK output metadata has the expected version;
+- APK output metadata has the expected application ID and version;
 - mapping output exists;
 - SHA-256 evidence is generated.
 
 A real successful protected signed-release validation run can additionally prove, for its exact selected ref and generated artifacts:
 
+- the signed artifact metadata identifies the expected production Android package/version;
 - the APK signature is valid;
 - the AAB signature is valid;
 - the APK signer certificate SHA-256 matches the configured expected identity;
