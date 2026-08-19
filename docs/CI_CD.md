@@ -15,22 +15,26 @@ Current v1.0 RC stages include:
 1. checkout;
 2. Java 17 setup;
 3. Gradle wrapper/cache validation;
-4. repository secret/signing-material guard;
-5. release-output verifier Python unit tests;
-6. partial release-signing fail-closed regression;
-7. English/Hindi translation parity;
-8. `:sudoku-engine:test`;
-9. `:app:testDebugUnitTest`;
-10. `:app:assembleDebugAndroidTest`;
-11. `:macrobenchmark:assembleBenchmark`;
-12. debug and release Android lint;
-13. debug APK assembly;
-14. release APK assembly with R8/resource shrinking;
-15. release Android App Bundle assembly;
-16. release APK/AAB/R8 mapping structural/application/version verification;
-17. SHA-256/byte-size release evidence generation;
-18. report/test-result artifact upload;
-19. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
+4. Android SDK `apkanalyzer` discovery for embedded-manifest inspection;
+5. repository secret/signing-material guard;
+6. release-output verifier Python unit tests and CLI-boundary tests;
+7. documentation/release-contract guard regression tests;
+8. partial release-signing fail-closed regression;
+9. repository documentation-link and source/workflow release-contract verification;
+10. English/Hindi translation parity;
+11. `:sudoku-engine:test`;
+12. `:app:testDebugUnitTest`;
+13. `:app:assembleDebugAndroidTest`;
+14. `:macrobenchmark:assembleBenchmark`;
+15. debug and release Android lint;
+16. debug APK assembly;
+17. release APK assembly with R8/resource shrinking;
+18. release Android App Bundle assembly;
+19. release APK/AAB/R8 mapping structural/application/version verification;
+20. independent APK-embedded application/version/SDK/debuggable verification;
+21. SHA-256/byte-size and embedded-identity evidence generation;
+22. report/test-result artifact upload;
+23. successful release APK/AAB/R8 mapping/checksum/identity artifact upload for short-lived verification evidence.
 
 ### Android Instrumentation — `instrumentation.yml`
 
@@ -50,7 +54,7 @@ This gate is particularly important for:
 
 This is a separate manually dispatched workflow for trusted signed-release validation. It uses the `production-release` GitHub Environment and is intentionally outside ordinary pull-request execution.
 
-It requires protected signing secrets, validates the operator-supplied version inputs, reconstructs the keystore only in `$RUNNER_TEMP`, builds signed R8 APK/AAB outputs, requires production `applicationId = in.sanskar.sudokunova`, verifies signatures, binds both artifacts to protected expected signer-certificate SHA-256 fingerprints, records hashes/sizes/signature fingerprints/exact workflow context, and removes the temporary keystore in cleanup.
+It requires protected signing secrets, validates the operator-supplied version inputs, reconstructs the keystore only in `$RUNNER_TEMP`, builds signed R8 APK/AAB outputs, requires production `applicationId = in.sanskar.sudokunova`, binds the expected `minSdk`/`targetSdk` values to the source release contract, independently inspects those identity values plus `debuggable=false` from the built APK, verifies signatures, requires a verified v2-or-newer APK signature scheme, binds both artifacts to protected expected signer-certificate SHA-256 fingerprints, records hashes/sizes/identity/signature fingerprints/exact workflow context, and removes the temporary keystore in cleanup.
 
 The workflow uploads non-secret production validation evidence after success. Signed APK/AAB upload is opt-in and short-lived rather than automatic.
 
@@ -88,6 +92,7 @@ The RC line runs:
 
 ```bash
 python -m unittest scripts.tests.test_verify_release_outputs
+python -m unittest scripts.tests.test_verify_release_cli_validation
 ```
 
 This verifies the pure-Python release-output checker before it is trusted to validate built artifacts.
@@ -101,13 +106,33 @@ Coverage includes:
 - production application ID parsing/rejection when missing;
 - wrong expected application ID rejection;
 - deterministic checksum-manifest content;
+- embedded APK manifest application/version/minimum-SDK/target-SDK/debuggable inspection;
+- embedded debuggable-release and SDK-drift rejection;
+- stable embedded-identity evidence output;
+- expected SDK argument positivity and minimum/target ordering validation;
 - certificate-fingerprint normalization;
 - `apksigner` certificate-digest parsing;
+- `apksigner` verified-signature-scheme parsing;
+- v1-only APK signature rejection when signed validation is required;
 - `keytool` certificate-fingerprint parsing;
 - expected APK signer identity acceptance/rejection;
 - expected AAB signer identity acceptance/rejection;
 - normalized signature-evidence output;
 - missing or invalid signature-verifier tool results.
+
+## Release-Contract Guard
+
+`scripts/verify_release_contract.py` treats `app/build.gradle.kts` as the source-controlled release contract for:
+
+- production application ID;
+- version code;
+- version name;
+- minimum SDK;
+- target SDK.
+
+The guard compares those values with the expectations encoded in ordinary CI and the protected production-validation workflow. CI fails if any of those release identities drift.
+
+The parser also rejects non-positive release/SDK integers, unsafe version-name characters, a production application ID ending in `.debug`, and a target SDK lower than the minimum SDK.
 
 ## Partial-Signing Fail-Closed Gate
 
@@ -238,7 +263,9 @@ After release APK/AAB/R8 mapping generation, ordinary CI runs `scripts/verify_re
 
 - `applicationId in.sanskar.sudokunova`;
 - `versionCode 1000`;
-- `versionName 1.0.0-rc.1`.
+- `versionName 1.0.0-rc.1`;
+- `minSdk 26`;
+- `targetSdk 37`.
 
 The verifier requires:
 
@@ -250,12 +277,20 @@ The verifier requires:
 - non-empty R8 `mapping.txt`;
 - exactly one APK release metadata element;
 - exact expected application ID;
-- exact expected version code/name.
+- exact expected version code/name;
+- exact embedded APK application/version/minimum-SDK/target-SDK identity;
+- embedded `debuggable=false`.
 
-It then writes SHA-256 and byte-size evidence for APK, AAB and mapping to:
+It writes SHA-256 and byte-size evidence for APK, AAB and mapping to:
 
 ```text
 app/build/outputs/release-evidence/sha256.txt
+```
+
+It also writes the independently inspected APK identity to:
+
+```text
+app/build/outputs/release-evidence/apk-identity.txt
 ```
 
 A successful ordinary verifier result does **not** prove production certificate identity or device installability.
@@ -266,13 +301,17 @@ A protected release environment additionally uses:
 
 ```text
 --expected-application-id in.sanskar.sudokunova
+--require-apk-manifest
+--expected-min-sdk <source value>
+--expected-target-sdk <source value>
+--apk-identity-output <path>
 --require-signatures
 --expected-apk-cert-sha256 <trusted fingerprint>
 --expected-aab-cert-sha256 <trusted fingerprint>
 --signature-output <path>
 ```
 
-In this mode the verifier requires the production package identity, requires `apksigner`, `jarsigner`, and `keytool`, verifies cryptographic signatures, extracts normalized signer SHA-256 fingerprints, and fails when identities do not match the trusted expected values.
+In this mode the verifier requires the production package/version/SDK/non-debuggable identity from the APK itself, requires `apksigner`, `jarsigner`, and `keytool`, verifies cryptographic signatures, requires a verified APK v2-or-newer signature scheme, extracts normalized signer SHA-256 fingerprints, and fails when identities do not match the trusted expected values.
 
 The expected fingerprints must come from a trusted release record or platform certificate record—not from the artifact being tested.
 
@@ -297,7 +336,8 @@ Ordinary CI may upload:
 - unsigned release APK output;
 - release AAB output;
 - R8 mapping output;
-- SHA-256 release evidence.
+- SHA-256 release evidence;
+- embedded APK identity/SDK/debuggable evidence.
 
 Ordinary CI currently compiles the Macrobenchmark harness but does not publish hosted-emulator timing numbers as performance evidence.
 
@@ -305,12 +345,12 @@ A real physical-device benchmark evidence package may retain the benchmark outpu
 
 The protected production-validation workflow may upload:
 
-- non-secret signature/hash/workflow-context evidence by default;
+- non-secret signature/hash/embedded-identity/workflow-context evidence by default;
 - signed APK/AAB/R8 mapping only after explicit workflow input opts into short-lived artifact retention.
 
 These artifacts are verification evidence and have limited retention. They should not automatically be described as published production releases.
 
-Do not publish a CI-built artifact as production unless application/package identity, signing, certificate identity, provenance, manual QA, legal/store metadata and the exact final artifact have been validated.
+Do not publish a CI-built artifact as production unless application/package identity, version/SDK identity, signing, certificate identity, provenance, manual QA, legal/store metadata and the exact final artifact have been validated.
 
 ## Production Signing Boundary
 
@@ -318,7 +358,7 @@ Normal pull-request CI intentionally receives no production signing secrets.
 
 The build supports secret-backed signing only when all four required `SUDOKUNOVA_*` build environment values are available in a controlled release environment. Ordinary PRs, forks and untrusted code must not receive those secrets.
 
-The protected workflow additionally requires a base64 keystore secret and expected APK/AAB signer certificate SHA-256 fingerprints in the `production-release` GitHub Environment. The workflow pins the application ID itself rather than accepting it as a dispatch input.
+The protected workflow additionally requires a base64 keystore secret and expected APK/AAB signer certificate SHA-256 fingerprints in the `production-release` GitHub Environment. The workflow pins the application ID and SDK expectations itself rather than accepting them as dispatch inputs.
 
 See:
 
@@ -340,8 +380,8 @@ A green ordinary CI run does not authorize the system to:
 - claim physical-device QA;
 - claim TalkBack/200% font/process-death validation;
 - claim representative startup/frame/memory/ANR performance evidence merely because the Macrobenchmark harness compiles;
-- claim signed artifact identity.
+- claim production-signed artifact identity.
 
-A successful protected production-validation run can establish package/version/signature/certificate identity for the exact generated artifacts, but it still does not authorize store publication or substitute for the remaining manual/admin/store evidence.
+A successful protected production-validation run can establish package/version/SDK/debuggable/signature/certificate identity for the exact generated artifacts, but it still does not authorize store publication or substitute for the remaining manual/admin/store evidence.
 
 Release/publishing remains a controlled maintainer action documented in the release guides.
