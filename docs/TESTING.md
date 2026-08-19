@@ -1,6 +1,6 @@
 # SudokuNova Testing Guide
 
-SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, release tooling, Compose/Room connected tests, static analysis, release builds, artifact verification, Macrobenchmark harness compilation, physical-device performance measurement, and real manual/production release QA.
+SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, repository/documentation/release tooling, Compose/Room connected tests, static analysis, release builds, artifact verification, Macrobenchmark harness compilation, physical-device performance measurement, and real manual/production release QA.
 
 ## Testing Layers
 
@@ -8,14 +8,15 @@ The project uses complementary layers:
 
 1. `sudoku-engine` JVM tests for Sudoku truth and deterministic domain behavior;
 2. Android app JVM tests for codecs/models/presentation-independent application logic;
-3. Python tests for release tooling and repository verification;
+3. Python regression tests for release tooling and repository consistency guards;
 4. Android instrumentation tests for Compose, Room, lifecycle-adjacent and integrated flows;
-5. translation/security/signing-configuration verification scripts;
-6. Android debug/release lint;
-7. debug/release APK and release AAB builds;
-8. release APK/AAB/R8 structural/application/version/checksum verification;
-9. Macrobenchmark harness compilation plus representative physical-device startup/frame measurement;
-10. real manual accessibility/device/performance/signing/store QA.
+5. direct documentation-link, tracked-file documentation-coverage, release-contract, translation and security verification scripts;
+6. release-signing configuration fail-closed verification;
+7. Android debug/release lint;
+8. debug/release APK and release AAB builds;
+9. release APK/AAB/R8 structural/application/version/checksum verification;
+10. Macrobenchmark harness compilation plus representative physical-device startup/frame measurement;
+11. real manual accessibility/device/performance/signing/store QA.
 
 No single layer replaces the others.
 
@@ -126,6 +127,64 @@ The Android app module is configured around JUnit4. Tests in this module should 
 - positive maximum-size requirement.
 
 This protects the pre-parser memory boundary in addition to `BackupCodec`'s structural validation.
+
+## Repository Consistency Guard Tests
+
+Repository guards that can block CI/releases have deterministic Python regression suites under `scripts/tests/`.
+
+Run the documentation-link suite:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_links
+```
+
+It covers repository-local Markdown target handling, ignored/generated locations, repository-boundary rejection, and supported link forms.
+
+Run the complete tracked-file documentation-coverage suite:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+```
+
+It verifies:
+
+- representative path resolution for Android source/tests/resources/Room schemas/benchmark overlays;
+- Sudoku engine source/tests;
+- Macrobenchmark;
+- repository scripts/tests;
+- GitHub workflows/metadata;
+- Gradle/root/editor files;
+- root documents and the `docs/` library;
+- rejection of unknown/unowned tracked paths;
+- rejection when a coverage rule points to an untracked canonical document;
+- deterministic Markdown report rendering;
+- Windows path-separator normalization while preserving legitimate leading-dot paths such as `.github/`.
+
+Run the release source/workflow contract suite:
+
+```bash
+python -m unittest scripts.tests.test_verify_release_contract
+```
+
+It protects package/version identity synchronization between `app/build.gradle.kts`, ordinary CI expected release metadata, and protected release-validation defaults.
+
+After the regression suites, run the guards against the actual checked-out repository:
+
+```bash
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+python scripts/verify_release_contract.py
+```
+
+The documentation-coverage command obtains the complete tracked-file set from `git ls-files -z`; it fails if even one tracked path is outside the maintained documentation ownership taxonomy. For a per-file audit, use:
+
+```bash
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+A green ownership guard proves every tracked path has a canonical documentation area. It does not prove the prose is factually current, so it complements rather than replaces source review, link checks, builds/tests, and manual/release evidence.
+
+See `REPOSITORY_GUARDS.md` and `REPOSITORY_FILE_REFERENCE.md`.
 
 ## Release-Output Verifier Tests
 
@@ -335,7 +394,13 @@ This does **not** prove production signing or store acceptance.
 
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_documentation_links
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python -m unittest scripts.tests.test_verify_release_contract
 python -m unittest scripts.tests.test_verify_release_outputs
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+python scripts/verify_release_contract.py
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test \
   :app:testDebugUnitTest \
@@ -364,7 +429,7 @@ Connected functional instrumentation and physical-device Macrobenchmarks should 
 
 ## Determinism Rules
 
-Deterministic tests are strongly preferred for correctness-critical Sudoku logic and release tooling.
+Deterministic tests are strongly preferred for correctness-critical Sudoku logic and release/repository tooling.
 
 Use:
 
@@ -372,7 +437,9 @@ Use:
 - fixed known puzzles for solver/teaching tests;
 - deterministic candidate-state fixtures for advanced technique evidence;
 - fixed timestamps/keys when testing challenge/history formats where practical;
-- stable artifact manifest ordering and explicit expected application/version metadata.
+- stable artifact manifest ordering and explicit expected application/version metadata;
+- stable path fixtures for repository guard acceptance/rejection;
+- Git's tracked-file set rather than filesystem walking for documentation ownership.
 
 Avoid tests that depend on random global state, wall-clock timing, network availability, or iteration order that is not part of the contract.
 
@@ -452,13 +519,15 @@ For an important defect:
 7. run final required CI/connected gates before merge;
 8. document release-relevant defects in `CHANGELOG.md`/`what_changed.md`.
 
+For repository/documentation structure defects, also add or update the narrow coverage/link guard test that would prevent recurrence.
+
 ## Exact-Head Rule
 
 A successful workflow run applies only to the commit it tested.
 
 If the PR head changes, old success is historical evidence only. Before merge/release, verify the final exact head.
 
-PR #27 satisfied this rule before it was merged for repository-side RC1 preparation. Post-RC release-hardening PR #28 must independently pass both `Android CI` and `Android Instrumentation` on its own final head before merge. Older PR #27 run IDs do not count for PR #28.
+PR #27 satisfied this rule before it was merged for repository-side RC1 preparation. PR #28 independently satisfied it and was merged from verified head `c3e0e3fc217062e374a434cfea46235fd6595f83` after Android CI `#706 / 32211246803` and API-35 Android Instrumentation `#229 / 32211246802` passed. Later pull requests—including the documentation-completion PR #30—must independently satisfy the same rule on their own final heads.
 
 `what_changed.md` should record exact run IDs/head SHAs only after the runs complete.
 
@@ -483,12 +552,14 @@ Use `V1_RELEASE_CANDIDATE.md` as the authoritative v1.0 worksheet and `PLAY_STOR
 
 ## Stable v1.0 Evidence Boundary
 
-The verified merged RC1 preparation proves that its exact repository-side RC source and automation were green. A later green PR #28 can prove only that the additional release-validation/performance tooling is correct on its own exact final head.
+The verified merged RC1 preparation proves that its exact repository-side RC source and automation were green. The verified merged PR #28 proves the additional release-validation/performance tooling was green on its own exact final head.
 
 Neither result by itself proves that stable `v1.0.0` is ready to ship.
 
 Stable promotion additionally requires the actual manual/production evidence described above plus a final exact stable source SHA, signed artifacts, certificate verification, release hashes, representative physical-device performance evidence, and a deliberate `SHIP` decision.
 
+Documentation/repository guard success also does not substitute for these stable-production requirements.
+
 ## CI Reference
 
-See `CI_CD.md` for the complete GitHub Actions gate and artifact policy, `PRODUCTION_SIGNING.md` and `PRODUCTION_RELEASE_VALIDATION.md` for signing/identity verification, `PERFORMANCE_BENCHMARKING.md` for physical performance evidence, and `RELEASING.md` for the RC-to-stable process.
+See `CI_CD.md` for the complete GitHub Actions gate and artifact policy, `REPOSITORY_GUARDS.md` and `REPOSITORY_FILE_REFERENCE.md` for repository/documentation consistency enforcement, `PRODUCTION_SIGNING.md` and `PRODUCTION_RELEASE_VALIDATION.md` for signing/identity verification, `PERFORMANCE_BENCHMARKING.md` for physical performance evidence, and `RELEASING.md` for the RC-to-stable process.
