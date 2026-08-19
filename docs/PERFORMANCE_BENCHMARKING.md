@@ -11,8 +11,11 @@ The benchmark path consists of:
 - `benchmark` uses the debug signing key only so maintainers can benchmark locally without exposing the production keystore;
 - `benchmark` remains non-debuggable;
 - `app/src/benchmark/AndroidManifest.xml` enables shell profiling only for the benchmark variant;
+- target-app `androidx.profileinstaller:profileinstaller:1.4.1` support for Macrobenchmark profile capture/reset and shader-cache operations;
 - separate `:macrobenchmark` `com.android.test` module;
 - Macrobenchmark library `1.4.1`;
+- benchmark test-manifest visibility for `in.sanskar.sudokunova`;
+- API-29 benchmark-output compatibility isolated to the test APK;
 - cold-start timing benchmark;
 - warm-start timing benchmark;
 - startup frame-timing benchmark;
@@ -20,7 +23,13 @@ The benchmark path consists of:
 - ten iterations per benchmark method;
 - standard CI compilation gate for the benchmark harness.
 
-The production `release` manifest is not made profileable by this setup because the `<profileable>` declaration lives only in the `benchmark` source set.
+The production `release` manifest is not made profileable by this setup because the `<profileable>` declaration lives only in the `benchmark` source set. The Macrobenchmark test APK's package-visibility/output compatibility declarations likewise live only in `macrobenchmark/src/main/AndroidManifest.xml` and do not alter the production app manifest.
+
+## Why ProfileInstaller is explicit
+
+Android's Macrobenchmark setup guidance requires the target app to include a sufficiently recent ProfileInstaller so the benchmark framework can reliably perform profile capture/reset and shader-cache handling. SudokuNova pins `androidx.profileinstaller:profileinstaller:1.4.1` explicitly in the version catalog and app dependency graph rather than relying on an incidental transitive dependency.
+
+This dependency does **not** mean SudokuNova currently ships a project-generated Baseline Profile. ProfileInstaller and a generated Baseline Profile are separate concerns; the Baseline Profile boundary remains documented below.
 
 ## Why this is a separate module
 
@@ -34,7 +43,9 @@ The target package is intentionally explicit so a benchmark cannot silently meas
 
 ## Supported benchmark targets
 
-The `:macrobenchmark` module requires Android API 29 or newer. For stable-release evidence, prefer a representative **physical** Android device on a current supported OS version.
+The `:macrobenchmark` module requires Android API 29 or newer. For stable-release evidence, use a representative **physical** Android device on a current supported OS version.
+
+For the committed `CompilationMode.None()` startup suite, Android 14 / API 34 or newer is the preferred evidence target because modern Macrobenchmark can reset compilation state while preserving app state more reliably. API 29–33 remain useful for compatibility/smoke work, but runs on older releases can require reinstall behavior while compilation state is reset.
 
 Do not treat emulator timings as production evidence. Emulators are useful for compilation/smoke/debugging of the benchmark harness but share host resources and are not representative performance targets.
 
@@ -73,6 +84,7 @@ gradlew.bat :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
 Before recording evidence:
 
 - use a physical target rather than an emulator;
+- prefer Android 14 / API 34 or newer for the committed compilation-reset workflow;
 - avoid simultaneously running heavy unrelated workloads on the target/host;
 - keep the target’s power/thermal state reasonably consistent across comparison runs;
 - record whether the device is charging;
@@ -155,6 +167,8 @@ The API-35 instrumentation workflow remains a functional Compose/Room correctnes
 ## Baseline Profile boundary
 
 The v1.0 release line currently adds measurement infrastructure, not a generated Baseline Profile optimization. Introducing or refreshing Baseline Profiles changes the performance-delivery pipeline and should be done as a separately reviewed optimization with its own generation, packaging, benchmark comparison, and exact-release verification.
+
+The presence of ProfileInstaller is required benchmark/profile infrastructure and must not be described as proof that a SudokuNova-generated Baseline Profile exists or improves startup.
 
 Do not claim Baseline Profile performance benefits unless a profile is actually generated, packaged, and measured for SudokuNova.
 
