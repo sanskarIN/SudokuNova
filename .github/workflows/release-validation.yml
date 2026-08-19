@@ -34,6 +34,8 @@ jobs:
     environment: production-release
 
     env:
+      EXPECTED_VERSION_CODE: ${{ inputs.expected_version_code }}
+      EXPECTED_VERSION_NAME: ${{ inputs.expected_version_name }}
       SUDOKUNOVA_KEYSTORE_BASE64: ${{ secrets.SUDOKUNOVA_KEYSTORE_BASE64 }}
       SUDOKUNOVA_KEYSTORE_PASSWORD: ${{ secrets.SUDOKUNOVA_KEYSTORE_PASSWORD }}
       SUDOKUNOVA_KEY_ALIAS: ${{ secrets.SUDOKUNOVA_KEY_ALIAS }}
@@ -53,6 +55,19 @@ jobs:
 
       - name: Set up Gradle cache and validate wrapper
         uses: gradle/actions/setup-gradle@v6
+
+      - name: Validate release metadata inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$EXPECTED_VERSION_CODE" =~ ^[1-9][0-9]*$ ]]; then
+            echo 'expected_version_code must be a positive decimal Android versionCode.' >&2
+            exit 1
+          fi
+          if [ -z "$EXPECTED_VERSION_NAME" ] || [[ "$EXPECTED_VERSION_NAME" == *$'\n'* ]] || [[ "$EXPECTED_VERSION_NAME" == *$'\r'* ]]; then
+            echo 'expected_version_name must be a non-empty single-line value.' >&2
+            exit 1
+          fi
 
       - name: Require protected release secrets
         shell: bash
@@ -136,8 +151,8 @@ jobs:
             --aab "$RELEASE_AAB" \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code '${{ inputs.expected_version_code }}' \
-            --expected-version-name '${{ inputs.expected_version_name }}' \
+            --expected-version-code "$EXPECTED_VERSION_CODE" \
+            --expected-version-name "$EXPECTED_VERSION_NAME" \
             --require-signatures \
             --expected-apk-cert-sha256 "$SUDOKUNOVA_APK_CERT_SHA256" \
             --expected-aab-cert-sha256 "$SUDOKUNOVA_AAB_CERT_SHA256" \
@@ -151,13 +166,13 @@ jobs:
           set -euo pipefail
           evidence_dir='app/build/outputs/release-evidence/production'
           {
-            echo "repository=$GITHUB_REPOSITORY"
-            echo "commit=$GITHUB_SHA"
-            echo "ref=$GITHUB_REF"
-            echo "run_id=$GITHUB_RUN_ID"
-            echo "run_attempt=$GITHUB_RUN_ATTEMPT"
-            echo "expected_version_code=${{ inputs.expected_version_code }}"
-            echo "expected_version_name=${{ inputs.expected_version_name }}"
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'commit=%s\n' "$GITHUB_SHA"
+            printf 'ref=%s\n' "$GITHUB_REF"
+            printf 'run_id=%s\n' "$GITHUB_RUN_ID"
+            printf 'run_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'expected_version_code=%s\n' "$EXPECTED_VERSION_CODE"
+            printf 'expected_version_name=%s\n' "$EXPECTED_VERSION_NAME"
           } > "$evidence_dir/workflow-context.txt"
 
       - name: Upload production validation evidence
