@@ -63,23 +63,25 @@ Read in this order:
 1. [v1.0 RC Preparation](V1_RELEASE_PREP.md)
 2. [Building](BUILDING.md)
 3. [Production Signing](PRODUCTION_SIGNING.md)
-4. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
-5. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
-6. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
-7. [Releasing](RELEASING.md)
-8. [Release Checklist](RELEASE_CHECKLIST.md)
-9. [Release QA](RELEASE_QA.md)
-10. [QA Matrix](QA_MATRIX.md)
-11. [CI/CD](CI_CD.md)
-12. [Testing](TESTING.md)
-13. [Performance](PERFORMANCE.md)
-14. [Accessibility](ACCESSIBILITY.md)
-15. [Privacy](PRIVACY.md)
-16. [`../SECURITY.md`](../SECURITY.md)
-17. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-18. [`../CHANGELOG.md`](../CHANGELOG.md)
-19. [`../ROADMAP.md`](../ROADMAP.md)
-20. [`../what_changed.md`](../what_changed.md)
+4. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
+5. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
+6. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
+7. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+8. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+9. [Releasing](RELEASING.md)
+10. [Release Checklist](RELEASE_CHECKLIST.md)
+11. [Release QA](RELEASE_QA.md)
+12. [QA Matrix](QA_MATRIX.md)
+13. [CI/CD](CI_CD.md)
+14. [Testing](TESTING.md)
+15. [Performance](PERFORMANCE.md)
+16. [Accessibility](ACCESSIBILITY.md)
+17. [Privacy](PRIVACY.md)
+18. [`../SECURITY.md`](../SECURITY.md)
+19. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+20. [`../CHANGELOG.md`](../CHANGELOG.md)
+21. [`../ROADMAP.md`](../ROADMAP.md)
+22. [`../what_changed.md`](../what_changed.md)
 
 For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md).
 
@@ -215,7 +217,7 @@ Complete engine/JVM/instrumentation/lint/release/manual QA strategy. v1.0 RC add
 
 ### [CI/CD](CI_CD.md)
 
-GitHub Actions quality gates, exact-head verification, security/translation scripts, release artifacts and failure triage.
+GitHub Actions quality gates, exact-head verification, security/translation scripts, unsigned release evidence, and the separate protected signed-release validation path.
 
 ### [Performance](PERFORMANCE.md)
 
@@ -273,6 +275,10 @@ Concrete source-audit findings and fixes for main-thread work, stale async resul
 
 Authoritative real-target worksheet for installation, gameplay, TalkBack, 200% font/adaptive layouts, contrast/motion, keyboard, process death, measured performance/ANR/memory, production signing, signed artifacts, store assets and final ship/no-ship decision.
 
+### [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
+
+Concise exact-evidence ledger separating already verified repository-side RC evidence from still-pending signed, manual, administrative and store evidence.
+
 ### [Accessibility](ACCESSIBILITY.md)
 
 Accessibility-specific QA requirements.
@@ -285,11 +291,15 @@ Performance/ANR review and measurement guidance.
 
 ### [v1.0 RC Preparation](V1_RELEASE_PREP.md)
 
-Current repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
+Verified repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
 
 ### [Production Signing](PRODUCTION_SIGNING.md)
 
-Four-variable secret-backed signing configuration, fail-closed rules, certificate verification and secure release-environment guidance.
+Four-variable secret-backed signing configuration, fail-closed rules, certificate-bound artifact verification and secure release-environment guidance.
+
+### [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
+
+Protected manual GitHub Actions workflow setup, required environment secrets/restrictions, signed APK/AAB validation, expected certificate identity checks, evidence artifacts and clear boundaries on what the workflow cannot prove.
 
 ### [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
 
@@ -301,7 +311,7 @@ Repository-admin settings that cannot be guaranteed merely by committed source f
 
 ### [Releasing](RELEASING.md)
 
-End-to-end RC/stable process from scope freeze through artifact verification, production signing, manual QA, exact-head evidence, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
+End-to-end RC/stable process from scope freeze through package/version/artifact verification, production signing, certificate identity, manual QA, exact-head evidence, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
 
 ### [Release Checklist](RELEASE_CHECKLIST.md)
 
@@ -346,7 +356,7 @@ Detailed implementation/verification/handoff history.
 
 ## Historical vs Current Documents
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `V1_RELEASE_PREP.md`, `PRODUCTION_SIGNING.md`, `V1_RELEASE_CANDIDATE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `V1_RELEASE_PREP.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
 
 ## Documentation Maintenance Rule
 
