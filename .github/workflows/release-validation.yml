@@ -37,12 +37,6 @@ jobs:
       EXPECTED_APPLICATION_ID: in.sanskar.sudokunova
       EXPECTED_VERSION_CODE: ${{ inputs.expected_version_code }}
       EXPECTED_VERSION_NAME: ${{ inputs.expected_version_name }}
-      SUDOKUNOVA_KEYSTORE_BASE64: ${{ secrets.SUDOKUNOVA_KEYSTORE_BASE64 }}
-      SUDOKUNOVA_KEYSTORE_PASSWORD: ${{ secrets.SUDOKUNOVA_KEYSTORE_PASSWORD }}
-      SUDOKUNOVA_KEY_ALIAS: ${{ secrets.SUDOKUNOVA_KEY_ALIAS }}
-      SUDOKUNOVA_KEY_PASSWORD: ${{ secrets.SUDOKUNOVA_KEY_PASSWORD }}
-      SUDOKUNOVA_APK_CERT_SHA256: ${{ secrets.SUDOKUNOVA_APK_CERT_SHA256 }}
-      SUDOKUNOVA_AAB_CERT_SHA256: ${{ secrets.SUDOKUNOVA_AAB_CERT_SHA256 }}
 
     steps:
       - name: Checkout selected release ref
@@ -65,13 +59,20 @@ jobs:
             echo 'expected_version_code must be a positive decimal Android versionCode.' >&2
             exit 1
           fi
-          if [ -z "$EXPECTED_VERSION_NAME" ] || [[ "$EXPECTED_VERSION_NAME" == *$'\n'* ]] || [[ "$EXPECTED_VERSION_NAME" == *$'\r'* ]]; then
-            echo 'expected_version_name must be a non-empty single-line value.' >&2
+          if [[ ! "$EXPECTED_VERSION_NAME" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
+            echo 'expected_version_name must use release-safe alphanumeric, dot, underscore, plus, or hyphen characters.' >&2
             exit 1
           fi
 
       - name: Require protected release secrets
         shell: bash
+        env:
+          SUDOKUNOVA_KEYSTORE_BASE64: ${{ secrets.SUDOKUNOVA_KEYSTORE_BASE64 }}
+          SUDOKUNOVA_KEYSTORE_PASSWORD: ${{ secrets.SUDOKUNOVA_KEYSTORE_PASSWORD }}
+          SUDOKUNOVA_KEY_ALIAS: ${{ secrets.SUDOKUNOVA_KEY_ALIAS }}
+          SUDOKUNOVA_KEY_PASSWORD: ${{ secrets.SUDOKUNOVA_KEY_PASSWORD }}
+          SUDOKUNOVA_APK_CERT_SHA256: ${{ secrets.SUDOKUNOVA_APK_CERT_SHA256 }}
+          SUDOKUNOVA_AAB_CERT_SHA256: ${{ secrets.SUDOKUNOVA_AAB_CERT_SHA256 }}
         run: |
           set -euo pipefail
           missing=()
@@ -91,8 +92,18 @@ jobs:
             exit 1
           fi
 
+          for name in SUDOKUNOVA_APK_CERT_SHA256 SUDOKUNOVA_AAB_CERT_SHA256; do
+            normalized="${!name//:/}"
+            if [[ ! "$normalized" =~ ^[0-9A-Fa-f]{64}$ ]]; then
+              printf '%s must contain exactly 64 hexadecimal SHA-256 digits (colons optional).\n' "$name" >&2
+              exit 1
+            fi
+          done
+
       - name: Materialize release keystore outside the repository
         shell: bash
+        env:
+          SUDOKUNOVA_KEYSTORE_BASE64: ${{ secrets.SUDOKUNOVA_KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
           umask 077
@@ -114,6 +125,10 @@ jobs:
         run: python scripts/verify_translations.py
 
       - name: Build signed release APK and AAB with R8
+        env:
+          SUDOKUNOVA_KEYSTORE_PASSWORD: ${{ secrets.SUDOKUNOVA_KEYSTORE_PASSWORD }}
+          SUDOKUNOVA_KEY_ALIAS: ${{ secrets.SUDOKUNOVA_KEY_ALIAS }}
+          SUDOKUNOVA_KEY_PASSWORD: ${{ secrets.SUDOKUNOVA_KEY_PASSWORD }}
         run: ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 
       - name: Locate signed release outputs and apksigner
@@ -143,6 +158,9 @@ jobs:
 
       - name: Verify signatures, certificate identities, metadata, R8, and hashes
         shell: bash
+        env:
+          SUDOKUNOVA_APK_CERT_SHA256: ${{ secrets.SUDOKUNOVA_APK_CERT_SHA256 }}
+          SUDOKUNOVA_AAB_CERT_SHA256: ${{ secrets.SUDOKUNOVA_AAB_CERT_SHA256 }}
         run: |
           set -euo pipefail
           evidence_dir='app/build/outputs/release-evidence/production'
@@ -152,12 +170,12 @@ jobs:
             --aab "$RELEASE_AAB" \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code "$EXPECTED_VERSION_CODE" \
-            --expected-version-name "$EXPECTED_VERSION_NAME" \
-            --expected-application-id "$EXPECTED_APPLICATION_ID" \
+            --expected-version-code="$EXPECTED_VERSION_CODE" \
+            --expected-version-name="$EXPECTED_VERSION_NAME" \
+            --expected-application-id="$EXPECTED_APPLICATION_ID" \
             --require-signatures \
-            --expected-apk-cert-sha256 "$SUDOKUNOVA_APK_CERT_SHA256" \
-            --expected-aab-cert-sha256 "$SUDOKUNOVA_AAB_CERT_SHA256" \
+            --expected-apk-cert-sha256="$SUDOKUNOVA_APK_CERT_SHA256" \
+            --expected-aab-cert-sha256="$SUDOKUNOVA_AAB_CERT_SHA256" \
             --output "$evidence_dir/sha256.txt" \
             --signature-output "$evidence_dir/signatures.txt" \
             | tee "$evidence_dir/verification.txt"
