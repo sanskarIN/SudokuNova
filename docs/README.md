@@ -63,28 +63,29 @@ Read:
 Read in this order:
 
 1. [v1.0 RC Preparation](V1_RELEASE_PREP.md)
-2. [Building](BUILDING.md)
-3. [Production Signing](PRODUCTION_SIGNING.md)
-4. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
-5. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-6. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
-7. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
-8. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
-9. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
-10. [Releasing](RELEASING.md)
-11. [Release Checklist](RELEASE_CHECKLIST.md)
-12. [Release QA](RELEASE_QA.md)
-13. [QA Matrix](QA_MATRIX.md)
-14. [CI/CD](CI_CD.md)
-15. [Testing](TESTING.md)
-16. [Performance](PERFORMANCE.md)
-17. [Accessibility](ACCESSIBILITY.md)
-18. [Privacy](PRIVACY.md)
-19. [`../SECURITY.md`](../SECURITY.md)
-20. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-21. [`../CHANGELOG.md`](../CHANGELOG.md)
-22. [`../ROADMAP.md`](../ROADMAP.md)
-23. [`../what_changed.md`](../what_changed.md)
+2. [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
+3. [Building](BUILDING.md)
+4. [Production Signing](PRODUCTION_SIGNING.md)
+5. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
+6. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+7. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
+8. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
+9. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+10. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+11. [Releasing](RELEASING.md)
+12. [Release Checklist](RELEASE_CHECKLIST.md)
+13. [Release QA](RELEASE_QA.md)
+14. [QA Matrix](QA_MATRIX.md)
+15. [CI/CD](CI_CD.md)
+16. [Testing](TESTING.md)
+17. [Performance](PERFORMANCE.md)
+18. [Accessibility](ACCESSIBILITY.md)
+19. [Privacy](PRIVACY.md)
+20. [`../SECURITY.md`](../SECURITY.md)
+21. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+22. [`../CHANGELOG.md`](../CHANGELOG.md)
+23. [`../ROADMAP.md`](../ROADMAP.md)
+24. [`../what_changed.md`](../what_changed.md)
 
 For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md).
 
@@ -278,6 +279,10 @@ v0.9 evidence-oriented hardening matrix retained as a supporting release referen
 
 Concrete source-audit findings and fixes for main-thread work, stale async results, accessibility, localization, Room, transfer/backup, security, and release gates.
 
+### [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
+
+Exact PR #28 head, Android CI/API-35 run IDs, artifact digests, Macrobenchmark compile-defect repair, repository-guard enforcement audit, merge SHA, and stable-release evidence boundary.
+
 ### [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
 
 Authoritative real-target worksheet for installation, gameplay, TalkBack, 200% font/adaptive layouts, contrast/motion, keyboard, process death, measured performance/ANR/memory, production signing, signed artifacts, store assets and final ship/no-ship decision.
@@ -303,6 +308,10 @@ Authoritative source for representative physical-device startup/frame measuremen
 ### [v1.0 RC Preparation](V1_RELEASE_PREP.md)
 
 Verified repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
+
+### [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
+
+Verified exact-head repository evidence for PR #28 and its merge, with all production/manual/admin/store boundaries retained.
 
 ### [Production Signing](PRODUCTION_SIGNING.md)
 
@@ -361,13 +370,14 @@ Detailed implementation/verification/handoff history.
 - [Changelog](../CHANGELOG.md)
 - [Roadmap](../ROADMAP.md)
 - [Implementation Log](../what_changed.md)
+- [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
 - [CODEOWNERS](../.github/CODEOWNERS)
 - [Funding metadata](../.github/FUNDING.yml)
 - [Generated release-note config](../.github/release.yml)
 
 ## Historical vs Current Documents
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
 
 ## Documentation Maintenance Rule
 
