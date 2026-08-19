@@ -4,6 +4,7 @@ from scripts.verify_documentation_coverage import (
     coverage_for_path,
     render_markdown,
     validate_coverage,
+    validate_documentation_index,
 )
 
 
@@ -70,6 +71,49 @@ class DocumentationCoverageVerifierTest(unittest.TestCase):
             ["Tracked file has no documentation coverage rule: new-module/src/main/example.kt"],
             errors,
         )
+
+    def test_documentation_index_accepts_every_linked_detailed_guide(self) -> None:
+        tracked = {
+            "docs/README.md",
+            "docs/BUILDING.md",
+            "docs/REPOSITORY_GUARDS.md",
+        }
+        index_text = """
+# Docs
+
+- [Building](BUILDING.md)
+- [Repository guards](./REPOSITORY_GUARDS.md#coverage)
+"""
+
+        errors = validate_documentation_index(tracked, index_text)
+
+        self.assertEqual([], errors)
+
+    def test_documentation_index_rejects_hidden_detailed_guide(self) -> None:
+        tracked = {
+            "docs/README.md",
+            "docs/BUILDING.md",
+            "docs/UNINDEXED_GUIDE.md",
+        }
+        index_text = "[Building](BUILDING.md)"
+
+        errors = validate_documentation_index(tracked, index_text)
+
+        self.assertEqual(
+            ["Detailed documentation file is not linked from docs/README.md: docs/UNINDEXED_GUIDE.md"],
+            errors,
+        )
+
+    def test_documentation_index_ignores_root_markdown_and_docs_index_itself(self) -> None:
+        tracked = {
+            "README.md",
+            "what_changed.md",
+            "docs/README.md",
+        }
+
+        errors = validate_documentation_index(tracked, "# Documentation")
+
+        self.assertEqual([], errors)
 
     def test_markdown_report_lists_each_resolved_file_and_documents(self) -> None:
         tracked = {
