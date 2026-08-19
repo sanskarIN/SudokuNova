@@ -8,7 +8,7 @@ Current workflows live under `.github/workflows/`.
 
 ### Android CI — `ci.yml`
 
-The standard pull-request gate verifies source integrity, tests, lint, release compilation, performance-harness compilation and RC artifact evidence.
+The standard pull-request gate verifies source integrity, repository/documentation consistency, tests, lint, release compilation, performance-harness compilation and RC artifact evidence.
 
 Current v1.0 RC stages include:
 
@@ -17,20 +17,22 @@ Current v1.0 RC stages include:
 3. Gradle wrapper/cache validation;
 4. repository secret/signing-material guard;
 5. release-output verifier Python unit tests;
-6. partial release-signing fail-closed regression;
-7. English/Hindi translation parity;
-8. `:sudoku-engine:test`;
-9. `:app:testDebugUnitTest`;
-10. `:app:assembleDebugAndroidTest`;
-11. `:macrobenchmark:assembleBenchmark`;
-12. debug and release Android lint;
-13. debug APK assembly;
-14. release APK assembly with R8/resource shrinking;
-15. release Android App Bundle assembly;
-16. release APK/AAB/R8 mapping structural/application/version verification;
-17. SHA-256/byte-size release evidence generation;
-18. report/test-result artifact upload;
-19. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
+6. repository-guard regression tests for documentation links, complete tracked-file documentation coverage and release source/workflow identity;
+7. partial release-signing fail-closed regression;
+8. direct repository consistency guards for documentation links, complete tracked-file documentation coverage and release source/workflow identity;
+9. English/Hindi translation parity;
+10. `:sudoku-engine:test`;
+11. `:app:testDebugUnitTest`;
+12. `:app:assembleDebugAndroidTest`;
+13. `:macrobenchmark:assembleBenchmark`;
+14. debug and release Android lint;
+15. debug APK assembly;
+16. release APK assembly with R8/resource shrinking;
+17. release Android App Bundle assembly;
+18. release APK/AAB/R8 mapping structural/application/version verification;
+19. SHA-256/byte-size release evidence generation;
+20. report/test-result artifact upload;
+21. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
 
 ### Android Instrumentation — `instrumentation.yml`
 
@@ -66,7 +68,7 @@ If a code/documentation commit that triggers the pull-request workflows is added
 
 Do not cite a workflow run from an older head as evidence for a newer head.
 
-PR #27 completed and merged the verified RC1 repository-preparation line. Any later release-hardening pull request must independently satisfy the same exact-final-head rule before merge.
+PR #27 completed and merged the verified RC1 repository-preparation line. PR #28 completed and merged the verified post-RC validation/performance-tooling line. Any later hardening/documentation/stable-promotion pull request must independently satisfy the same exact-final-head rule before merge.
 
 ## Repository Security Guard
 
@@ -81,6 +83,47 @@ It is designed to reject committed material such as:
 This is a defense-in-depth repository guard, not a substitute for GitHub secret scanning or careful review.
 
 Production signing material must remain outside version control.
+
+## Documentation and Repository-Contract Gates
+
+Standard Android CI runs deterministic regression tests for the repository guards and then executes the guards against the checked-out pull-request head.
+
+### Documentation link integrity
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_links
+python scripts/verify_documentation_links.py
+```
+
+This rejects missing repository-local Markdown file/image targets and links that escape the repository root.
+
+### Complete tracked-file documentation coverage
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python scripts/verify_documentation_coverage.py
+```
+
+The direct guard obtains the exact tracked-file set with `git ls-files -z`. Every tracked path must resolve to a maintained documentation area, and every canonical document referenced by that area must itself be tracked. A new uncovered path fails closed.
+
+Use this for an audit-friendly mapping of every tracked path:
+
+```bash
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+See `REPOSITORY_FILE_REFERENCE.md` for the ownership taxonomy and `REPOSITORY_GUARDS.md` for guard semantics.
+
+### Release source/workflow identity
+
+```bash
+python -m unittest scripts.tests.test_verify_release_contract
+python scripts/verify_release_contract.py
+```
+
+This keeps the Android source application/version identity synchronized with the ordinary CI and protected release-validation workflow expectations.
+
+These repository-contract gates are deliberately cheap and run before the Gradle source/build workload. They reduce the chance of spending a full Android build on a branch that already has deterministic repository drift.
 
 ## Release-Verifier Unit Gate
 
@@ -322,6 +365,8 @@ The protected workflow additionally requires a base64 keystore secret and expect
 
 See:
 
+- `REPOSITORY_GUARDS.md`;
+- `REPOSITORY_FILE_REFERENCE.md`;
 - `PRODUCTION_SIGNING.md`;
 - `PRODUCTION_RELEASE_VALIDATION.md`;
 - `PERFORMANCE_BENCHMARKING.md`;
