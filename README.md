@@ -13,15 +13,17 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 ## Current Development Status
 
-**v0.9.0 — Release Hardening is merged and verified on `main`.** Final PR head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9` passed Android CI run `32139568718` and API-35 connected instrumentation run `32139568591` before PR #25 was merged as `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
+**The current source release target is SudokuNova 2.0.12.** The active release contract is `versionCode 2012` / `versionName 2.0.12`, application ID `in.sanskar.sudokunova`, `minSdk 26`, and `targetSdk 37`. The current final hardening/version line is PR #30 and must pass both Android CI and API-35 Android Instrumentation on its exact final head before merge.
 
-**v1.0 RC1 repository-side preparation is also verified and merged.** Final PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` passed Android CI run `32151771317` and API-35 connected instrumentation run `32151771297`, then merged as `2329881aff8dabaf8d040918e16b6113e3900245`. The merged candidate metadata is `versionCode 1000` / `versionName 1.0.0-rc.1`.
+**2.0.12 is not yet claimed as published.** Source metadata, CI defaults, protected-release defaults, release documentation, and repository guards are prepared for 2.0.12, but production signing, real-device accessibility/lifecycle/performance QA, repository administration, distribution-platform validation, final SHIP approval, `v2.0.12` tagging, GitHub Release creation, and store publication require real evidence.
 
-**Post-RC v1.0 validation hardening is verified and merged.** Final PR #28 head `c3e0e3fc217062e374a434cfea46235fd6595f83` passed Android CI run #706 / `32211246803` and API-35 connected instrumentation run #229 / `32211246802`, then merged as `27640cb9089ddae4a9242bb84a8927c3761201f4`.
+Historical verified milestones remain preserved:
 
-Post-RC hardening adds a protected manual production-release validation workflow, stronger artifact/package/certificate identity checks, deterministic repository consistency guards, and a dedicated release-like Macrobenchmark module. Release verification can require the exact production `applicationId`, cryptographic APK/AAB signatures, and expected APK/AAB signer-certificate SHA-256 fingerprints while retaining archive/version/R8/hash evidence. Ordinary CI also compiles the performance harness, but physical-device timing remains a separate evidence requirement.
+- **v0.9.0 Release Hardening** — final PR #25 head `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`; Android CI `32139568718`; API-35 instrumentation `32139568591`; merge `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
+- **v1.0 RC1 repository preparation** — final PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`; Android CI `32151771317`; API-35 instrumentation `32151771297`; merge `2329881aff8dabaf8d040918e16b6113e3900245`; historical metadata `1000 / 1.0.0-rc.1`.
+- **Post-RC v1 validation hardening** — final PR #28 head `c3e0e3fc217062e374a434cfea46235fd6595f83`; Android CI #706 / `32211246803`; API-35 instrumentation #229 / `32211246802`; merge `27640cb9089ddae4a9242bb84a8927c3761201f4`.
 
-Stable `v1.0.0` is **not yet claimed**. Issue #5 remains open for TalkBack, representative 200% font/device/window QA, physical-device performance/ANR evidence, process-death scenarios, GitHub `main` protection/ruleset administration, actual production signing and a real protected validation run, signed artifact installation/distribution verification, real store/repository assets/declarations, final stable metadata, and publication evidence.
+Those older workflow runs are historical evidence only and cannot be reused as final 2.0.12 verification.
 
 ## Complete Documentation
 
@@ -33,18 +35,19 @@ The repository also has an enforceable tracked-file documentation ownership cont
 
 High-value entry points:
 
+- [2.0.12 Release Line](docs/V2_0_12_RELEASE.md)
 - [Repository File Reference and Documentation Coverage](docs/REPOSITORY_FILE_REFERENCE.md)
 - [Repository Consistency Guards](docs/REPOSITORY_GUARDS.md)
-- [v1.0 RC Preparation](docs/V1_RELEASE_PREP.md)
-- [Post-RC Validation Evidence](docs/POST_RC_VALIDATION_EVIDENCE.md)
-- [v1.0 RC Evidence Worksheet](docs/V1_RELEASE_CANDIDATE.md)
-- [v1.0 Release Evidence Ledger](docs/V1_RELEASE_EVIDENCE.md)
-- [v1.0 Release Notes Source](docs/V1_RELEASE_NOTES.md)
 - [Production Signing](docs/PRODUCTION_SIGNING.md)
 - [Production Release Validation](docs/PRODUCTION_RELEASE_VALIDATION.md)
 - [Performance Benchmarking and Evidence](docs/PERFORMANCE_BENCHMARKING.md)
 - [Play Store Release Preparation](docs/PLAY_STORE_RELEASE.md)
 - [GitHub Repository Settings](docs/GITHUB_REPOSITORY_SETTINGS.md)
+- [v1.0 RC Preparation — historical](docs/V1_RELEASE_PREP.md)
+- [Post-RC Validation Evidence — historical](docs/POST_RC_VALIDATION_EVIDENCE.md)
+- [v1.0 RC Evidence Worksheet — historical](docs/V1_RELEASE_CANDIDATE.md)
+- [v1.0 Release Evidence Ledger — historical](docs/V1_RELEASE_EVIDENCE.md)
+- [v1.0 Release Notes Source — historical](docs/V1_RELEASE_NOTES.md)
 - [User Guide](docs/USER_GUIDE.md)
 - [Complete Feature Reference](docs/FEATURES.md)
 - [Project Structure](docs/PROJECT_STRUCTURE.md)
@@ -181,7 +184,7 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - API-35 connected Compose/Room instrumentation gate
 - Dedicated release-like Macrobenchmark module and CI compilation gate
 - Cold startup, warm startup, and cold-start frame-timing benchmark definitions
-- Release APK/AAB structural/application/version verification and SHA-256 evidence in the v1.0 line
+- Release APK/AAB structural/application/version/SDK/debuggable verification and SHA-256/identity evidence in the 2.0.12 line
 - Partial production-signing configuration fails closed in CI
 - Optional secret-backed production signing without committed credentials
 - Protected manual signed-release workflow using a restricted GitHub Environment
@@ -226,9 +229,9 @@ Exact v0.9 verification:
 
 See [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), and [docs/V09_HARDENING_AUDIT.md](docs/V09_HARDENING_AUDIT.md).
 
-## Verified v1.0 RC1 Repository Preparation
+## Verified v1.0 RC1 Repository Preparation — Historical
 
-PR #27 prepared the first stable-release candidate without weakening the evidence boundary and is now merged.
+PR #27 prepared the v1 release candidate without weakening the evidence boundary and is merged.
 
 Repository-side RC work includes:
 
@@ -257,7 +260,7 @@ Exact RC1 repository verification:
 - R8 mapping SHA-256 `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac`;
 - PR #27 merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
 
-## Verified Post-RC v1.0 Validation Hardening
+## Verified Post-RC v1 Validation Hardening — Historical
 
 PR #28 hardened release identity, protected validation, repository guards, and reproducible performance tooling, and was merged only after the exact final head passed both required workflows.
 
@@ -272,9 +275,23 @@ Exact post-RC repository verification:
 
 During exact-head verification, Android CI #697 exposed a missing direct AndroidX Test Runner dependency for the Macrobenchmark `LargeTest` annotation. That defect was repaired and the exact final run #706 subsequently passed `:macrobenchmark:assembleBenchmark`. The same final run also passed the newly enforced repository guard regression suites and direct guard commands.
 
-See [docs/POST_RC_VALIDATION_EVIDENCE.md](docs/POST_RC_VALIDATION_EVIDENCE.md), [docs/V1_RELEASE_EVIDENCE.md](docs/V1_RELEASE_EVIDENCE.md), and issue #5.
+See [docs/POST_RC_VALIDATION_EVIDENCE.md](docs/POST_RC_VALIDATION_EVIDENCE.md) and [docs/V1_RELEASE_EVIDENCE.md](docs/V1_RELEASE_EVIDENCE.md) for the historical evidence.
 
-Still requiring actual real-world evidence before stable v1.0:
+## Current 2.0.12 Release Line
+
+The current source line promotes the release contract to:
+
+- `versionCode 2012`;
+- `versionName 2.0.12`;
+- `applicationId in.sanskar.sudokunova`;
+- `minSdk 26`;
+- `targetSdk 37`.
+
+Ordinary CI and the protected production-validation workflow use the same version/application/SDK contract and are checked against `app/build.gradle.kts` by `scripts/verify_release_contract.py`.
+
+Current 2.0.12 release preparation also includes complete Git-tracked documentation ownership/discoverability enforcement and independent APK-embedded application/version/SDK/debuggable verification. See [docs/V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md) for the authoritative current release evidence requirements.
+
+Still requiring actual real-world evidence before 2.0.12 publication:
 
 - real TalkBack focus-order traversal;
 - representative 200% font and window/device QA;
@@ -286,7 +303,10 @@ Still requiring actual real-world evidence before stable v1.0:
 - signed production artifact installation/signature verification and expected certificate confirmation;
 - final R8 smoke QA on signed artifacts;
 - real store/repository screenshots, listing text, privacy declarations and release assets;
-- final stable version code, `versionName = 1.0.0`, fresh stable exact-head CI/API-35 verification, SHIP decision, tag and publication.
+- exact-final-head 2.0.12 Android CI/API-35 verification;
+- final signed hashes/identity/signature evidence;
+- final SHIP decision;
+- immutable `v2.0.12` tag and publication.
 
 ## Technology Stack
 
@@ -337,7 +357,7 @@ Complete tracked-file ownership: [docs/REPOSITORY_FILE_REFERENCE.md](docs/REPOSI
 - Android SDK 37 for compilation
 - Android device/emulator on API 26 or newer
 - API 35 emulator/device for reproducing the repository's connected verification gate
-- Representative physical Android hardware for stable-release Macrobenchmark evidence
+- Representative physical Android hardware for production-release Macrobenchmark evidence
 
 ## Build
 
@@ -382,7 +402,7 @@ python scripts/verify_translations.py
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-The v1.0 CI verifies the built release outputs through `scripts/verify_release_outputs.py`, pins `applicationId = in.sanskar.sudokunova`, records SHA-256 evidence, executes repository consistency guards—including complete tracked-file documentation ownership—and compiles the Macrobenchmark harness. Protected signed-release validation can additionally require APK/AAB signatures and trusted expected signer-certificate SHA-256 fingerprints through `.github/workflows/release-validation.yml`. More build types, executable outputs, tooling requirements, signing rules, repository guard semantics, benchmark evidence, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/REPOSITORY_GUARDS.md](docs/REPOSITORY_GUARDS.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md), [docs/PERFORMANCE_BENCHMARKING.md](docs/PERFORMANCE_BENCHMARKING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
+The 2.0.12 CI verifies the built release outputs through `scripts/verify_release_outputs.py`, pins `applicationId = in.sanskar.sudokunova`, verifies `versionCode 2012` / `versionName 2.0.12`, records SHA-256 and embedded APK identity evidence, executes repository consistency guards—including complete tracked-file documentation ownership—and compiles the Macrobenchmark harness. Protected signed-release validation can additionally require APK/AAB signatures and trusted expected signer-certificate SHA-256 fingerprints through `.github/workflows/release-validation.yml`. More build types, executable outputs, tooling requirements, signing rules, repository guard semantics, benchmark evidence, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/REPOSITORY_GUARDS.md](docs/REPOSITORY_GUARDS.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md), [docs/PERFORMANCE_BENCHMARKING.md](docs/PERFORMANCE_BENCHMARKING.md), and [docs/V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md).
 
 ## Testing
 
@@ -410,16 +430,16 @@ Important suites include:
 
 GitHub pull requests are expected to pass both `Android CI` and `Android Instrumentation` on the exact final head when those gates are required for the milestone.
 
-Latest fully verified merged repository-side release evidence:
+Latest fully verified **merged historical** repository-side release evidence remains:
 
-- post-RC v1.0 validation-hardening head `c3e0e3fc217062e374a434cfea46235fd6595f83`;
+- post-RC v1 validation-hardening head `c3e0e3fc217062e374a434cfea46235fd6595f83`;
 - Android CI run #706 / `32211246803`;
 - API-35 connected instrumentation run #229 / `32211246802`;
 - merge commit `27640cb9089ddae4a9242bb84a8927c3761201f4`.
 
-These repository gates do not replace physical-device performance, manual accessibility/device, production-signing, repository-admin, or store evidence required for stable `v1.0.0`.
+The current 2.0.12 head must receive its own fresh workflow pair; older v1 runs do not count. Repository gates also do not replace physical-device performance, manual accessibility/device, production-signing, repository-admin, or store evidence required before 2.0.12 publication.
 
-See [docs/TESTING.md](docs/TESTING.md), [docs/CI_CD.md](docs/CI_CD.md), [docs/REPOSITORY_GUARDS.md](docs/REPOSITORY_GUARDS.md), [docs/REPOSITORY_FILE_REFERENCE.md](docs/REPOSITORY_FILE_REFERENCE.md), and [docs/POST_RC_VALIDATION_EVIDENCE.md](docs/POST_RC_VALIDATION_EVIDENCE.md).
+See [docs/TESTING.md](docs/TESTING.md), [docs/CI_CD.md](docs/CI_CD.md), [docs/REPOSITORY_GUARDS.md](docs/REPOSITORY_GUARDS.md), [docs/REPOSITORY_FILE_REFERENCE.md](docs/REPOSITORY_FILE_REFERENCE.md), and [docs/V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md).
 
 ## Privacy
 
@@ -433,9 +453,9 @@ See [docs/PRIVACY.md](docs/PRIVACY.md), [docs/DATA_STORAGE.md](docs/DATA_STORAGE
 
 The project uses semantic cell descriptions, selected-state semantics, large touch targets where practical, contrast-aware states, adaptive layouts, keyboard support, and high-contrast/reduced-motion preferences. Structured hints add semantics for sources, targets, candidate removals, and final placements so teaching logic is not represented only by color.
 
-Source/automated accessibility hardening and API-35 semantics coverage are verified. Real TalkBack and representative large-font/device validation remain stable-v1.0 release gates and are not claimed as completed.
+Source/automated accessibility hardening and API-35 semantics coverage are part of the repository gate. Real TalkBack and representative large-font/device validation remain 2.0.12 release evidence requirements and are not claimed as completed.
 
-See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) and [docs/V1_RELEASE_CANDIDATE.md](docs/V1_RELEASE_CANDIDATE.md).
+See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) and [docs/V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md).
 
 ## Contributing
 
