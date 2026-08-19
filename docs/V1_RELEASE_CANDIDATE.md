@@ -1,6 +1,6 @@
 # v1.0 Release Candidate Evidence Worksheet
 
-This is the authoritative manual/production evidence worksheet for SudokuNova v1.0. Repository automation has prepared and verified the RC1 repository line, and post-RC source adds stronger release/performance tooling, but this document must not mark real device, accessibility-service, signing, performance, repository-admin, or store checks complete from source review/CI alone.
+This is the authoritative manual/production evidence worksheet for SudokuNova v1.0. Repository automation has prepared and verified the RC1 repository line, and the post-RC validation/performance hardening line is also verified and merged, but this document must not mark real device, accessibility-service, signing, performance, repository-admin, or store checks complete from source review/CI alone.
 
 Current merged candidate metadata:
 
@@ -9,25 +9,32 @@ Current merged candidate metadata:
 - package: `in.sanskar.sudokunova`
 - final verified PR #27 source head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
 - PR #27 merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`
-- post-RC validation/performance tooling PR: `#28` — **open / exact-final-head verification pending**
+- final verified PR #28 source head: `c3e0e3fc217062e374a434cfea46235fd6595f83`
+- PR #28 merge commit: `27640cb9089ddae4a9242bb84a8927c3761201f4`
+- post-RC validation/performance tooling PR: `#28` — **verified and merged**
 - stable publication: **not yet claimed**
 
 If RC version code `1000` is uploaded to a store track that reserves it, the later stable build must use a higher version code.
 
 ## Evidence header
 
-Repository-side automated evidence is prefilled from the exact verified RC1 head. Manual/production identity fields remain blank until real validation occurs. PR #28 evidence must be added only after its final head is actually green and merged.
+Repository-side automated evidence is prefilled from the exact verified RC1 and post-RC hardening heads. Manual/production identity fields remain blank until real validation occurs.
 
-- Source commit SHA: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
-- GitHub PR: `#27` — merged as `2329881aff8dabaf8d040918e16b6113e3900245`
-- Standard Android CI run: `#635 / 32151771317 — PASS`
-- API-35 connected run: `#188 / 32151771297 — PASS`
+- RC1 source commit SHA: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- RC1 GitHub PR: `#27` — merged as `2329881aff8dabaf8d040918e16b6113e3900245`
+- RC1 Standard Android CI run: `#635 / 32151771317 — PASS`
+- RC1 API-35 connected run: `#188 / 32151771297 — PASS`
 - Unsigned RC APK SHA-256: `422a151ab3bb47268a69548ce5669b7a141169cc822400d3ef1376fa476b53c7`
 - Unsigned RC AAB SHA-256: `1bbbb2f227fc432efa74fa6efe16f2f17ae3aa5bf4a59ffac9e2e71de9a7cdfd`
 - RC R8 mapping SHA-256: `0f8b128679e858e0d835f0e3d23bfb629448efc4215703dd6c0f69b155e3f3ac`
-- CI artifact ID: `9330415157`
-- CI artifact digest: `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`
-- PR #28 final source SHA / CI / instrumentation: `________________` — **PENDING exact-final-head verification**
+- RC1 CI artifact ID: `9330415157`
+- RC1 CI artifact digest: `sha256:0f1fa33127f6ae46d633c039bf0aad2e308b11e94bbd5567dd0fbc4805b4263c`
+- PR #28 final source SHA: `c3e0e3fc217062e374a434cfea46235fd6595f83`
+- PR #28 Android CI: `#706 / 32211246803 — PASS`
+- PR #28 API-35 connected run: `#229 / 32211246802 — PASS`
+- PR #28 merge commit: `27640cb9089ddae4a9242bb84a8927c3761201f4`
+- PR #28 unsigned-release-builds artifact ID: `9351009095`
+- PR #28 unsigned-release-builds digest: `sha256:432c0741cf94ee459fcb58c07eaa5316776f38abd15f91827fd04a2e4fb2225c`
 - Production Release Validation run: `________________` — **PENDING protected signed run**
 - APK signer certificate SHA-256: `________________` — **PENDING production signing**
 - AAB upload signer certificate SHA-256: `________________` — **PENDING production signing**
@@ -365,7 +372,7 @@ Evidence/notes:
 All mandatory fields below must be explicit.
 
 - Automated RC1 repository-side exact-head gates: `PASS` — PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
-- PR #28 validation/performance-tooling exact-head gates: `PENDING`
+- PR #28 validation/performance-tooling exact-head gates: `PASS` — head `c3e0e3fc217062e374a434cfea46235fd6595f83`; Android CI `#706 / 32211246803`; API-35 `#229 / 32211246802`
 - Fresh stable-metadata/source exact-head gates: `PENDING`
 - Manual functional matrix: `PENDING`
 - Accessibility/TalkBack: `PENDING`
@@ -377,7 +384,7 @@ All mandatory fields below must be explicit.
 - GitHub repository-admin protection/settings: `PENDING`
 - Production signing/certificate identity: `PENDING`
 - Store assets/declarations: `PENDING`
-- Known release blockers/evidence gaps: `post-RC exact-head, manual/admin/production/performance/stable-promotion evidence listed above remains pending`
+- Known release blockers/evidence gaps: `manual/admin/production-signing/physical-performance/stable-promotion/store evidence listed above remains pending`
 - Final decision: `PENDING`
 - Decision owner: `________________`
 - Decision date: `________________`
