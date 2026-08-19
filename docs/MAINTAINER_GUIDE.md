@@ -1,6 +1,6 @@
 # SudokuNova Maintainer Guide
 
-This guide describes how to maintain SudokuNova as a correctness-first open-source Android project. It complements `CONTRIBUTING.md`, `CONTRIBUTING_GUIDE.md`, `RELEASING.md`, and the technical documentation.
+This guide describes how to maintain SudokuNova as a correctness-first open-source Android project. It complements `CONTRIBUTING.md`, `CONTRIBUTING_GUIDE.md`, `RELEASING.md`, `REPOSITORY_FILE_REFERENCE.md`, `REPOSITORY_GUARDS.md`, and the technical documentation.
 
 ## Maintainer Priorities
 
@@ -12,9 +12,10 @@ When priorities conflict, prefer:
 4. accessibility;
 5. crash/ANR avoidance;
 6. deterministic regression coverage;
-7. maintainable architecture;
-8. UX polish;
-9. feature count.
+7. maintainable architecture and repository contracts;
+8. documentation accuracy/traceability;
+9. UX polish;
+10. feature count.
 
 A feature is not worth shipping if it weakens the earlier priorities.
 
@@ -28,8 +29,11 @@ For milestone pull requests:
 - use focused Conventional Commit-style commits;
 - keep the PR draft while major work or required verification is incomplete;
 - do not merge until required workflows are green on the exact final head;
+- treat any run from an older head as historical evidence only;
 - record final workflow evidence before declaring the milestone verified;
 - close the milestone issue only after successful merge when that is the stated process.
+
+Documentation-only or repository-tooling pull requests still require exact-head workflow verification when the configured pull-request workflows run for them.
 
 ## Repository Automation and Ownership
 
@@ -42,10 +46,44 @@ The public repository carries the project-maintenance surfaces needed for normal
 - `.github/FUNDING.yml` exposes the optional Buy Me a Coffee support link through GitHub's funding metadata;
 - root `SECURITY.md` is the vulnerability-reporting authority;
 - root `SUPPORT.md` is the general support boundary;
-- `.github/workflows/ci.yml` is the standard build/test/release-assembly gate;
-- `.github/workflows/instrumentation.yml` is the API-35 connected Compose/Room gate.
+- `.github/workflows/ci.yml` is the standard repository/build/test/release-assembly gate;
+- `.github/workflows/instrumentation.yml` is the API-35 connected Compose/Room gate;
+- `.github/workflows/release-validation.yml` is the protected, manually dispatched signed-release validation path;
+- `scripts/verify_documentation_links.py` protects repository-local Markdown targets;
+- `scripts/verify_documentation_coverage.py` requires every Git-tracked path to have maintained documentation ownership;
+- `scripts/verify_release_contract.py` keeps source and workflow release identity synchronized;
+- repository security, translation, and release-output verifiers provide additional deterministic fail-closed boundaries.
 
-These files are project infrastructure, not decoration. Changes to them should receive the same review discipline as code because they can affect dependency intake, release evidence, contributor routing, security reporting, or merge confidence.
+These files are project infrastructure, not decoration. Changes to them should receive the same review discipline as code because they can affect dependency intake, release evidence, contributor routing, security reporting, documentation completeness, or merge confidence.
+
+## Complete Tracked-File Documentation Ownership
+
+Git is the authoritative file inventory. Maintain documentation ownership with:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python scripts/verify_documentation_coverage.py
+```
+
+For an exact per-file audit:
+
+```bash
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+The verifier reads `git ls-files -z` and fails when a tracked path is not owned by a documented repository area or when a coverage rule references a canonical document that is no longer tracked.
+
+When introducing a new path family:
+
+1. identify the correct subsystem/maintainer audience;
+2. update/create the narrow canonical guide;
+3. add a narrow coverage rule only if required;
+4. add representative regression coverage;
+5. run the coverage and Markdown-link guards;
+6. update `docs/README.md` for new major references;
+7. update `what_changed.md` when the change is milestone/evidence/handoff significant.
+
+Do not make the guard pass by assigning an unrelated broad owner. See `REPOSITORY_FILE_REFERENCE.md` for the complete taxonomy.
 
 ## Commit Policy
 
@@ -88,7 +126,7 @@ The connector/API or local Git environment controls the actual author metadata a
 
 ## Issue Triage
 
-Classify reports by impact:
+Classify reports by impact.
 
 ### Release blocker
 
@@ -102,7 +140,9 @@ Examples:
 - reproducible startup/crash/ANR on supported Android;
 - release build broken;
 - required accessibility path unusable;
-- final CI/connected gate red.
+- required final CI/connected gate red;
+- release package/version/signature identity cannot be established;
+- a repository guard reveals an unresolved release/security/documentation-contract inconsistency that affects the candidate.
 
 ### High priority
 
@@ -111,14 +151,15 @@ Examples:
 - common gameplay state loss;
 - incorrect statistics/history provenance;
 - major localization/accessibility regression;
-- frequent but recoverable performance stall.
+- frequent but recoverable performance stall;
+- documentation that materially misstates shipped privacy/security/data/release behavior.
 
 ### Normal
 
 Examples:
 
 - isolated visual defect;
-- documentation typo;
+- ordinary documentation typo;
 - enhancement request;
 - non-critical polish.
 
@@ -137,7 +178,8 @@ For `sudoku-engine` changes, verify:
 - teaching evidence never removes the solved candidate;
 - technique ordering changes are intentional;
 - Reveal remains clearly separate from logical evidence;
-- regression tests cover the changed behavior.
+- regression tests cover the changed behavior;
+- engine/difficulty/generation/learning docs are updated when contracts change.
 
 ## Reviewing UI Changes
 
@@ -151,7 +193,8 @@ For Compose/UI changes, check:
 - reduced-motion preference is respected;
 - large text/narrow widths remain usable;
 - English/Hindi resources stay in parity;
-- stable test tags are used only where they improve robust test targeting.
+- stable test tags are used only where they improve robust test targeting;
+- user guide/feature/accessibility/design documentation stays aligned.
 
 ## Reviewing Persistence Changes
 
@@ -165,7 +208,8 @@ For DataStore/Room changes:
 - do not move large archives into Preferences DataStore;
 - verify reset scope precisely;
 - preserve replay/challenge/favorite provenance;
-- review backup format compatibility.
+- review backup format compatibility;
+- update `DATA_STORAGE.md`, `DATA_FORMATS.md`, backup/privacy/security documentation as applicable.
 
 ## Reviewing Transfer Changes
 
@@ -178,7 +222,8 @@ For puzzle/backup imports:
 - do not broaden Android permissions unnecessarily;
 - keep file I/O off the main thread;
 - avoid leaking unrelated data into share payloads;
-- add parser/oversize/duplicate regression tests.
+- add parser/oversize/duplicate regression tests;
+- document compatibility/version changes before release.
 
 ## Dependency Updates
 
@@ -255,12 +300,20 @@ Examples:
 - data format → `DATA_FORMATS.md`;
 - persistence schema → `DATA_STORAGE.md`;
 - build command → `BUILDING.md`;
-- CI gate → `CI_CD.md`;
+- CI/repository guard → `CI_CD.md`, `REPOSITORY_GUARDS.md`;
+- new repository path family → `REPOSITORY_FILE_REFERENCE.md` plus coverage rule/test if needed;
 - release process → `RELEASING.md`/checklists;
 - security/privacy → corresponding policy;
 - milestone state → root `ROADMAP.md`, `CHANGELOG.md`, `what_changed.md` as appropriate.
 
-`what_changed.md` is evidence-oriented. Do not use it to claim a future test result.
+After structural documentation changes run:
+
+```bash
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+```
+
+`what_changed.md` is evidence-oriented. Do not use it to claim a future test result, production signing, physical-device benchmark, TalkBack QA, repository-admin setting, store state, tag, or publication that did not actually occur.
 
 ## Release Candidate Process
 
@@ -268,17 +321,22 @@ Before promoting a release candidate:
 
 1. freeze scope;
 2. complete code/documentation audit;
-3. run the full automated gate;
-4. run API-35 connected tests;
-5. verify release APK/AAB/R8 outputs;
-6. review dependencies/licenses;
-7. verify manifest/permissions/privacy;
-8. execute manual release QA matrix on actual targets as available;
-9. verify large-font/accessibility flows;
-10. verify backup/restore and lifecycle scenarios;
-11. update changelog/release notes;
-12. record exact evidence;
-13. tag only after the intended release commit is final.
+3. run repository security, documentation-link, complete documentation-coverage, release-contract and translation guards;
+4. run the full automated Gradle gate;
+5. run API-35 connected tests;
+6. verify release APK/AAB/R8 outputs and application/version identity;
+7. review dependencies/licenses;
+8. verify manifest/permissions/privacy;
+9. execute manual release QA matrix on actual targets as available;
+10. verify large-font/accessibility flows;
+11. verify backup/restore and lifecycle scenarios;
+12. collect representative physical-device performance evidence;
+13. validate production signing/certificate identity through the protected path when preparing the real signed candidate;
+14. update changelog/release notes/evidence records;
+15. verify every required workflow on the exact final source head;
+16. tag only after the intended release commit is final and the documented ship decision is made.
+
+Source-controlled release tooling does not prove the protected GitHub Environment, production keys, manual QA, or store state exists.
 
 ## Handling a Failed Verification
 
@@ -294,6 +352,8 @@ Instead:
 6. run the full required final-head gate before merge;
 7. document the defect/fix if release-relevant.
 
+For repository/documentation guard failures, repair the ownership/link/contract itself rather than excluding legitimate tracked files from verification without a documented reason.
+
 ## Backporting
 
 Pre-1.0 maintenance normally targets the active development line. If a security/data-integrity issue requires a backport to a published line, create a dedicated branch from the affected release tag/commit and do not mix unrelated feature work.
@@ -308,6 +368,7 @@ Before removing a feature/format/key/schema field:
 - provide migration/compatibility where needed;
 - communicate the removal in changelog/release notes;
 - remove stale documentation/tests only after the code contract changes;
+- update documentation coverage/links for moved/deleted files;
 - avoid silent destructive resets.
 
 ## Maintainer Handoff
@@ -320,8 +381,10 @@ A handoff should include:
 - implemented work;
 - unresolved defects;
 - workflow status/evidence;
+- repository documentation-coverage status;
 - pending manual QA;
+- pending repository-admin/production-signing/store work;
 - relevant documentation pages;
 - whether a release/tag/merge has actually happened.
 
-`what_changed.md` is designed to carry this detailed project history across sessions/maintainers.
+`what_changed.md` is designed to carry this detailed project history across sessions/maintainers. Keep its top current-state block synchronized while preserving historical evidence sections.
