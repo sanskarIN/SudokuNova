@@ -181,13 +181,13 @@ Completed release-hardening work:
 
 ### v0.9 evidence boundary
 
-v0.9 deliberately completed **source, automated, documentation, and repository hardening**. It did not fabricate manual production evidence. Real-device/assistive-technology/signing/store validation remains a v1.0 gate and is tracked in issue #5.
+v0.9 deliberately completed **source, automated, documentation, and repository hardening**. It did not fabricate manual production evidence. The release-validation requirements that followed are preserved in the historical v1 section and continue, where applicable, in the current 2.0.12 release line.
 
-## v1.0 — Stable Classic Sudoku Release
+## v1.0 — Historical RC and Post-RC Release Engineering Foundation
 
-Status: **RC1 and post-RC repository hardening verified and merged; stable production validation still in progress — issue #5**
+Status: **RC1 and post-RC repository hardening verified and merged; superseded as the current version target by 2.0.12**
 
-The v1.0 line is evidence-driven production validation, not another uncontrolled feature-expansion phase.
+This section preserves the verified v1 release-engineering history. Its workflow runs prove only their historical exact heads and must not be reused as final 2.0.12 evidence.
 
 ### Repository-side RC1 preparation — completed
 
@@ -253,63 +253,164 @@ These are unsigned repository-CI verification artifacts, not production-signed r
 - [x] PR #28 merged using the exact verified head — merge commit `27640cb9089ddae4a9242bb84a8927c3761201f4`
 - [x] Focused post-RC evidence record added at `docs/POST_RC_VALIDATION_EVIDENCE.md`
 
-The Macrobenchmark compile gate proves the benchmark harness builds. Representative physical-device performance measurements remain a separate required stable-release gate.
+The Macrobenchmark compile gate proved the benchmark harness built on the verified v1 head. Representative physical-device performance measurements remained a separate production-release evidence requirement and are still required for 2.0.12.
 
-### GitHub repository-admin setting still pending
+### Historical v1 evidence boundary
 
-At RC-prep start and during the post-RC audit, GitHub reported `main` as unprotected. The connected GitHub tool used for this work does not expose branch-protection/ruleset mutation.
+The v1 line established strong source, CI, signing-validation, repository-guard, and performance-harness foundations. It did not complete or fabricate:
 
-- [ ] Enable an appropriate `main` protection/ruleset in GitHub administration
-- [ ] Require `Android CI / verify`
-- [ ] Require `Android Instrumentation / connected-tests`
-- [ ] Review force-push/deletion/bypass and repository security settings
-- [ ] Configure/restrict the `production-release` GitHub Environment and protected signing secrets
+- real GitHub repository-admin protection/environment configuration;
+- real production signing execution;
+- signed artifact certificate/install/distribution evidence;
+- real TalkBack/200% font/device/window QA;
+- representative physical-device performance/memory/ANR evidence;
+- process-death/lifecycle manual evidence;
+- real store listing/privacy/data/content validation;
+- a final SHIP/tag/publication event.
 
-### Required stable-release manual/production validation
+Those evidence categories remain part of the current 2.0.12 release gate where applicable.
 
-- [ ] real TalkBack traversal/focus-order QA on representative target(s)
-- [ ] representative 200% font-scale, narrow-phone, large-phone, tablet/large-window, resize/orientation QA
-- [ ] high-contrast and reduced-motion manual verification
-- [ ] representative physical-device Macrobenchmark startup/frame measurements and retained traces
-- [ ] measured memory/ANR evidence on representative targets
-- [ ] process-death and lifecycle-restoration manual scenarios
-- [ ] secure production/upload signing outside Git using the intended key
-- [ ] real protected Production Release Validation workflow run on the exact intended release ref
-- [ ] signed APK verification with `apksigner` and expected certificate identity
-- [ ] signed AAB verification/distribution-platform validation and expected upload-certificate identity
-- [ ] signed production/production-equivalent APK installation smoke QA
-- [ ] final release-only R8 smoke QA on signed artifacts
-- [ ] real store/repository screenshots and listing/privacy/data/content/target-API review
-- [ ] final stable version-code decision after any RC store-track uploads
-- [ ] promote metadata to stable `versionName = 1.0.0` with a valid higher versionCode where required
-- [ ] fresh exact-head stable Android CI/API-35 verification after final stable metadata/source changes
-- [ ] final signed artifact hashes/signature evidence recorded
-- [ ] final release decision is `SHIP`
-- [ ] immutable `v1.0.0` tag, GitHub Release, and Android/store publication only after evidence exists
+## v2.0.12 — Current Final Release Validation and Production Readiness
 
-### Stable v1.0 product contract
+Status: **Source/version/repository hardening in PR #30; exact-final-head and real production evidence still pending — issue #5**
 
-Stable v1.0 must preserve:
+Current release authority: `docs/V2_0_12_RELEASE.md`.
 
-- polished Classic 9×9 gameplay
-- reliable generator/solver and unique solutions
-- seven supported difficulty levels with calibrated scoring
-- Quick Play and Daily/Weekly Challenges
-- Custom Puzzle and safe sharing/import/export
-- Notes, undo/redo, advanced hints, timer, mistake modes
-- autosave/resume
-- statistics/history/achievements
-- interactive learning center and local practice progress
-- Light/Dark/System/Dynamic Color
-- accessibility and English/Hindi localization
-- Settings, About, Support, privacy/security documentation
-- complete CI/tests/build/release documentation
-- secure production-ready APK/AAB release process
+Current source contract:
 
-### Stable promotion rule
+- Android `versionCode 2012`;
+- Android `versionName 2.0.12`;
+- application ID `in.sanskar.sudokunova`;
+- `minSdk 26`;
+- `targetSdk 37`;
+- `compileSdk 37`.
 
-Do not tag `v1.0.0` until the exact stable source commit has both automated and required manual/production evidence. If RC version code `1000` is accepted by a store/distribution track, the final stable build must use a strictly higher version code.
+### Final repository hardening — implemented
 
-## v1.x — Carefully Selected Extensions
+- [x] Consolidate release-verifier hardening and documentation-completion work onto one final PR #30 line
+- [x] Close temporary integration PR #31 after conflicts were exposed/resolved
+- [x] Close PR #29 as superseded after its complete hardening was integrated into PR #30
+- [x] Add `git ls-files -z` complete tracked-file documentation ownership verification
+- [x] Fail closed for new/unowned tracked paths
+- [x] Fail closed when canonical documentation referenced by a coverage rule is missing/untracked
+- [x] Require every tracked detailed `docs/*.md` guide to be discoverable from `docs/README.md`
+- [x] Add documentation-coverage regression suite
+- [x] Add `docs/REPOSITORY_FILE_REFERENCE.md`
+- [x] Independently inspect APK application ID/version/minSdk/targetSdk/debuggable state with `apkanalyzer`
+- [x] Reject embedded release identity/SDK drift
+- [x] Reject debuggable release APK
+- [x] Add deterministic `apk-identity.txt` evidence
+- [x] Require verified APK v2-or-newer signature scheme for mandatory signed-release validation
+- [x] Add release-verifier CLI-boundary regression suite
+- [x] Extend source/workflow release-contract guard to minSdk/targetSdk
+- [x] Reconcile documentation-link, documentation-coverage and release-contract gates in ordinary CI
+- [x] Preserve protected production validation with step-scoped signing material and expected certificate identities
 
-Possible post-1.0 work should be selected for quality and maintainability rather than feature count. Candidates may include additional Sudoku variants, expanded learning techniques, richer statistics, optional sync/export integrations, or additional platform clients only after Classic Sudoku remains stable and the privacy/security model is explicit.
+### 2.0.12 promotion — implemented
+
+- [x] Promote `app/build.gradle.kts` to `versionCode 2012 / versionName 2.0.12`
+- [x] Promote ordinary CI artifact expectations to `2012 / 2.0.12`
+- [x] Promote protected Production Release Validation defaults to `2012 / 2.0.12`
+- [x] Keep application ID/minSdk/targetSdk pinned and synchronized across source/workflows
+- [x] Add `docs/V2_0_12_RELEASE.md` current release authority
+- [x] Update documentation index for the 2.0.12 release path
+- [x] Update CI/CD and protected-release validation guidance for 2.0.12
+- [x] Update root README to present 2.0.12 as the current source target
+- [x] Update active `what_changed.md` to the 2.0.12 continuation
+- [x] Update changelog current Unreleased line to 2.0.12
+- [x] Preserve v1 release files and exact workflow evidence as historical documentation
+- [x] Update issue #5 to track 2.0.12 production readiness
+- [x] Update PR #30 title/body to the 2.0.12 final line
+
+### Exact final repository verification — pending current head
+
+- [ ] Freeze PR #30 source/documentation head
+- [ ] Android CI green on the exact final 2.0.12 head
+- [ ] API-35 Android Instrumentation green on the same exact final head
+- [ ] Record exact final head SHA and workflow run IDs
+- [ ] Confirm no later commit invalidated the successful pair
+- [ ] Merge PR #30 using the exact verified head
+- [ ] Record merge commit
+
+The final Android CI must verify repository security, release-verifier tests, release CLI boundaries, documentation links, complete documentation coverage, release-contract synchronization, partial-signing failure, translation parity, engine/JVM/instrumentation compilation, Macrobenchmark compilation, debug/release lint, APK/AAB/R8 builds, exact `2012 / 2.0.12` metadata, embedded APK identity/SDK/debuggable state, and release evidence generation.
+
+### GitHub repository administration — pending real evidence
+
+- [ ] Enable/review appropriate `main` protection/ruleset
+- [ ] Require the intended Android CI/instrumentation checks where appropriate
+- [ ] Review force-push/deletion/bypass policy
+- [ ] Review Actions/security settings
+- [ ] Configure/review the `production-release` GitHub Environment
+- [ ] Restrict environment access to trusted maintainers/intended release refs
+- [ ] Add required reviewers/approval controls where supported
+- [ ] Verify protected signing secrets exist without exposing them
+
+### Production signing and exact signed artifacts — pending real evidence
+
+- [ ] Configure/verify secure production/upload signing outside Git
+- [ ] Confirm key recovery/backup process
+- [ ] Run protected Production Release Validation on the exact intended 2.0.12 ref
+- [ ] Verify exact `2012 / 2.0.12` identity from metadata and embedded APK manifest
+- [ ] Verify `minSdk 26 / targetSdk 37`
+- [ ] Verify release APK `debuggable=false`
+- [ ] Verify APK signature and v2-or-newer signature scheme
+- [ ] Verify expected APK signer certificate SHA-256
+- [ ] Verify AAB signature
+- [ ] Verify expected AAB signer/upload certificate SHA-256
+- [ ] Retain production checksum/identity/signature/workflow-context evidence
+- [ ] Record final signed APK/AAB/R8 hashes and sizes
+
+### Physical-device/manual validation — pending real evidence
+
+- [ ] Signed APK install/launch smoke where direct APK distribution is intended
+- [ ] Background/foreground/resume checks
+- [ ] Process-death/lifecycle restoration scenarios
+- [ ] Active game/history/saved/challenge/learning state smoke checks
+- [ ] Backup/export/import/restore smoke checks
+- [ ] Final signed R8 build smoke QA
+- [ ] Real TalkBack traversal/focus-order QA
+- [ ] Sudoku selected/error/hint semantic announcement review
+- [ ] Representative 200% font-scale QA
+- [ ] Narrow phone, large phone and tablet/large-window QA
+- [ ] Resize/orientation QA where applicable
+- [ ] High-contrast manual QA
+- [ ] Reduced-motion manual QA
+- [ ] Hardware-keyboard QA where applicable
+
+### Performance evidence — pending physical hardware
+
+- [ ] Run `:macrobenchmark:connectedBenchmarkAndroidTest` on representative physical hardware
+- [ ] Record exact source commit, device and OS/API level
+- [ ] Retain cold-start results
+- [ ] Retain warm-start results
+- [ ] Retain cold-start frame results
+- [ ] Retain traces where required
+- [ ] Review memory behavior
+- [ ] Review ANR/crash behavior
+
+Hosted-emulator compilation/timing must not be described as representative production-device performance evidence.
+
+### Store/distribution validation — pending real evidence
+
+- [ ] Review current target-API/distribution requirements at submission time
+- [ ] Capture screenshots from the actual 2.0.12 binary
+- [ ] Review listing and release-note text against current behavior
+- [ ] Review privacy/data/content declarations against current behavior
+- [ ] Validate final AAB through the intended distribution platform
+- [ ] Distinguish upload-key and platform app-signing certificate identities where applicable
+- [ ] Verify distributed artifact where platform tooling permits
+- [ ] Review rollout/monitoring/fix-forward plan
+
+### 2.0.12 final promotion rule
+
+Do not create `v2.0.12`, a GitHub Release, or store publication until:
+
+1. the exact final source head has the required green automated pair;
+2. production signing/identity evidence exists;
+3. required physical/manual/accessibility/performance/store evidence is recorded;
+4. no critical/high release blocker remains;
+5. the final decision is explicitly `SHIP` with owner/date.
+
+## Future — Carefully Selected Extensions
+
+Future work should be selected for quality and maintainability rather than feature count. Candidates may include additional Sudoku variants, expanded learning techniques, richer statistics, optional sync/export integrations, or additional platform clients only after the current Classic Sudoku release remains correct, accessible, maintainable, and explicit about privacy/security boundaries.
