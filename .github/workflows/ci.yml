@@ -71,6 +71,9 @@ jobs:
       - name: Compile Android instrumentation tests
         run: ./gradlew :app:assembleDebugAndroidTest --stacktrace
 
+      - name: Compile Macrobenchmark harness
+        run: ./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+
       - name: Run Android lint
         shell: bash
         run: |
