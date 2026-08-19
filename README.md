@@ -29,8 +29,12 @@ The complete categorized documentation hub is:
 
 **[docs/README.md](docs/README.md)**
 
+The repository also has an enforceable tracked-file documentation ownership contract. [`docs/REPOSITORY_FILE_REFERENCE.md`](docs/REPOSITORY_FILE_REFERENCE.md) maps every tracked path family to canonical documentation, while [`scripts/verify_documentation_coverage.py`](scripts/verify_documentation_coverage.py) asks Git for the complete tracked-file set and fails if any path is left without documentation ownership.
+
 High-value entry points:
 
+- [Repository File Reference and Documentation Coverage](docs/REPOSITORY_FILE_REFERENCE.md)
+- [Repository Consistency Guards](docs/REPOSITORY_GUARDS.md)
 - [v1.0 RC Preparation](docs/V1_RELEASE_PREP.md)
 - [Post-RC Validation Evidence](docs/POST_RC_VALIDATION_EVIDENCE.md)
 - [v1.0 RC Evidence Worksheet](docs/V1_RELEASE_CANDIDATE.md)
@@ -65,6 +69,16 @@ High-value entry points:
 - [v0.9 Hardening Audit](docs/V09_HARDENING_AUDIT.md)
 - [Documentation Standards](docs/DOCUMENTATION_STANDARDS.md)
 - [Glossary](docs/GLOSSARY.md)
+
+To audit the documentation owner for every tracked file locally:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python scripts/verify_documentation_coverage.py
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+The coverage guard proves every tracked path has a maintained documentation owner. It does not manufacture a successful build, device QA, production signature, representative physical-device benchmark, repository-admin setting, or store publication claim.
 
 ## Implemented
 
@@ -163,7 +177,7 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - GitHub Actions unit-test/lint/build quality gate
 - Debug/release lint and release APK/AAB/R8 verification
 - Repository secret/signing-material guard
-- Deterministic documentation-link and release-contract guards with regression tests
+- Deterministic documentation-link, complete tracked-file documentation-coverage, and release-contract guards with regression tests
 - API-35 connected Compose/Room instrumentation gate
 - Dedicated release-like Macrobenchmark module and CI compilation gate
 - Cold startup, warm startup, and cold-start frame-timing benchmark definitions
@@ -303,7 +317,8 @@ SudokuNova/
 ├── sudoku-engine/          # Platform-independent Sudoku logic, teaching evidence and tests
 ├── macrobenchmark/         # Release-like Android startup/frame benchmark harness
 ├── docs/                   # Technical and contributor documentation
-├── .github/                # CI, instrumentation, ownership, funding and community templates
+├── scripts/                # Deterministic repository/release consistency tooling
+├── .github/                # CI, instrumentation, release validation, ownership and community metadata
 └── gradle/                 # Version catalog and Gradle wrapper
 ```
 
@@ -312,6 +327,8 @@ The Sudoku engine deliberately has no Android dependency so it can be tested qui
 Detailed design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 Repository map: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
+
+Complete tracked-file ownership: [docs/REPOSITORY_FILE_REFERENCE.md](docs/REPOSITORY_FILE_REFERENCE.md)
 
 ## Requirements
 
@@ -349,8 +366,10 @@ Run the standard local verification tasks:
 python scripts/verify_no_secrets.py
 python -m unittest scripts.tests.test_verify_release_outputs
 python -m unittest scripts.tests.test_verify_documentation_links
+python -m unittest scripts.tests.test_verify_documentation_coverage
 python -m unittest scripts.tests.test_verify_release_contract
 python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
 python scripts/verify_release_contract.py
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test --stacktrace
@@ -363,7 +382,7 @@ python scripts/verify_translations.py
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-The v1.0 CI verifies the built release outputs through `scripts/verify_release_outputs.py`, pins `applicationId = in.sanskar.sudokunova`, records SHA-256 evidence, executes repository consistency guards, and compiles the Macrobenchmark harness. Protected signed-release validation can additionally require APK/AAB signatures and trusted expected signer-certificate SHA-256 fingerprints through `.github/workflows/release-validation.yml`. More build types, executable outputs, tooling requirements, signing rules, benchmark evidence, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md), [docs/PERFORMANCE_BENCHMARKING.md](docs/PERFORMANCE_BENCHMARKING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
+The v1.0 CI verifies the built release outputs through `scripts/verify_release_outputs.py`, pins `applicationId = in.sanskar.sudokunova`, records SHA-256 evidence, executes repository consistency guards—including complete tracked-file documentation ownership—and compiles the Macrobenchmark harness. Protected signed-release validation can additionally require APK/AAB signatures and trusted expected signer-certificate SHA-256 fingerprints through `.github/workflows/release-validation.yml`. More build types, executable outputs, tooling requirements, signing rules, repository guard semantics, benchmark evidence, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/REPOSITORY_GUARDS.md](docs/REPOSITORY_GUARDS.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md), [docs/PERFORMANCE_BENCHMARKING.md](docs/PERFORMANCE_BENCHMARKING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
 
 ## Testing
 
@@ -381,8 +400,8 @@ Important suites include:
 - practice-catalog completeness/determinism tests;
 - learning-progress JVM tests;
 - release artifact verifier unit tests, including package and certificate identity checks;
-- documentation-link and release-contract repository-guard regression tests;
-- direct documentation-link and release-contract repository guards;
+- documentation-link, complete tracked-file documentation-coverage, and release-contract repository-guard regression tests;
+- direct documentation-link, tracked-file documentation-coverage, and release-contract repository guards;
 - release signing fail-closed CI regression;
 - Macrobenchmark harness compilation in ordinary CI;
 - Compose/Room connected tests on API 35;
@@ -400,7 +419,7 @@ Latest fully verified merged repository-side release evidence:
 
 These repository gates do not replace physical-device performance, manual accessibility/device, production-signing, repository-admin, or store evidence required for stable `v1.0.0`.
 
-See [docs/TESTING.md](docs/TESTING.md), [docs/CI_CD.md](docs/CI_CD.md), and [docs/POST_RC_VALIDATION_EVIDENCE.md](docs/POST_RC_VALIDATION_EVIDENCE.md).
+See [docs/TESTING.md](docs/TESTING.md), [docs/CI_CD.md](docs/CI_CD.md), [docs/REPOSITORY_GUARDS.md](docs/REPOSITORY_GUARDS.md), [docs/REPOSITORY_FILE_REFERENCE.md](docs/REPOSITORY_FILE_REFERENCE.md), and [docs/POST_RC_VALIDATION_EVIDENCE.md](docs/POST_RC_VALIDATION_EVIDENCE.md).
 
 ## Privacy
 
@@ -420,9 +439,9 @@ See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) and [docs/V1_RELEASE_CANDIDAT
 
 ## Contributing
 
-Contributions to code, tests, documentation, accessibility, translations, and design are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/CONTRIBUTING_GUIDE.md](docs/CONTRIBUTING_GUIDE.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions to code, tests, documentation, accessibility, translations, and design are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/CONTRIBUTING_GUIDE.md](docs/CONTRIBUTING_GUIDE.md), [docs/REPOSITORY_FILE_REFERENCE.md](docs/REPOSITORY_FILE_REFERENCE.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-The repository includes structured issue forms, a pull-request template, Dependabot, and CODEOWNERS to keep reports and reviews maintainable.
+The repository includes structured issue forms, a pull-request template, Dependabot, CODEOWNERS, and fail-closed repository/documentation guards to keep reports, reviews, and repository structure maintainable.
 
 Use Conventional Commits such as:
 
@@ -434,7 +453,7 @@ a11y: improve board focus descriptions
 docs: document release verification
 ```
 
-For a new advanced Sudoku technique, implementation, structured evidence, deterministic correctness tests, localized explanation resources, accessibility presentation, and learning/practice representation should land together.
+For a new advanced Sudoku technique, implementation, structured evidence, deterministic correctness tests, localized explanation resources, accessibility presentation, learning/practice representation, and canonical documentation ownership should land together.
 
 ## Security
 
