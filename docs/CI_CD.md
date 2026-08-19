@@ -8,7 +8,7 @@ Current workflows live under `.github/workflows/`.
 
 ### Android CI — `ci.yml`
 
-The standard pull-request gate verifies source integrity, tests, lint, release compilation and RC artifact evidence.
+The standard pull-request gate verifies source integrity, tests, lint, release compilation, performance-harness compilation and RC artifact evidence.
 
 Current v1.0 RC stages include:
 
@@ -22,14 +22,15 @@ Current v1.0 RC stages include:
 8. `:sudoku-engine:test`;
 9. `:app:testDebugUnitTest`;
 10. `:app:assembleDebugAndroidTest`;
-11. debug and release Android lint;
-12. debug APK assembly;
-13. release APK assembly with R8/resource shrinking;
-14. release Android App Bundle assembly;
-15. release APK/AAB/R8 mapping structural/application/version verification;
-16. SHA-256/byte-size release evidence generation;
-17. report/test-result artifact upload;
-18. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
+11. `:macrobenchmark:assembleBenchmark`;
+12. debug and release Android lint;
+13. debug APK assembly;
+14. release APK assembly with R8/resource shrinking;
+15. release Android App Bundle assembly;
+16. release APK/AAB/R8 mapping structural/application/version verification;
+17. SHA-256/byte-size release evidence generation;
+18. report/test-result artifact upload;
+19. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
 
 ### Android Instrumentation — `instrumentation.yml`
 
@@ -166,6 +167,35 @@ This verifies that Android test sources and the test APK compile even before an 
 
 Compilation success is not equivalent to connected-test success.
 
+## Macrobenchmark Compilation Gate
+
+Standard CI also runs:
+
+```bash
+./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+```
+
+This proves that the release-like `benchmark` app variant, the separate `com.android.test` Macrobenchmark module and its instrumentation APK remain buildable together.
+
+The benchmark path intentionally differs from the normal debug/instrumentation path:
+
+- the app `benchmark` build type is initialized from `release`;
+- release R8/resource shrinking behavior is preserved;
+- the target app remains non-debuggable;
+- debug signing is used for local benchmarkability without production credentials;
+- `<profileable android:shell="true">` is present only in the benchmark source set;
+- AndroidX ProfileInstaller is included in the target app so Macrobenchmark can perform supported profile/reset and shader-cache operations;
+- the benchmark test APK explicitly declares visibility of `in.sanskar.sudokunova`;
+- current benchmark methods cover cold startup, warm startup and cold-start frame timing.
+
+A successful hosted CI compile does **not** satisfy the v1.0 performance evidence row. Representative timing evidence must come from the connected Macrobenchmark suite on physical hardware and be recorded with the exact release commit, device/OS and raw output/traces:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+See `PERFORMANCE_BENCHMARKING.md`.
+
 ## Lint Gates
 
 Current release verification runs both:
@@ -248,13 +278,15 @@ The expected fingerprints must come from a trusted release record or platform ce
 
 ## Connected API-35 Gate
 
-The repository workflow runs connected tests on API 35. To reproduce locally, use a compatible emulator/device and:
+The repository workflow runs connected functional tests on API 35. To reproduce locally, use a compatible emulator/device and:
 
 ```bash
 ./gradlew :app:connectedDebugAndroidTest --stacktrace
 ```
 
 Local device/emulator names and hardware acceleration vary by environment.
+
+This connected functional gate is separate from physical-device Macrobenchmark evidence. An emulator is appropriate for deterministic Compose/Room integration verification but should not be treated as representative production timing evidence.
 
 ## Artifact Policy
 
@@ -266,6 +298,10 @@ Ordinary CI may upload:
 - release AAB output;
 - R8 mapping output;
 - SHA-256 release evidence.
+
+Ordinary CI currently compiles the Macrobenchmark harness but does not publish hosted-emulator timing numbers as performance evidence.
+
+A real physical-device benchmark evidence package may retain the benchmark output and traces according to the release evidence process, provided it contains no sensitive/private data.
 
 The protected production-validation workflow may upload:
 
@@ -288,6 +324,7 @@ See:
 
 - `PRODUCTION_SIGNING.md`;
 - `PRODUCTION_RELEASE_VALIDATION.md`;
+- `PERFORMANCE_BENCHMARKING.md`;
 - `V1_RELEASE_CANDIDATE.md`;
 - `V1_RELEASE_EVIDENCE.md`;
 - `RELEASING.md`.
@@ -301,7 +338,8 @@ A green ordinary CI run does not authorize the system to:
 - create a stable production tag automatically;
 - expose signing secrets;
 - claim physical-device QA;
-- claim TalkBack/200% font/performance/process-death validation;
+- claim TalkBack/200% font/process-death validation;
+- claim representative startup/frame/memory/ANR performance evidence merely because the Macrobenchmark harness compiles;
 - claim signed artifact identity.
 
 A successful protected production-validation run can establish package/version/signature/certificate identity for the exact generated artifacts, but it still does not authorize store publication or substitute for the remaining manual/admin/store evidence.
