@@ -3,14 +3,16 @@
 
 The normal CI path proves archive structure, expected APK identity/version metadata,
 a non-empty R8 mapping file, and deterministic SHA-256/size evidence. A protected
-release environment can additionally require APK/AAB signature verification and
-bind those artifacts to expected signing-certificate SHA-256 fingerprints without
-putting signing credentials in this tool or the repository.
+release environment can additionally inspect the identity embedded in the APK,
+require APK/AAB signature verification, and bind those artifacts to expected
+signing-certificate SHA-256 fingerprints without putting signing credentials in
+this tool or the repository.
 """
 
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -32,7 +34,22 @@ AAB_REQUIRED_ENTRIES = {
 }
 SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
 APK_CERT_RE = re.compile(r"certificate SHA-256 digest:\s*([0-9A-Fa-f:]+)", re.IGNORECASE)
+APK_SCHEME_RE = re.compile(
+    r"Verified using v(\d+) scheme[^:]*:\s*(true|false)",
+    re.IGNORECASE,
+)
 KEYTOOL_SHA256_RE = re.compile(r"^\s*SHA256:\s*([0-9A-Fa-f:]+)\s*$", re.MULTILINE)
+MIN_REQUIRED_APK_SIGNATURE_SCHEME = 2
+
+
+@dataclass(frozen=True)
+class ApkManifestIdentity:
+    application_id: str
+    version_code: int
+    version_name: str
+    min_sdk: int
+    target_sdk: int
+    debuggable: bool
 
 
 def require_file(path: Path, label: str) -> None:
@@ -113,6 +130,103 @@ def _run_tool(command: list[str]) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _run_scalar_tool(command: list[str], label: str) -> str:
+    completed = _run_tool(command)
+    combined = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"{label} inspection failed: "
+            + (combined or f"tool exited with status {completed.returncode}")
+        )
+    value = completed.stdout.strip()
+    if not value:
+        raise RuntimeError(f"{label} inspection returned an empty value")
+    return value
+
+
+def _parse_positive_int(value: str, label: str) -> int:
+    try:
+        parsed = int(value.strip())
+    except ValueError as exc:
+        raise RuntimeError(f"{label} inspection returned a non-integer value: {value!r}") from exc
+    if parsed <= 0:
+        raise RuntimeError(f"{label} inspection returned a non-positive value: {parsed}")
+    return parsed
+
+
+def inspect_apk_manifest(path: Path) -> ApkManifestIdentity:
+    require_file(path, "Release APK")
+    tool = shutil.which("apkanalyzer")
+    if tool is None:
+        raise RuntimeError("apkanalyzer is required for embedded APK manifest verification")
+
+    def inspect(field: str) -> str:
+        return _run_scalar_tool(
+            [tool, "manifest", field, str(path)],
+            f"APK manifest {field}",
+        )
+
+    application_id = inspect("application-id")
+    version_code = _parse_positive_int(inspect("version-code"), "APK manifest versionCode")
+    version_name = inspect("version-name")
+    min_sdk = _parse_positive_int(inspect("min-sdk"), "APK manifest minSdk")
+    target_sdk = _parse_positive_int(inspect("target-sdk"), "APK manifest targetSdk")
+    debuggable_text = inspect("debuggable").strip().lower()
+    if debuggable_text not in {"true", "false"}:
+        raise RuntimeError(
+            "APK manifest debuggable inspection returned an unexpected value: "
+            f"{debuggable_text!r}"
+        )
+
+    return ApkManifestIdentity(
+        application_id=application_id,
+        version_code=version_code,
+        version_name=version_name,
+        min_sdk=min_sdk,
+        target_sdk=target_sdk,
+        debuggable=debuggable_text == "true",
+    )
+
+
+def verify_apk_manifest(
+    path: Path,
+    *,
+    expected_application_id: str,
+    expected_version_code: int,
+    expected_version_name: str,
+    expected_min_sdk: int | None = None,
+    expected_target_sdk: int | None = None,
+) -> ApkManifestIdentity:
+    identity = inspect_apk_manifest(path)
+    if identity.application_id != expected_application_id:
+        raise RuntimeError(
+            "Embedded APK applicationId mismatch: "
+            f"expected {expected_application_id!r}, got {identity.application_id!r}"
+        )
+    if identity.version_code != expected_version_code:
+        raise RuntimeError(
+            "Embedded APK versionCode mismatch: "
+            f"expected {expected_version_code}, got {identity.version_code}"
+        )
+    if identity.version_name != expected_version_name:
+        raise RuntimeError(
+            "Embedded APK versionName mismatch: "
+            f"expected {expected_version_name!r}, got {identity.version_name!r}"
+        )
+    if expected_min_sdk is not None and identity.min_sdk != expected_min_sdk:
+        raise RuntimeError(
+            f"Embedded APK minSdk mismatch: expected {expected_min_sdk}, got {identity.min_sdk}"
+        )
+    if expected_target_sdk is not None and identity.target_sdk != expected_target_sdk:
+        raise RuntimeError(
+            "Embedded APK targetSdk mismatch: "
+            f"expected {expected_target_sdk}, got {identity.target_sdk}"
+        )
+    if identity.debuggable:
+        raise RuntimeError("Embedded APK manifest unexpectedly marks the release artifact debuggable")
+    return identity
+
+
 def _unique_digests(values: list[str]) -> list[str]:
     return sorted({normalize_cert_sha256(value) for value in values})
 
@@ -122,6 +236,19 @@ def parse_apksigner_cert_sha256(output: str) -> list[str]:
     if not digests:
         raise RuntimeError("apksigner verification succeeded but no signer certificate SHA-256 digest was reported")
     return digests
+
+
+def parse_apksigner_verified_schemes(output: str) -> list[int]:
+    schemes = sorted(
+        {
+            int(version)
+            for version, enabled in APK_SCHEME_RE.findall(output)
+            if enabled.lower() == "true"
+        }
+    )
+    if not schemes:
+        raise RuntimeError("apksigner verification succeeded but no verified APK signature scheme was reported")
+    return schemes
 
 
 def parse_keytool_cert_sha256(output: str) -> list[str]:
@@ -151,6 +278,11 @@ def verify_apk_signature(path: Path, expected_cert_sha256: str | None = None) ->
         raise RuntimeError(
             "APK signature verification failed: "
             + (combined or f"apksigner exited with status {completed.returncode}")
+        )
+    schemes = parse_apksigner_verified_schemes(combined)
+    if not any(scheme >= MIN_REQUIRED_APK_SIGNATURE_SCHEME for scheme in schemes):
+        raise RuntimeError(
+            "APK signature verification did not report a verified v2-or-newer signature scheme"
         )
     digests = parse_apksigner_cert_sha256(combined)
     if expected_cert_sha256 is not None:
@@ -233,6 +365,20 @@ def write_signature_evidence(
     output.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_apk_identity_evidence(output: Path, identity: ApkManifestIdentity) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# SudokuNova embedded APK manifest identity evidence",
+        f"application_id={identity.application_id}",
+        f"version_code={identity.version_code}",
+        f"version_name={identity.version_name}",
+        f"min_sdk={identity.min_sdk}",
+        f"target_sdk={identity.target_sdk}",
+        f"debuggable={str(identity.debuggable).lower()}",
+    ]
+    output.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", required=True, type=Path)
@@ -246,6 +392,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="expected Android applicationId from APK output metadata",
     )
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument(
+        "--require-apk-manifest",
+        action="store_true",
+        help="independently verify identity/version/SDK/debuggable values embedded in the APK",
+    )
+    parser.add_argument("--expected-min-sdk", type=int)
+    parser.add_argument("--expected-target-sdk", type=int)
+    parser.add_argument(
+        "--apk-identity-output",
+        type=Path,
+        help="write embedded APK manifest identity evidence when APK manifest verification is required",
+    )
     parser.add_argument(
         "--require-signatures",
         action="store_true",
@@ -274,6 +432,12 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError(
                 "certificate expectations/signature evidence require --require-signatures"
             )
+        if (args.expected_min_sdk or args.expected_target_sdk or args.apk_identity_output) and not args.require_apk_manifest:
+            raise ValueError(
+                "APK SDK expectations/identity evidence require --require-apk-manifest"
+            )
+        if args.require_apk_manifest and not args.expected_application_id:
+            raise ValueError("--require-apk-manifest requires --expected-application-id")
 
         validate_zip(args.apk, "Release APK", APK_REQUIRED_ENTRIES)
         validate_zip(args.aab, "Release AAB", AAB_REQUIRED_ENTRIES)
@@ -297,6 +461,19 @@ def main(argv: list[str] | None = None) -> int:
                     f"expected {args.expected_application_id!r}, got {actual_application_id!r}"
                 )
 
+        apk_identity: ApkManifestIdentity | None = None
+        if args.require_apk_manifest:
+            apk_identity = verify_apk_manifest(
+                args.apk,
+                expected_application_id=args.expected_application_id,
+                expected_version_code=args.expected_version_code,
+                expected_version_name=args.expected_version_name,
+                expected_min_sdk=args.expected_min_sdk,
+                expected_target_sdk=args.expected_target_sdk,
+            )
+            if args.apk_identity_output is not None:
+                write_apk_identity_evidence(args.apk_identity_output, apk_identity)
+
         apk_digests: list[str] = []
         aab_digests: list[str] = []
         if args.require_signatures:
@@ -317,6 +494,14 @@ def main(argv: list[str] | None = None) -> int:
         "Release outputs verified: "
         f"versionCode={actual_code}, versionName={actual_name}{identity}, evidence={args.output}"
     )
+    if apk_identity is not None:
+        print(
+            "Embedded APK manifest verified: "
+            f"minSdk={apk_identity.min_sdk}, targetSdk={apk_identity.target_sdk}, "
+            f"debuggable={str(apk_identity.debuggable).lower()}"
+        )
+    else:
+        print("Embedded APK manifest: not required by this verification run")
     if args.require_signatures:
         print(f"Signature: APK verified; signer SHA-256={','.join(apk_digests)}")
         print(f"Signature: AAB verified; signer SHA-256={','.join(aab_digests)}")
