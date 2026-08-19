@@ -64,6 +64,12 @@ jobs:
             exit 1
           fi
 
+      - name: Verify release contract regression suite
+        run: python -m unittest scripts.tests.test_verify_release_contract
+
+      - name: Verify source and workflow release contract
+        run: python scripts/verify_release_contract.py
+
       - name: Require protected release secrets
         shell: bash
         env:
