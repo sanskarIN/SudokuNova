@@ -185,7 +185,7 @@ v0.9 deliberately completed **source, automated, documentation, and repository h
 
 ## v1.0 — Stable Classic Sudoku Release
 
-Status: **Repository-side RC1 preparation verified and merged; stable production validation still in progress — issue #5**
+Status: **RC1 and post-RC repository hardening verified and merged; stable production validation still in progress — issue #5**
 
 The v1.0 line is evidence-driven production validation, not another uncontrolled feature-expansion phase.
 
@@ -232,25 +232,51 @@ The v1.0 line is evidence-driven production validation, not another uncontrolled
 
 These are unsigned repository-CI verification artifacts, not production-signed release evidence.
 
+### Post-RC release validation hardening — completed
+
+- [x] Add package/certificate-bound signed-release verification support
+- [x] Add protected manual Production Release Validation workflow source
+- [x] Scope production secrets to the minimum required workflow steps
+- [x] Add release-contract and documentation-link repository guards with regression tests
+- [x] Enforce repository guard regression suites and direct guards in ordinary Android CI
+- [x] Enforce the release-contract guard before protected signing work
+- [x] Add release-like non-debuggable `benchmark` app variant
+- [x] Add dedicated `:macrobenchmark` test module
+- [x] Add cold startup, warm startup and cold-start frame timing benchmarks
+- [x] Compile the Macrobenchmark harness in ordinary Android CI
+- [x] Repair the AndroidX Test Runner dependency exposed by Android CI run #697 / `32208530447`
+- [x] Final exact-head Android CI green — run #706 / `32211246803`
+- [x] Final exact-head API-35 connected gate green — run #229 / `32211246802`
+- [x] Final verified PR #28 head — `c3e0e3fc217062e374a434cfea46235fd6595f83`
+- [x] `unsigned-release-builds` artifact ID `9351009095` / digest `sha256:432c0741cf94ee459fcb58c07eaa5316776f38abd15f91827fd04a2e4fb2225c` recorded
+- [x] verification-reports artifact ID `9351008412` / digest `sha256:8374a7a82fe604e0b516d7768a8c563d16030bdbe4862cc26509ce5ce83cf651` recorded
+- [x] PR #28 merged using the exact verified head — merge commit `27640cb9089ddae4a9242bb84a8927c3761201f4`
+- [x] Focused post-RC evidence record added at `docs/POST_RC_VALIDATION_EVIDENCE.md`
+
+The Macrobenchmark compile gate proves the benchmark harness builds. Representative physical-device performance measurements remain a separate required stable-release gate.
+
 ### GitHub repository-admin setting still pending
 
-At RC-prep start, GitHub reported `main` as unprotected. The connected GitHub tool used for this work does not expose branch-protection/ruleset mutation.
+At RC-prep start and during the post-RC audit, GitHub reported `main` as unprotected. The connected GitHub tool used for this work does not expose branch-protection/ruleset mutation.
 
 - [ ] Enable an appropriate `main` protection/ruleset in GitHub administration
 - [ ] Require `Android CI / verify`
 - [ ] Require `Android Instrumentation / connected-tests`
 - [ ] Review force-push/deletion/bypass and repository security settings
+- [ ] Configure/restrict the `production-release` GitHub Environment and protected signing secrets
 
 ### Required stable-release manual/production validation
 
 - [ ] real TalkBack traversal/focus-order QA on representative target(s)
 - [ ] representative 200% font-scale, narrow-phone, large-phone, tablet/large-window, resize/orientation QA
 - [ ] high-contrast and reduced-motion manual verification
-- [ ] measured startup/frame/memory/ANR evidence on representative targets
+- [ ] representative physical-device Macrobenchmark startup/frame measurements and retained traces
+- [ ] measured memory/ANR evidence on representative targets
 - [ ] process-death and lifecycle-restoration manual scenarios
 - [ ] secure production/upload signing outside Git using the intended key
+- [ ] real protected Production Release Validation workflow run on the exact intended release ref
 - [ ] signed APK verification with `apksigner` and expected certificate identity
-- [ ] signed AAB verification/distribution-platform validation
+- [ ] signed AAB verification/distribution-platform validation and expected upload-certificate identity
 - [ ] signed production/production-equivalent APK installation smoke QA
 - [ ] final release-only R8 smoke QA on signed artifacts
 - [ ] real store/repository screenshots and listing/privacy/data/content/target-API review
