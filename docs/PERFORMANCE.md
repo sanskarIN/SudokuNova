@@ -192,6 +192,40 @@ Before stable release verify:
 
 A debug-only pass is insufficient.
 
+## Macrobenchmark Harness
+
+SudokuNova now includes a dedicated `:macrobenchmark` module and a release-like `benchmark` app build type.
+
+The benchmark variant:
+
+- is initialized from `release`;
+- inherits release R8/resource shrinking behavior;
+- remains non-debuggable;
+- uses debug signing only so local benchmarking does not require production signing credentials;
+- enables `<profileable android:shell="true">` only through `app/src/benchmark/AndroidManifest.xml`, so this profiling declaration is not added to the production release manifest.
+
+The benchmark suite currently measures:
+
+- cold startup timing;
+- warm startup timing;
+- frame timing during cold startup.
+
+Standard CI compiles the harness with:
+
+```bash
+./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+```
+
+Physical-device release evidence is collected separately with:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+CI compilation proves the harness remains buildable. It does not convert hosted-emulator output into real performance evidence.
+
+See [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md) for target requirements, commands, evidence fields, interpretation rules and the Baseline Profile boundary.
+
 ## Measurement Strategy
 
 When collecting real performance evidence, record:
@@ -207,6 +241,8 @@ When collecting real performance evidence, record:
 - raw results or artifact location.
 
 For solver/generator measurements, fixed seeds/puzzles are mandatory for useful comparison.
+
+For Android startup/frame evidence, use the committed Macrobenchmark harness on a representative physical target and retain the generated output/traces with the exact release-candidate commit.
 
 ## Regression Thresholds
 

@@ -8,7 +8,7 @@ Current workflows live under `.github/workflows/`.
 
 ### Android CI — `ci.yml`
 
-The standard pull-request gate verifies source integrity, tests, lint, release compilation and RC artifact evidence.
+The standard pull-request gate verifies source integrity, tests, lint, release compilation, performance-harness compilation and RC artifact evidence.
 
 Current v1.0 RC stages include:
 
@@ -22,14 +22,15 @@ Current v1.0 RC stages include:
 8. `:sudoku-engine:test`;
 9. `:app:testDebugUnitTest`;
 10. `:app:assembleDebugAndroidTest`;
-11. debug and release Android lint;
-12. debug APK assembly;
-13. release APK assembly with R8/resource shrinking;
-14. release Android App Bundle assembly;
-15. release APK/AAB/R8 mapping structural/version verification;
-16. SHA-256/byte-size release evidence generation;
-17. report/test-result artifact upload;
-18. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
+11. `:macrobenchmark:assembleBenchmark`;
+12. debug and release Android lint;
+13. debug APK assembly;
+14. release APK assembly with R8/resource shrinking;
+15. release Android App Bundle assembly;
+16. release APK/AAB/R8 mapping structural/application/version verification;
+17. SHA-256/byte-size release evidence generation;
+18. report/test-result artifact upload;
+19. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
 
 ### Android Instrumentation — `instrumentation.yml`
 
@@ -45,6 +46,18 @@ This gate is particularly important for:
 - Learn/practice UI behavior;
 - accessibility semantic regressions that can be asserted reliably.
 
+### Production Release Validation — `release-validation.yml`
+
+This is a separate manually dispatched workflow for trusted signed-release validation. It uses the `production-release` GitHub Environment and is intentionally outside ordinary pull-request execution.
+
+It requires protected signing secrets, validates the operator-supplied version inputs, reconstructs the keystore only in `$RUNNER_TEMP`, builds signed R8 APK/AAB outputs, requires production `applicationId = in.sanskar.sudokunova`, verifies signatures, binds both artifacts to protected expected signer-certificate SHA-256 fingerprints, records hashes/sizes/signature fingerprints/exact workflow context, and removes the temporary keystore in cleanup.
+
+The workflow uploads non-secret production validation evidence after success. Signed APK/AAB upload is opt-in and short-lived rather than automatic.
+
+A successful protected run is still not a substitute for physical-device, accessibility, performance, Play Console, listing/privacy, branch-protection, or publication evidence.
+
+See `PRODUCTION_RELEASE_VALIDATION.md` and `PRODUCTION_SIGNING.md`.
+
 ## Pull-Request Gate Policy
 
 A pull request intended for merge should not be treated as verified until the required workflows are green on the **exact final head commit**.
@@ -53,7 +66,7 @@ If a code/documentation commit that triggers the pull-request workflows is added
 
 Do not cite a workflow run from an older head as evidence for a newer head.
 
-PR #27 is the active v1.0 RC preparation PR. Its repository-side work must remain draft until its final intended head passes both required workflows and no repository-blocking defect remains.
+PR #27 completed and merged the verified RC1 repository-preparation line. Any later release-hardening pull request must independently satisfy the same exact-final-head rule before merge.
 
 ## Repository Security Guard
 
@@ -85,7 +98,16 @@ Coverage includes:
 - missing required archive entry rejection;
 - single release metadata parsing;
 - multiple release metadata element rejection;
-- deterministic checksum-manifest content.
+- production application ID parsing/rejection when missing;
+- wrong expected application ID rejection;
+- deterministic checksum-manifest content;
+- certificate-fingerprint normalization;
+- `apksigner` certificate-digest parsing;
+- `keytool` certificate-fingerprint parsing;
+- expected APK signer identity acceptance/rejection;
+- expected AAB signer identity acceptance/rejection;
+- normalized signature-evidence output;
+- missing or invalid signature-verifier tool results.
 
 ## Partial-Signing Fail-Closed Gate
 
@@ -145,6 +167,35 @@ This verifies that Android test sources and the test APK compile even before an 
 
 Compilation success is not equivalent to connected-test success.
 
+## Macrobenchmark Compilation Gate
+
+Standard CI also runs:
+
+```bash
+./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+```
+
+This proves that the release-like `benchmark` app variant, the separate `com.android.test` Macrobenchmark module and its instrumentation APK remain buildable together.
+
+The benchmark path intentionally differs from the normal debug/instrumentation path:
+
+- the app `benchmark` build type is initialized from `release`;
+- release R8/resource shrinking behavior is preserved;
+- the target app remains non-debuggable;
+- debug signing is used for local benchmarkability without production credentials;
+- `<profileable android:shell="true">` is present only in the benchmark source set;
+- AndroidX ProfileInstaller is included in the target app so Macrobenchmark can perform supported profile/reset and shader-cache operations;
+- the benchmark test APK explicitly declares visibility of `in.sanskar.sudokunova`;
+- current benchmark methods cover cold startup, warm startup and cold-start frame timing.
+
+A successful hosted CI compile does **not** satisfy the v1.0 performance evidence row. Representative timing evidence must come from the connected Macrobenchmark suite on physical hardware and be recorded with the exact release commit, device/OS and raw output/traces:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+See `PERFORMANCE_BENCHMARKING.md`.
+
 ## Lint Gates
 
 Current release verification runs both:
@@ -183,8 +234,9 @@ The AAB is the expected store-oriented Android bundle format. Final production d
 
 ## Release-Output Verification Gate
 
-After release APK/AAB/R8 mapping generation, CI runs `scripts/verify_release_outputs.py` with the exact expected RC metadata:
+After release APK/AAB/R8 mapping generation, ordinary CI runs `scripts/verify_release_outputs.py` with the exact expected RC identity:
 
+- `applicationId in.sanskar.sudokunova`;
 - `versionCode 1000`;
 - `versionName 1.0.0-rc.1`.
 
@@ -197,6 +249,7 @@ The verifier requires:
 - AAB bundle config, base manifest and base DEX entries;
 - non-empty R8 `mapping.txt`;
 - exactly one APK release metadata element;
+- exact expected application ID;
 - exact expected version code/name.
 
 It then writes SHA-256 and byte-size evidence for APK, AAB and mapping to:
@@ -205,11 +258,27 @@ It then writes SHA-256 and byte-size evidence for APK, AAB and mapping to:
 app/build/outputs/release-evidence/sha256.txt
 ```
 
-A successful verifier result does **not** prove production certificate identity or device installability.
+A successful ordinary verifier result does **not** prove production certificate identity or device installability.
+
+### Signed/certificate-bound mode
+
+A protected release environment additionally uses:
+
+```text
+--expected-application-id in.sanskar.sudokunova
+--require-signatures
+--expected-apk-cert-sha256 <trusted fingerprint>
+--expected-aab-cert-sha256 <trusted fingerprint>
+--signature-output <path>
+```
+
+In this mode the verifier requires the production package identity, requires `apksigner`, `jarsigner`, and `keytool`, verifies cryptographic signatures, extracts normalized signer SHA-256 fingerprints, and fails when identities do not match the trusted expected values.
+
+The expected fingerprints must come from a trusted release record or platform certificate record—not from the artifact being tested.
 
 ## Connected API-35 Gate
 
-The repository workflow runs connected tests on API 35. To reproduce locally, use a compatible emulator/device and:
+The repository workflow runs connected functional tests on API 35. To reproduce locally, use a compatible emulator/device and:
 
 ```bash
 ./gradlew :app:connectedDebugAndroidTest --stacktrace
@@ -217,9 +286,11 @@ The repository workflow runs connected tests on API 35. To reproduce locally, us
 
 Local device/emulator names and hardware acceleration vary by environment.
 
+This connected functional gate is separate from physical-device Macrobenchmark evidence. An emulator is appropriate for deterministic Compose/Room integration verification but should not be treated as representative production timing evidence.
+
 ## Artifact Policy
 
-CI may upload:
+Ordinary CI may upload:
 
 - test reports;
 - lint/build reports;
@@ -228,89 +299,49 @@ CI may upload:
 - R8 mapping output;
 - SHA-256 release evidence.
 
-These artifacts are verification evidence and have limited retention. They should not automatically be described as production releases.
+Ordinary CI currently compiles the Macrobenchmark harness but does not publish hosted-emulator timing numbers as performance evidence.
 
-Do not publish a CI-built artifact as production unless signing, certificate identity, provenance, manual QA, legal/store metadata and the exact final artifact have been validated.
+A real physical-device benchmark evidence package may retain the benchmark output and traces according to the release evidence process, provided it contains no sensitive/private data.
+
+The protected production-validation workflow may upload:
+
+- non-secret signature/hash/workflow-context evidence by default;
+- signed APK/AAB/R8 mapping only after explicit workflow input opts into short-lived artifact retention.
+
+These artifacts are verification evidence and have limited retention. They should not automatically be described as published production releases.
+
+Do not publish a CI-built artifact as production unless application/package identity, signing, certificate identity, provenance, manual QA, legal/store metadata and the exact final artifact have been validated.
 
 ## Production Signing Boundary
 
 Normal pull-request CI intentionally receives no production signing secrets.
 
-The build supports secret-backed signing only when all four required `SUDOKUNOVA_*` environment values are available in a controlled release environment. Ordinary PRs, forks and untrusted code must not receive those secrets.
+The build supports secret-backed signing only when all four required `SUDOKUNOVA_*` build environment values are available in a controlled release environment. Ordinary PRs, forks and untrusted code must not receive those secrets.
+
+The protected workflow additionally requires a base64 keystore secret and expected APK/AAB signer certificate SHA-256 fingerprints in the `production-release` GitHub Environment. The workflow pins the application ID itself rather than accepting it as a dispatch input.
 
 See:
 
 - `PRODUCTION_SIGNING.md`;
+- `PRODUCTION_RELEASE_VALIDATION.md`;
+- `PERFORMANCE_BENCHMARKING.md`;
 - `V1_RELEASE_CANDIDATE.md`;
+- `V1_RELEASE_EVIDENCE.md`;
 - `RELEASING.md`.
 
 ## No Automatic Production Deployment
 
-A green CI run does not authorize the system to:
+A green ordinary CI run does not authorize the system to:
 
 - create a Play Store release;
 - publish an APK/AAB publicly;
 - create a stable production tag automatically;
 - expose signing secrets;
 - claim physical-device QA;
-- claim TalkBack/200% font/performance/process-death validation;
+- claim TalkBack/200% font/process-death validation;
+- claim representative startup/frame/memory/ANR performance evidence merely because the Macrobenchmark harness compiles;
 - claim signed artifact identity.
 
+A successful protected production-validation run can establish package/version/signature/certificate identity for the exact generated artifacts, but it still does not authorize store publication or substitute for the remaining manual/admin/store evidence.
+
 Release/publishing remains a controlled maintainer action documented in the release guides.
-
-## Failure Triage
-
-When CI fails:
-
-1. identify the first failing stage;
-2. inspect its report/log rather than only the final Gradle error;
-3. reproduce the narrow task locally when possible;
-4. add/fix regression coverage for code defects;
-5. avoid broad cache deletion or suppression as a first response;
-6. push a focused fix;
-7. verify the new exact head.
-
-Typical ordering is:
-
-- repository security failure → committed secret/signing-material issue;
-- release-verifier unit failure → verifier/test contract issue;
-- partial-signing guard failure → signing configuration regression;
-- translation script failure → localization resource issue;
-- engine test failure → domain logic/test issue;
-- app unit-test failure → Android-module pure logic issue;
-- instrumentation compilation failure → Android test/API/Compose compile issue;
-- lint failure → API/resource/static-analysis issue;
-- release build failure → R8/resource/shrinking/build configuration issue;
-- release-output verifier failure → artifact path/structure/version/mapping issue;
-- connected failure → emulator/runtime/Room/Compose/state issue.
-
-## Evidence Recording
-
-`what_changed.md` may record exact workflow run IDs only after results exist. Do not write `GREEN`, `verified`, `device-tested`, `signed`, `store-ready`, or `release-ready` in advance.
-
-The repository roadmap/checklists should distinguish:
-
-- implemented;
-- automatically verified;
-- manually verified;
-- production-signed/validated;
-- still pending.
-
-## Recommended Local Pre-Push Check
-
-For a broad RC change:
-
-```bash
-python scripts/verify_no_secrets.py
-python -m unittest scripts.tests.test_verify_release_outputs
-python scripts/verify_translations.py
-./gradlew :sudoku-engine:test :app:testDebugUnitTest :app:assembleDebugAndroidTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease :app:bundleRelease --stacktrace
-```
-
-Then run `scripts/verify_release_outputs.py` against the generated release outputs using the expected candidate metadata.
-
-Run connected instrumentation separately on a suitable emulator/device.
-
-## Stable v1.0 Evidence Boundary
-
-PR #27 can prove repository-side RC preparation. Stable `v1.0.0` additionally requires the real-target evidence in `V1_RELEASE_CANDIDATE.md`, including TalkBack, large-font/adaptive layout, contrast/motion, lifecycle/process death, measured performance/ANR/memory, production signing, signed artifact verification, and store/repository release assets.

@@ -1,6 +1,6 @@
 # SudokuNova Testing Guide
 
-SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, release tooling, Compose/Room connected tests, static analysis, release builds, artifact verification, and real manual/production release QA.
+SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, release tooling, Compose/Room connected tests, static analysis, release builds, artifact verification, Macrobenchmark harness compilation, physical-device performance measurement, and real manual/production release QA.
 
 ## Testing Layers
 
@@ -13,8 +13,9 @@ The project uses complementary layers:
 5. translation/security/signing-configuration verification scripts;
 6. Android debug/release lint;
 7. debug/release APK and release AAB builds;
-8. release APK/AAB/R8 structural/version/checksum verification;
-9. real manual accessibility/device/performance/signing/store QA.
+8. release APK/AAB/R8 structural/application/version/checksum verification;
+9. Macrobenchmark harness compilation plus representative physical-device startup/frame measurement;
+10. real manual accessibility/device/performance/signing/store QA.
 
 No single layer replaces the others.
 
@@ -128,7 +129,7 @@ This protects the pre-parser memory boundary in addition to `BackupCodec`'s stru
 
 ## Release-Output Verifier Tests
 
-The v1.0 RC line adds pure-Python regression coverage for `scripts/verify_release_outputs.py`.
+The v1.0 line includes pure-Python regression coverage for `scripts/verify_release_outputs.py`.
 
 Run:
 
@@ -142,7 +143,16 @@ The tests verify:
 - required archive entries are enforced;
 - APK release metadata requires exactly one element;
 - version code/name metadata is parsed correctly;
-- checksum-manifest output is deterministic and includes hash, byte size and path.
+- production `applicationId` metadata is parsed and missing/wrong identities are rejected when required;
+- checksum-manifest output is deterministic and includes hash, byte size and path;
+- certificate SHA-256 normalization accepts supported colon/no-colon forms and rejects malformed values;
+- `apksigner` signer-certificate digest parsing;
+- `keytool` signer-certificate fingerprint parsing;
+- missing signature-verifier tools fail mandatory signed verification;
+- unsigned AAB output is rejected;
+- expected APK signer-certificate mismatch is rejected;
+- expected AAB signer/upload-certificate mismatch is rejected;
+- normalized non-secret signature evidence is written deterministically.
 
 The verifier itself runs later in CI against the actual Gradle-generated release outputs.
 
@@ -280,7 +290,15 @@ Release lint matters because release-only configuration/resource behavior can di
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-Successful release assembly verifies release compilation/shrinking but does not by itself prove artifact structure/version metadata, production signing, certificate identity or device QA.
+### Macrobenchmark harness
+
+```bash
+./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+```
+
+Successful Macrobenchmark assembly proves the performance test module and release-like benchmark variant compile together. It does not produce representative timing evidence until the connected benchmark is run on an appropriate physical target.
+
+Successful release assembly verifies release compilation/shrinking but does not by itself prove artifact structure/application/version metadata, production signing, certificate identity or device QA.
 
 ## Release Artifact Verification
 
@@ -294,6 +312,7 @@ python scripts/verify_release_outputs.py \
   --metadata app/build/outputs/apk/release/output-metadata.json \
   --expected-version-code 1000 \
   --expected-version-name 1.0.0-rc.1 \
+  --expected-application-id in.sanskar.sudokunova \
   --output app/build/outputs/release-evidence/sha256.txt
 ```
 
@@ -303,6 +322,7 @@ The verifier requires:
 - ZIP-valid APK/AAB archives;
 - core expected archive entries;
 - exactly one APK release metadata element;
+- exact production application ID when requested;
 - exact RC `versionCode` / `versionName`;
 - a non-empty R8 mapping;
 - SHA-256/byte-size evidence for APK, AAB and mapping.
@@ -320,6 +340,7 @@ python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test \
   :app:testDebugUnitTest \
   :app:assembleDebugAndroidTest \
+  :macrobenchmark:assembleBenchmark \
   :app:lintDebug \
   :app:lintRelease \
   :app:assembleDebug \
@@ -333,12 +354,13 @@ python scripts/verify_release_outputs.py \
   --metadata app/build/outputs/apk/release/output-metadata.json \
   --expected-version-code 1000 \
   --expected-version-name 1.0.0-rc.1 \
+  --expected-application-id in.sanskar.sudokunova \
   --output app/build/outputs/release-evidence/sha256.txt
 ```
 
 Windows can use `gradlew.bat` with the same Gradle tasks and PowerShell line continuation for the verifier command.
 
-Connected instrumentation should be run separately on a supported emulator/device.
+Connected functional instrumentation and physical-device Macrobenchmarks should be run separately on appropriate targets.
 
 ## Determinism Rules
 
@@ -350,9 +372,11 @@ Use:
 - fixed known puzzles for solver/teaching tests;
 - deterministic candidate-state fixtures for advanced technique evidence;
 - fixed timestamps/keys when testing challenge/history formats where practical;
-- stable artifact manifest ordering and explicit expected version metadata.
+- stable artifact manifest ordering and explicit expected application/version metadata.
 
 Avoid tests that depend on random global state, wall-clock timing, network availability, or iteration order that is not part of the contract.
+
+Performance measurement is inherently time-based, so it is handled as a dedicated benchmark/evidence workflow rather than a fragile shared-runner wall-clock unit-test threshold.
 
 ## Performance Tests
 
@@ -369,11 +393,19 @@ Useful solver/generator evidence includes:
 - candidate elimination counts;
 - fixed-seed execution measurements when a stable benchmark environment exists.
 
-Do not introduce an arbitrary millisecond threshold on shared CI without a measured baseline and variance analysis.
+Android release-like startup/frame measurements use `:macrobenchmark`:
 
-Stable v1.0 still requires real measured startup/frame/memory/ANR evidence on representative target(s). Source-level review and deterministic corpus coverage do not satisfy that manual production gate.
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
 
-See `PERFORMANCE.md` and `V1_RELEASE_CANDIDATE.md`.
+The committed suite currently measures cold startup, warm startup and cold-start frame timing with a defined no-compilation starting state and ten iterations per benchmark. Record the physical device, OS, exact commit and raw benchmark output/traces.
+
+Do not introduce an arbitrary millisecond threshold on shared CI without a measured baseline and variance analysis. Do not use hosted-emulator timing as stable-production evidence.
+
+Stable v1.0 still requires real measured startup/frame/memory/ANR evidence on representative target(s). The Macrobenchmark harness addresses startup/frame reproducibility but does not automatically measure memory or establish ANR absence.
+
+See `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md` and `V1_RELEASE_CANDIDATE.md`.
 
 ## Database Migration Tests
 
@@ -426,7 +458,7 @@ A successful workflow run applies only to the commit it tested.
 
 If the PR head changes, old success is historical evidence only. Before merge/release, verify the final exact head.
 
-For PR #27, both `Android CI` and `Android Instrumentation` must be green on the same final repository-side RC-preparation head before the PR leaves draft/merges.
+PR #27 satisfied this rule before it was merged for repository-side RC1 preparation. Post-RC release-hardening PR #28 must independently pass both `Android CI` and `Android Instrumentation` on its own final head before merge. Older PR #27 run IDs do not count for PR #28.
 
 `what_changed.md` should record exact run IDs/head SHAs only after the runs complete.
 
@@ -451,10 +483,12 @@ Use `V1_RELEASE_CANDIDATE.md` as the authoritative v1.0 worksheet and `PLAY_STOR
 
 ## Stable v1.0 Evidence Boundary
 
-A green PR #27 can prove that repository-side RC preparation is correct and reproducible. It cannot by itself prove that stable `v1.0.0` is ready to ship.
+The verified merged RC1 preparation proves that its exact repository-side RC source and automation were green. A later green PR #28 can prove only that the additional release-validation/performance tooling is correct on its own exact final head.
 
-Stable promotion additionally requires the actual manual/production evidence described above plus a final exact stable source SHA, signed artifacts, certificate verification, release hashes and a deliberate `SHIP` decision.
+Neither result by itself proves that stable `v1.0.0` is ready to ship.
+
+Stable promotion additionally requires the actual manual/production evidence described above plus a final exact stable source SHA, signed artifacts, certificate verification, release hashes, representative physical-device performance evidence, and a deliberate `SHIP` decision.
 
 ## CI Reference
 
-See `CI_CD.md` for the complete GitHub Actions gate and artifact policy, `PRODUCTION_SIGNING.md` for signing, and `RELEASING.md` for the RC-to-stable process.
+See `CI_CD.md` for the complete GitHub Actions gate and artifact policy, `PRODUCTION_SIGNING.md` and `PRODUCTION_RELEASE_VALIDATION.md` for signing/identity verification, `PERFORMANCE_BENCHMARKING.md` for physical performance evidence, and `RELEASING.md` for the RC-to-stable process.

@@ -1,6 +1,6 @@
 # Releasing SudokuNova
 
-SudokuNova is currently preparing its first v1.0 release candidate. This document defines the controlled release process. It does not imply that a production package has already been signed, Play-listed, manually device-verified, or published.
+SudokuNova has completed repository-side preparation for its first v1.0 release candidate. This document defines the controlled path from that verified RC state to a stable release. It does not imply that a production package has already been signed, Play-listed, manually device-verified, or published.
 
 ## Release Principles
 
@@ -11,26 +11,29 @@ A release is acceptable only when:
 - privacy/security documentation matches the binary;
 - required automated gates pass on the exact release commit;
 - release APK/AAB/R8 processing succeeds;
-- release artifacts match expected version metadata and checksum evidence exists;
+- release artifacts match the expected application ID and version metadata and checksum evidence exists;
 - required manual QA is performed and recorded;
 - signing material stays outside version control;
-- signed artifact identity is verified;
+- signed artifact identity is verified against trusted certificate fingerprints;
 - release notes describe actual shipped behavior.
 
 Do not lower these requirements to meet an arbitrary date.
 
 ## Current v1.0 RC line
 
-The active candidate is:
+The repository-side RC1 preparation completed as:
 
-- branch: `release/v1.0-rc1-prep`;
-- draft PR: `#27`;
+- preparation branch: `release/v1.0-rc1-prep`;
+- PR #27: **verified and merged**;
+- final verified PR head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`;
+- PR #27 merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`;
+- `applicationId = "in.sanskar.sudokunova"`;
 - `versionCode = 1000`;
-- `versionName = 1.0.0-rc.1`.
+- `versionName = "1.0.0-rc.1"`.
 
 If version code `1000` is accepted by a distribution track during RC testing, the final stable build must use a strictly higher version code.
 
-Stable `v1.0.0` must not be tagged simply because RC1 compiles. Use [v1.0 RC Preparation](V1_RELEASE_PREP.md) and [v1.0 RC Evidence](V1_RELEASE_CANDIDATE.md) as the promotion gates.
+Stable `v1.0.0` must not be tagged simply because RC1 compiles or because repository-side RC preparation merged. Use [v1.0 RC Preparation](V1_RELEASE_PREP.md), [v1.0 RC Evidence](V1_RELEASE_CANDIDATE.md), and [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md) as promotion gates.
 
 ## Versioning
 
@@ -81,7 +84,9 @@ Review at minimum:
 - `RELEASE_QA.md`;
 - `V1_RELEASE_PREP.md`;
 - `V1_RELEASE_CANDIDATE.md`;
+- `V1_RELEASE_EVIDENCE.md`;
 - `PRODUCTION_SIGNING.md`;
+- `PRODUCTION_RELEASE_VALIDATION.md`;
 - `PLAY_STORE_RELEASE.md`;
 - `GITHUB_REPOSITORY_SETTINGS.md`;
 - `what_changed.md`.
@@ -99,6 +104,8 @@ python scripts/verify_translations.py
 ```
 
 The normal CI also verifies that a partial release-signing environment fails closed.
+
+Release-verifier regression tests cover archive structure, version metadata, production `applicationId`, checksum evidence, signature tool failure modes, signer SHA-256 parsing, expected-certificate mismatch rejection, and normalized signature evidence.
 
 ## 4. Local/CI Verification
 
@@ -140,10 +147,11 @@ python scripts/verify_release_outputs.py \
   --metadata app/build/outputs/apk/release/output-metadata.json \
   --expected-version-code 1000 \
   --expected-version-name 1.0.0-rc.1 \
+  --expected-application-id in.sanskar.sudokunova \
   --output app/build/outputs/release-evidence/sha256.txt
 ```
 
-The verifier checks archive structure, exact APK output version metadata, a non-empty R8 mapping and SHA-256/size evidence.
+The verifier checks archive structure, exact APK output version metadata, exact production application ID, a non-empty R8 mapping, and SHA-256/size evidence.
 
 This is build/artifact evidence, not production-signing evidence.
 
@@ -177,6 +185,14 @@ Do not commit:
 
 Production signing must come from a controlled local/CI secret environment with least privilege, masked logs and secure key recovery/backup.
 
+### Protected GitHub validation path
+
+The repository includes `.github/workflows/release-validation.yml`, a manually dispatched **Production Release Validation** workflow. Configure and restrict a GitHub Environment named `production-release` according to [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md).
+
+That workflow is deliberately separate from ordinary PR CI. It requires protected signing material and trusted expected signer-certificate fingerprints, builds signed R8 APK/AAB outputs, verifies package/version/signature/certificate identity, records non-secret evidence, and removes the temporary keystore.
+
+The existence of the workflow is not evidence that production signing has been configured or executed. Only a real successful protected run on the exact intended release ref can satisfy the corresponding release-evidence rows.
+
 ## 7. Verify Signed Artifact Identity
 
 After producing the actual signed APK, verify it with Android SDK Build Tools:
@@ -185,9 +201,27 @@ After producing the actual signed APK, verify it with Android SDK Build Tools:
 apksigner verify --verbose --print-certs app-release.apk
 ```
 
-Record the expected certificate digest/fingerprint outside sensitive logs and compare it against the intended production/upload certificate.
+For the AAB, verify JAR-signature integrity and inspect the signer certificate using JDK tooling. The repository verifier can perform these checks and compare both artifacts against trusted expected SHA-256 fingerprints:
 
-For the AAB, complete the validation required by the selected distribution workflow/platform and record the result.
+```bash
+python scripts/verify_release_outputs.py \
+  --apk path/to/signed-release.apk \
+  --aab path/to/signed-release.aab \
+  --mapping path/to/mapping.txt \
+  --metadata path/to/output-metadata.json \
+  --expected-version-code <final-version-code> \
+  --expected-version-name 1.0.0 \
+  --expected-application-id in.sanskar.sudokunova \
+  --output path/to/sha256.txt \
+  --require-signatures \
+  --expected-apk-cert-sha256 <trusted-apk-cert-sha256> \
+  --expected-aab-cert-sha256 <trusted-aab-cert-sha256> \
+  --signature-output path/to/signatures.txt
+```
+
+Do not obtain the “expected” certificate value from the same artifact being validated. The comparison value must come from a trusted release/key/platform record.
+
+If Play App Signing is used, distinguish the local upload-key certificate used for the submitted AAB from the Google Play app-signing certificate used for APKs delivered to users. Validate the correct identity at each stage.
 
 A successful Gradle build alone is not proof that the intended key was used.
 
@@ -263,7 +297,9 @@ Recommended required checks:
 - `Android CI` / `verify`;
 - `Android Instrumentation` / `connected-tests`.
 
-Do not claim repository protection until it has actually been enabled in GitHub settings.
+Also restrict the `production-release` GitHub Environment to trusted maintainers and intended release refs/tags, using required reviewers where supported.
+
+Do not claim repository/environment protection until it has actually been enabled in GitHub settings.
 
 ## 12. Store Metadata Preparation
 
@@ -292,24 +328,28 @@ Do not use mock screenshots showing unimplemented features.
 Immediately before merge/tag/release record:
 
 - exact commit SHA;
+- application ID;
 - versionCode/versionName;
 - Android CI run ID/status;
 - API-35 instrumentation run ID/status;
+- protected signed-release validation run ID/status where used;
 - APK/AAB/mapping SHA-256 evidence;
 - release build outputs verified;
+- expected APK/AAB certificate fingerprints verified against trusted records;
 - manual QA evidence actually completed;
-- production certificate identity evidence;
 - known limitations/blockers.
 
 Record exact repository history/evidence in `what_changed.md` and release notes as appropriate.
 
 If the head changes after recording evidence, rerun the required gates and determine which manual checks must be repeated.
 
-## 14. Merge the RC Preparation PR
+## 14. Merge Verified Release-Hardening Changes
 
-PR #27 can be merged after all repository-side work is complete and the exact final head passes both required automated workflows with no repository-blocking defect.
+PR #27 already completed and merged the repository-side RC1 preparation from an exact green head.
 
-Merging the RC-preparation PR does **not** automatically mean stable v1.0 is approved. Manual/production evidence may remain open in issue #5.
+Any later release-hardening or stable-metadata pull request must independently pass the exact-final-head automated gates before merge. Do not reuse PR #27’s green status as evidence for newer source commits.
+
+Merging repository hardening does **not** automatically mean stable v1.0 is approved. Manual, signing, administrative and store evidence can remain open in issue #5 until actually completed.
 
 ## 15. Stable Promotion
 
@@ -317,11 +357,12 @@ Once the RC evidence worksheet reaches a real ship decision:
 
 1. choose a stable version code strictly higher than every accepted distributed version code;
 2. set `versionName = "1.0.0"`;
-3. run all exact-head automated gates again;
-4. build and verify signed stable artifacts;
-5. repeat manual checks affected by any post-RC changes;
-6. update changelog/roadmap/README/what_changed with actual stable evidence;
-7. confirm no release blocker remains.
+3. keep `applicationId = "in.sanskar.sudokunova"`;
+4. run all exact-head automated gates again;
+5. build and verify signed stable artifacts against trusted certificate identities;
+6. repeat manual checks affected by any post-RC changes;
+7. update changelog/roadmap/README/what_changed with actual stable evidence;
+8. confirm no release blocker remains.
 
 Do not simply rename an unvalidated RC build to stable.
 
@@ -415,12 +456,14 @@ For a vulnerability:
 
 Use these files together:
 
-- `V1_RELEASE_PREP.md` — current RC repository handoff;
+- `V1_RELEASE_PREP.md` — verified RC1 repository handoff;
 - `BUILDING.md` — build outputs and artifact verifier;
 - `PRODUCTION_SIGNING.md` — secret-backed signing and certificate checks;
+- `PRODUCTION_RELEASE_VALIDATION.md` — protected signed-release workflow setup and evidence;
 - `V1_RELEASE_CANDIDATE.md` — manual/production evidence worksheet;
+- `V1_RELEASE_EVIDENCE.md` — concise exact-evidence ledger;
 - `PLAY_STORE_RELEASE.md` — listing/privacy/store preparation;
-- `GITHUB_REPOSITORY_SETTINGS.md` — branch/repository protection checklist;
+- `GITHUB_REPOSITORY_SETTINGS.md` — branch/repository/environment protection checklist;
 - `CI_CD.md` — automated gates;
 - `TESTING.md` — test strategy;
 - `RELEASE_CHECKLIST.md` — general checklist;

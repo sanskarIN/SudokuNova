@@ -13,10 +13,18 @@ SudokuNova uses Android and AndroidX libraries, including:
 - Navigation Compose;
 - DataStore Preferences;
 - Room Runtime, Room KTX, Room Compiler, and Room Testing;
+- ProfileInstaller;
+- AndroidX Benchmark Macrobenchmark JUnit4 tooling;
 - Jetpack Compose UI, tooling preview, Material 3, Material Icons Extended, and Compose UI testing;
-- AndroidX Test JUnit and Espresso.
+- AndroidX Test JUnit, Test Runner, and Espresso.
 
 These projects are provided by the Android Open Source Project / AndroidX and are generally distributed under the Apache License 2.0. Project information and license texts are available from the official Android Open Source Project and AndroidX source distributions.
+
+`ProfileInstaller` is included in the target app to support Android runtime-profile installation and Macrobenchmark profile/reset operations. The presence of this library does not by itself mean SudokuNova ships a project-generated Baseline Profile.
+
+The `androidx.benchmark:benchmark-macro-junit4` dependency is used only by the dedicated `:macrobenchmark` test module for release-like performance measurement and is not evidence that physical-device benchmark results have already passed.
+
+`androidx.test:runner` is a direct dependency of the Macrobenchmark test module so the instrumentation runner and AndroidX test-size annotations used by the benchmark source are available explicitly rather than relying on an incidental transitive dependency.
 
 ## Kotlin
 
@@ -58,18 +66,18 @@ Direct dependency coordinates and versions are maintained in:
 gradle/libs.versions.toml
 ```
 
-Release reviews should compare that catalog, module build files, Gradle plugins, and GitHub Actions references against this notice rather than assuming this document alone is a complete dependency inventory.
+Release reviews should compare that catalog, module build files, Gradle plugins, benchmark tooling, and GitHub Actions references against this notice rather than assuming this document alone is a complete dependency inventory.
 
 ## Maintaining This File
 
-When adding a dependency, asset, font, sound, icon set, animation, code sample, GitHub Action, or other third-party material:
+When adding a dependency, asset, font, sound, icon set, animation, code sample, GitHub Action, benchmark tool, or other third-party material:
 
 1. Verify that its license is compatible with SudokuNova's distribution.
 2. Preserve notices required by that license.
 3. Add an entry here when attribution or notice is appropriate.
 4. Update `gradle/libs.versions.toml` or the relevant build/workflow file consistently.
 5. Do not commit material whose redistribution rights are unclear.
-6. Re-run the v0.9 release QA dependency/license review before claiming release readiness.
+6. Re-run the current release QA dependency/license review before claiming release readiness.
 
 This file is an informational notice and does not replace the license text supplied by each third-party project.
 

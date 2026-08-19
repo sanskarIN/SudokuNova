@@ -48,20 +48,29 @@ unset SUDOKUNOVA_KEYSTORE_PATH SUDOKUNOVA_KEYSTORE_PASSWORD \
   SUDOKUNOVA_KEY_ALIAS SUDOKUNOVA_KEY_PASSWORD
 ```
 
-## GitHub Actions / CI
+## GitHub Actions / protected release validation
 
-The normal repository CI intentionally does not receive production signing secrets. It verifies an unsigned release APK/AAB, R8 mapping, version metadata, archive structure, and SHA-256 evidence.
+The normal repository CI intentionally does not receive production signing secrets. It verifies an unsigned release APK/AAB, R8 mapping, production application ID, version metadata, archive structure, and SHA-256 evidence.
 
-If a future protected release workflow is introduced, it must:
+The repository also contains a separate manual workflow, `.github/workflows/release-validation.yml`, named **Production Release Validation**. It is designed to run through a protected GitHub Environment named `production-release` and must not be exposed to untrusted pull-request code.
 
-1. run only from a protected/manual release context;
-2. reconstruct or mount the keystore from a GitHub Environment or equivalent secret store;
-3. expose the four variables only for the release-build step;
-4. avoid printing secret values or keystore contents;
-5. delete temporary keystore material after use;
-6. verify the signed APK/AAB before publication;
-7. retain only intended release artifacts and checksums;
-8. never run untrusted pull-request code with production secrets.
+The protected workflow:
+
+1. requires every configured release secret before doing release work;
+2. validates operator-supplied version metadata before using it;
+3. reconstructs the keystore only under `$RUNNER_TEMP` with restrictive permissions;
+4. exports the temporary keystore path to the existing Gradle release-signing contract;
+5. runs the repository security guard, release-verifier tests, and translation parity check;
+6. builds the signed release APK and AAB with R8/resource shrinking;
+7. verifies the exact production application ID and requested version metadata;
+8. verifies APK and AAB cryptographic signatures;
+9. compares APK and AAB signer certificate SHA-256 fingerprints with protected expected values;
+10. records hashes, sizes, signer fingerprints, exact commit/ref, application ID/version expectations, and workflow-run context;
+11. uploads non-secret verification evidence for 30 days;
+12. uploads signed release binaries only when the workflow operator explicitly opts in;
+13. removes the materialized keystore in an `always()` cleanup step.
+
+See [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md) for environment configuration, secret names, evidence files, and operation rules.
 
 ## Keystore handling
 
@@ -84,11 +93,11 @@ Use Android SDK Build Tools `apksigner` on the actual signed APK:
 apksigner verify --verbose --print-certs app-release.apk
 ```
 
-Record the certificate digest/fingerprint in private release evidence and confirm it matches the expected production/upload certificate.
+Record the certificate digest/fingerprint and confirm it matches the expected production/upload certificate.
 
-For AABs, verify JAR-signature integrity with the JDK tooling and complete the distribution platform's own bundle validation before upload. A successful Gradle build alone is not evidence that the intended production key was used.
+For AABs, verify JAR-signature integrity with the JDK tooling and inspect the signer certificate with `keytool`. Complete the distribution platform's own bundle validation before upload. A successful Gradle build alone is not evidence that the intended production key was used.
 
-The v1.0 release verifier can require both signature checks while retaining the stricter structure/version/mapping/hash checks:
+The v1.0 release verifier can require both signature checks, bind them to expected certificate identities, verify the production Android application ID, and retain the stricter structure/version/mapping/hash checks:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -98,17 +107,36 @@ python scripts/verify_release_outputs.py \
   --metadata path/to/output-metadata.json \
   --expected-version-code <final-version-code> \
   --expected-version-name 1.0.0 \
+  --expected-application-id in.sanskar.sudokunova \
   --output path/to/sha256.txt \
-  --require-signatures
+  --require-signatures \
+  --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
+  --expected-aab-cert-sha256 <expected-aab-cert-sha256> \
+  --signature-output path/to/signatures.txt
 ```
 
-With `--require-signatures`:
+Metadata/signature behavior:
 
-- APK verification requires `apksigner` on `PATH` and fails if its verification fails;
+- `--expected-application-id` requires the APK output metadata to identify `in.sanskar.sudokunova` and fails if the package identity differs or is missing;
+- APK verification requires `apksigner` on `PATH`, requires a reported signer certificate SHA-256 digest, and fails if signature verification fails;
 - AAB verification requires `jarsigner` on `PATH`, requires explicit `jar verified` output, and rejects unsigned output;
+- AAB signer-certificate evidence additionally requires `keytool` on `PATH`;
+- `--expected-apk-cert-sha256` fails closed if the verified APK is signed by a different certificate;
+- `--expected-aab-cert-sha256` fails closed if the verified AAB is signed by a different certificate;
+- certificate fingerprints accept hexadecimal with or without colon separators and are normalized to lowercase 64-character SHA-256 hex;
+- `--signature-output` writes normalized non-secret signer fingerprint evidence;
 - missing verifier tools fail the command rather than silently skipping signature checks.
 
-This confirms signature integrity, but the maintainer must still compare the APK certificate digest/fingerprint with the expected production/upload certificate. A cryptographically valid signature from the wrong key is not acceptable release evidence.
+A cryptographically valid signature from the wrong key or a valid artifact from the wrong Android package is not acceptable release evidence. Expected package/certificate identity must come from the source-controlled product contract and trusted release records, not from the artifact being validated.
+
+### Play App Signing distinction
+
+If Play App Signing is used, distinguish:
+
+- the **upload-key certificate** used to sign the AAB submitted to Google Play;
+- the **app-signing certificate** used by Google Play for APKs delivered to users.
+
+The protected repository workflow proves the identity of the locally produced signed APK/AAB against the configured expected fingerprints. It does not replace validation of the Play-distributed artifact or Play Console certificate records.
 
 ## Version-code rule
 
@@ -123,11 +151,18 @@ Repository CI can prove:
 - release compilation succeeds;
 - R8/resource shrinking succeeds;
 - APK/AAB archives have expected structural entries;
-- APK output metadata has the expected version;
+- APK output metadata has the expected application ID and version;
 - mapping output exists;
 - SHA-256 evidence is generated.
 
-A protected signed-release validation run can additionally prove that the APK/AAB signatures pass the selected verification tools.
+A real successful protected signed-release validation run can additionally prove, for its exact selected ref and generated artifacts:
+
+- the signed artifact metadata identifies the expected production Android package/version;
+- the APK signature is valid;
+- the AAB signature is valid;
+- the APK signer certificate SHA-256 matches the configured expected identity;
+- the AAB signer/upload certificate SHA-256 matches the configured expected identity;
+- normalized signature evidence and exact workflow context were recorded.
 
 Repository CI without production secrets cannot prove:
 
@@ -136,4 +171,4 @@ Repository CI without production secrets cannot prove:
 - Play Console acceptance;
 - production rollout safety.
 
-Those checks remain mandatory before the stable v1.0 publication claim and must be recorded in `V1_RELEASE_CANDIDATE.md` / `V1_RELEASE_EVIDENCE.md`.
+Even after a successful protected workflow, device/install/accessibility/performance/store checks remain separate real-world evidence requirements. Those checks remain mandatory before the stable v1.0 publication claim and must be recorded in `V1_RELEASE_CANDIDATE.md` / `V1_RELEASE_EVIDENCE.md`.

@@ -40,6 +40,11 @@ jobs:
       - name: Verify release artifact verifier tests
         run: python -m unittest scripts.tests.test_verify_release_outputs
 
+      - name: Verify repository guard regression tests
+        run: |
+          python -m unittest scripts.tests.test_verify_documentation_links
+          python -m unittest scripts.tests.test_verify_release_contract
+
       - name: Verify partial release signing fails closed
         shell: bash
         run: |
@@ -59,6 +64,11 @@ jobs:
           fi
           echo "Partial release signing failed closed as expected."
 
+      - name: Verify repository consistency guards
+        run: |
+          python scripts/verify_documentation_links.py
+          python scripts/verify_release_contract.py
+
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
 
@@ -70,6 +80,9 @@ jobs:
 
       - name: Compile Android instrumentation tests
         run: ./gradlew :app:assembleDebugAndroidTest --stacktrace
+
+      - name: Compile Macrobenchmark harness
+        run: ./gradlew :macrobenchmark:assembleBenchmark --stacktrace
 
       - name: Run Android lint
         shell: bash
@@ -107,6 +120,7 @@ jobs:
             --metadata app/build/outputs/apk/release/output-metadata.json \
             --expected-version-code 1000 \
             --expected-version-name 1.0.0-rc.1 \
+            --expected-application-id in.sanskar.sudokunova \
             --output app/build/outputs/release-evidence/sha256.txt
 
       - name: Upload verification reports

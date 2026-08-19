@@ -75,9 +75,63 @@ Exact evidence from the verified PR #27 head:
 
 These are unsigned repository-CI verification artifacts. They are not production-signed release evidence.
 
+## Post-RC release-validation hardening — TOOLING ONLY
+
+PR #28 adds stricter release validation and reproducible performance infrastructure without claiming that production signing, physical-device benchmarks or manual QA have already happened.
+
+### Release identity tooling
+
+The release verifier now supports:
+
+- exact `applicationId` validation through `--expected-application-id`;
+- APK signature verification through `apksigner`;
+- AAB signature verification through `jarsigner`;
+- AAB signer-certificate inspection through `keytool`;
+- expected APK signer SHA-256 identity through `--expected-apk-cert-sha256`;
+- expected AAB signer/upload SHA-256 identity through `--expected-aab-cert-sha256`;
+- normalized signer-certificate evidence through `--signature-output`;
+- fail-closed certificate mismatch handling.
+
+`.github/workflows/release-validation.yml` provides a manually dispatched protected validation path using the `production-release` GitHub Environment. Its source scopes secrets to the minimum practical steps, builds signed artifacts when correctly configured, verifies package/version/signature/certificate identities, records hashes and exact workflow context, and removes the temporary keystore afterward.
+
+**Important:** the existence of this tooling is not production evidence. A real successful protected run on the exact intended release ref is still required before any corresponding production row below can move from `PENDING` to `PASS`.
+
+### Performance measurement tooling
+
+PR #28 also adds source-controlled performance infrastructure:
+
+- a separate `:macrobenchmark` `com.android.test` module;
+- AndroidX Macrobenchmark `1.4.1`;
+- AndroidX ProfileInstaller `1.4.1` in the target app for supported Macrobenchmark profile/reset and shader-cache operations;
+- release-like non-debuggable app `benchmark` build type initialized from `release`;
+- release R8/resource shrinking preserved in the benchmark variant;
+- debug signing for the benchmark variant so production signing credentials are unnecessary for local measurement;
+- benchmark-only `<profileable android:shell="true">`, leaving the production release manifest unchanged;
+- benchmark-test package visibility for `in.sanskar.sudokunova`;
+- cold-start timing, warm-start timing and cold-start frame-timing benchmarks;
+- a defined `CompilationMode.None()` starting state with ten iterations per benchmark method;
+- ordinary CI compilation through `:macrobenchmark:assembleBenchmark`.
+
+ProfileInstaller presence is benchmark/runtime-profile infrastructure; it is **not** evidence that SudokuNova ships a project-generated Baseline Profile.
+
+A successful CI compile proves only that the benchmark harness builds. It is not representative physical-device timing evidence.
+
+## PR #28 exact-head repository verification
+
+Status: **PENDING exact-final-head workflows**.
+
+The post-RC branch must independently pass, on the exact final head:
+
+- Android CI, including release-verifier tests, Macrobenchmark harness compilation, lint/build/R8/AAB/package/version/hash gates;
+- Android Instrumentation API-35 connected Compose/Room tests.
+
+PR #27's green run IDs remain historical RC1 evidence and cannot be reused for PR #28.
+
+Record the final PR #28 SHA/run IDs here only after the branch stops changing and both workflows actually succeed.
+
 ## Production-signed artifact evidence
 
-For the final signed artifacts, the same verifier can require platform signature checks:
+For the final signed artifacts, use the certificate-bound verifier path (or the protected Production Release Validation workflow):
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -87,21 +141,27 @@ python scripts/verify_release_outputs.py \
   --metadata path/to/output-metadata.json \
   --expected-version-code <final-code> \
   --expected-version-name 1.0.0 \
+  --expected-application-id in.sanskar.sudokunova \
   --output path/to/sha256.txt \
-  --require-signatures
+  --require-signatures \
+  --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
+  --expected-aab-cert-sha256 <expected-aab-cert-sha256> \
+  --signature-output path/to/signatures.txt
 ```
 
-`--require-signatures` requires:
-
-- `apksigner` verification for the APK;
-- `jarsigner` verification for the AAB.
+Certificate fingerprints must come from a trusted release/platform record rather than from the artifact being validated. With Play App Signing, distinguish the upload certificate used for the submitted AAB from the app-signing certificate used by Google Play for distributed APKs.
 
 Production evidence remains pending:
 
+- `production-release` GitHub Environment configured/restricted: `PENDING`
 - Production/upload signing configured outside Git: `PENDING`
+- Protected signed-release validation run on exact release ref: `PENDING`
+- APK application ID/version metadata verification on signed output: `PENDING`
 - APK signature verification: `PENDING`
 - AAB signature verification: `PENDING`
-- Expected certificate fingerprint/digest confirmed: `PENDING`
+- Expected APK certificate fingerprint/digest confirmed: `PENDING`
+- Expected AAB upload certificate fingerprint/digest confirmed: `PENDING`
+- Signed artifact SHA-256/size evidence recorded: `PENDING`
 - Signed APK install/launch smoke: `PENDING`
 - AAB testing/store-track validation: `PENDING`
 
@@ -136,10 +196,20 @@ The detailed checklist and notes fields are in `V1_RELEASE_CANDIDATE.md`.
 
 Status: **PENDING real measurement**.
 
+The committed Macrobenchmark harness can collect startup/frame evidence using:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+For the current compilation-reset workflow, Android 14 / API 34+ physical hardware is the preferred release-evidence target. Emulator timings are not treated as stable-production performance evidence.
+
 Record target, exact commit, input, method and result for:
 
-- startup;
-- gameplay/navigation frame behavior;
+- Macrobenchmark cold startup;
+- Macrobenchmark warm startup;
+- Macrobenchmark cold-start frame timing;
+- gameplay/navigation frame behavior beyond the startup scenario where needed;
 - puzzle generation;
 - hint computation;
 - Custom Puzzle solving/validation;
@@ -148,7 +218,11 @@ Record target, exact commit, input, method and result for:
 - memory behavior;
 - ANR observations.
 
-Do not convert subjective observations into invented benchmark numbers.
+For Macrobenchmark runs retain the device/OS, physical-device status, compilation mode, iteration count, reported percentiles and trace/output artifact location.
+
+Do not convert subjective observations or hosted-emulator timings into invented benchmark numbers. Do not invent a pass threshold merely to complete the checklist; establish a representative baseline and investigate material regressions.
+
+See `PERFORMANCE_BENCHMARKING.md`.
 
 ## Repository settings evidence
 
@@ -159,8 +233,9 @@ At RC-prep start, GitHub reported `main` as unprotected. The connected repositor
 - Required `Android Instrumentation / connected-tests`: `PENDING`
 - Force-push/deletion restrictions reviewed: `PENDING`
 - Security/Dependabot/secret-scanning settings reviewed: `PENDING`
+- `production-release` environment access/reviewer/ref restrictions reviewed: `PENDING`
 
-See `GITHUB_REPOSITORY_SETTINGS.md`.
+See `GITHUB_REPOSITORY_SETTINGS.md` and `PRODUCTION_RELEASE_VALIDATION.md`.
 
 ## Store / publication evidence
 
@@ -186,15 +261,17 @@ See `PLAY_STORE_RELEASE.md`.
 Promote to stable `1.0.0` only when:
 
 1. repository-side RC preparation is merged from an exact green head — **completed for PR #27**;
-2. any stable-metadata/source changes receive fresh exact-head Android CI and API-35 verification;
-3. release APK/AAB/R8 integrity/hash evidence exists — **completed for the unsigned RC verification artifacts; must be repeated for final signed stable artifacts**;
-4. required device/accessibility/lifecycle QA is recorded;
-5. measured release performance has no release-blocking defect;
-6. production signing is configured outside Git and signed artifacts are verified;
-7. repository/store release assets represent the actual release UI;
-8. no release-blocking issue remains;
-9. final versionCode is higher than every accepted distributed candidate code;
-10. README, changelog, roadmap, release notes and `what_changed.md` match the final stable source commit;
-11. final decision in `V1_RELEASE_CANDIDATE.md` is `SHIP`.
+2. post-RC release-validation/performance tooling is merged from its own exact green head if included in stable source — **pending for PR #28 until its final head passes both required workflows**;
+3. any later stable-metadata/source changes receive fresh exact-head Android CI and API-35 verification;
+4. release APK/AAB/R8 integrity/hash evidence exists — **completed for the unsigned RC verification artifacts; must be repeated for final signed stable artifacts**;
+5. required device/accessibility/lifecycle QA is recorded;
+6. representative measured release performance has no release-blocking defect;
+7. production signing is configured outside Git and signed artifacts are verified against the intended certificate identities;
+8. the exact signed artifact application ID/version metadata is verified;
+9. repository/store release assets represent the actual release UI;
+10. no release-blocking issue remains;
+11. final versionCode is higher than every accepted distributed candidate code;
+12. README, changelog, roadmap, release notes and `what_changed.md` match the final stable source commit;
+13. final decision in `V1_RELEASE_CANDIDATE.md` is `SHIP`.
 
 Until those remaining conditions are satisfied, SudokuNova remains a verified repository-side release candidate rather than a stable-production claim.

@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "SudokuNova"
 include(":app")
 include(":sudoku-engine")
+include(":macrobenchmark")

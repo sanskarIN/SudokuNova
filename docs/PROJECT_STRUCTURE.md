@@ -6,11 +6,12 @@ This document maps the repository so contributors can find the correct layer bef
 
 ```text
 SudokuNova/
-├── .github/                 # CI workflows, issue/community configuration
+├── .github/                 # CI, instrumentation, protected release validation and community configuration
 ├── app/                     # Android application module
+├── macrobenchmark/          # Release-like Android performance benchmark test module
 ├── docs/                    # Product, engineering, QA and release documentation
 ├── gradle/                  # Version catalog and Gradle wrapper metadata
-├── scripts/                 # Repository verification scripts
+├── scripts/                 # Repository/release verification scripts
 ├── sudoku-engine/           # Platform-independent Classic Sudoku domain module
 ├── build.gradle.kts         # Root Gradle plugin declarations
 ├── settings.gradle.kts      # Module and repository configuration
@@ -69,6 +70,7 @@ The Android application owns platform concerns:
 - Preferences DataStore;
 - Android sharing/document picker;
 - accessibility presentation;
+- release/output/signing configuration;
 - Android-specific test infrastructure.
 
 ### Production source
@@ -130,6 +132,16 @@ Important resource categories include:
 
 English/Hindi parity is checked by `scripts/verify_translations.py`.
 
+### Benchmark-only app source set
+
+```text
+app/src/benchmark/AndroidManifest.xml
+```
+
+The `benchmark` app build type is initialized from `release`, keeps release R8/resource shrinking behavior, is non-debuggable, and uses debug signing so maintainers can measure locally without production signing material. The benchmark-only manifest enables shell profiling for Macrobenchmark. That profiling declaration does not live in the production `release` manifest.
+
+The target app also includes AndroidX ProfileInstaller so Macrobenchmark can perform the supported profile/reset and shader-cache operations required by Android's benchmark tooling.
+
 ## Android JVM Tests
 
 ```text
@@ -152,6 +164,32 @@ app/src/androidTest/java/com/sanskar/sudokunova/
 
 Connected tests cover Compose navigation and Room-backed persistence/transfer flows on the configured API-35 emulator CI gate. Stable semantic test tags are used when duplicate/off-screen text would make tests brittle.
 
+## `macrobenchmark/`
+
+The Macrobenchmark module is a separate `com.android.test` module targeting the release-like `:app` benchmark variant.
+
+Important files:
+
+```text
+macrobenchmark/build.gradle.kts
+macrobenchmark/src/main/AndroidManifest.xml
+macrobenchmark/src/main/kotlin/com/sanskar/sudokunova/macrobenchmark/StartupBenchmark.kt
+```
+
+Responsibilities:
+
+- target `in.sanskar.sudokunova` explicitly;
+- keep benchmark instrumentation outside the target app process contract;
+- expose the target package through benchmark-test package visibility;
+- keep API-29 test-output compatibility in the benchmark test APK only;
+- measure cold startup timing;
+- measure warm startup timing;
+- measure cold-start frame timing;
+- use a defined `CompilationMode.None()` starting state;
+- compile in ordinary CI without turning hosted-emulator timings into production evidence.
+
+Representative physical-device measurement is a separate release-evidence step. See `PERFORMANCE_BENCHMARKING.md`.
+
 ## Room Schemas
 
 ```text
@@ -173,27 +211,34 @@ High-value references include:
 - engine/teaching/difficulty/generation;
 - data storage/formats/backup;
 - build/setup/testing/CI;
+- performance benchmarking/evidence;
 - accessibility/localization/privacy/security;
+- production signing/release validation;
 - release QA/releasing/checklists;
 - contribution/maintenance/documentation standards.
 
 ## `.github/workflows/`
 
-Current quality workflows include:
+Current quality/release workflows include:
 
-- `ci.yml` — repository security guard, translation parity, engine tests, Android JVM tests, instrumentation-test compilation, debug/release lint, debug APK, R8/resource-shrunk release APK, release AAB and artifact/report evidence.
+- `ci.yml` — repository security guard, release-verifier tests, signing fail-closed regression, translation parity, engine tests, Android JVM tests, Android instrumentation-test compilation, Macrobenchmark harness compilation, debug/release lint, debug APK, R8/resource-shrunk release APK, release AAB, package/version/artifact verification and report/evidence upload.
 - `instrumentation.yml` — API-35 connected Compose/Room verification using an emulator with KVM when available.
+- `release-validation.yml` — manually dispatched, protected signed-release validation through the `production-release` GitHub Environment; verifies package/version/signature/certificate/hash evidence without making production publication automatic.
 
 Do not weaken gates simply to make a pull request green. Fix the underlying defect or document a justified workflow change.
+
+Do not expose production signing secrets to ordinary pull-request workflows. The protected release-validation path remains distinct from normal CI.
 
 ## `scripts/`
 
 Repository verification scripts include:
 
 - `verify_translations.py` — English/Hindi key/format parity verification.
-- `verify_no_secrets.py` — v0.9 repository guard against committed signing/private-key material and obvious credential patterns.
+- `verify_no_secrets.py` — repository guard against committed signing/private-key material and obvious credential patterns.
+- `verify_release_outputs.py` — APK/AAB/R8 structure, package/version identity, checksums and optional signed/certificate-bound release verification.
+- `scripts/tests/test_verify_release_outputs.py` — deterministic regression coverage for release-output verification.
 
-Scripts used by CI should be deterministic, fast, and fail with actionable output.
+Scripts used by CI should be deterministic, fast, fail closed for security/release identity checks, and produce actionable output.
 
 ## Root Documentation Files
 
@@ -205,6 +250,7 @@ Root files serve repository-wide purposes:
 - `what_changed.md` — detailed implementation/verification evidence; it must not invent successful tests or device checks.
 - `SECURITY.md` — authoritative vulnerability reporting policy.
 - `CONTRIBUTING.md` — contributor entry point.
+- `THIRD_PARTY_NOTICES.md` — direct dependency/tooling notice summary.
 
 More specialized material belongs under `docs/` so the root remains navigable.
 
@@ -218,6 +264,8 @@ When adding or fixing behavior, prefer the narrowest correct layer:
 - Player-facing strings → Android resources.
 - Compose presentation → feature UI package.
 - Android share/document APIs → Android transfer/presentation layer.
+- Release-like startup/frame measurement → `macrobenchmark` plus the benchmark-only app variant.
+- Signing/package/certificate release verification → release workflow/scripts/docs, never committed secret material.
 - Cross-cutting policy/process → root or `docs/`.
 
 ## New Feature Checklist
@@ -232,9 +280,11 @@ Before adding a new feature family, identify:
 6. accessibility semantics;
 7. JVM tests;
 8. connected tests when needed;
-9. privacy/security implications;
-10. backup compatibility implications;
-11. documentation updates;
-12. changelog/roadmap impact.
+9. performance/benchmark implications;
+10. privacy/security implications;
+11. backup compatibility implications;
+12. release/signing implications;
+13. documentation updates;
+14. changelog/roadmap impact.
 
-This prevents a feature from landing as UI-only code without correctness, persistence, accessibility, localization or release support.
+This prevents a feature from landing as UI-only code without correctness, persistence, accessibility, localization, performance, security or release support.
