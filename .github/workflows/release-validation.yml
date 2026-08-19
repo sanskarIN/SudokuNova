@@ -34,6 +34,7 @@ jobs:
     environment: production-release
 
     env:
+      EXPECTED_APPLICATION_ID: in.sanskar.sudokunova
       EXPECTED_VERSION_CODE: ${{ inputs.expected_version_code }}
       EXPECTED_VERSION_NAME: ${{ inputs.expected_version_name }}
       SUDOKUNOVA_KEYSTORE_BASE64: ${{ secrets.SUDOKUNOVA_KEYSTORE_BASE64 }}
@@ -153,6 +154,7 @@ jobs:
             --metadata app/build/outputs/apk/release/output-metadata.json \
             --expected-version-code "$EXPECTED_VERSION_CODE" \
             --expected-version-name "$EXPECTED_VERSION_NAME" \
+            --expected-application-id "$EXPECTED_APPLICATION_ID" \
             --require-signatures \
             --expected-apk-cert-sha256 "$SUDOKUNOVA_APK_CERT_SHA256" \
             --expected-aab-cert-sha256 "$SUDOKUNOVA_AAB_CERT_SHA256" \
@@ -171,6 +173,7 @@ jobs:
             printf 'ref=%s\n' "$GITHUB_REF"
             printf 'run_id=%s\n' "$GITHUB_RUN_ID"
             printf 'run_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'expected_application_id=%s\n' "$EXPECTED_APPLICATION_ID"
             printf 'expected_version_code=%s\n' "$EXPECTED_VERSION_CODE"
             printf 'expected_version_name=%s\n' "$EXPECTED_VERSION_NAME"
           } > "$evidence_dir/workflow-context.txt"
