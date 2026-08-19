@@ -43,6 +43,7 @@ jobs:
       - name: Verify repository guard regression tests
         run: |
           python -m unittest scripts.tests.test_verify_documentation_links
+          python -m unittest scripts.tests.test_verify_documentation_coverage
           python -m unittest scripts.tests.test_verify_release_contract
 
       - name: Verify partial release signing fails closed
@@ -67,6 +68,7 @@ jobs:
       - name: Verify repository consistency guards
         run: |
           python scripts/verify_documentation_links.py
+          python scripts/verify_documentation_coverage.py
           python scripts/verify_release_contract.py
 
       - name: Verify English/Hindi translation parity
