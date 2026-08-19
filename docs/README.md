@@ -432,6 +432,8 @@ Detailed implementation/verification/handoff history.
 
 ## Historical vs Current Documents
 
+The archived development ledger is preserved at [archive/what_changed_through_2026-08-19.md](archive/what_changed_through_2026-08-19.md). It is immutable historical context; current work continues in [`../what_changed.md`](../what_changed.md).
+
 Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md`, `V09_HARDENING_AUDIT.md`, and `BRANCH_FREEZE.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `QUALITY_GATES.md`, `EXACT_HEAD_VERIFICATION.md`, `REPOSITORY_FILE_REFERENCE.md`, `REPOSITORY_GUARDS.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `V1_RELEASE_NOTES.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
 
 ## Documentation Maintenance Rule
