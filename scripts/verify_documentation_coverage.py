@@ -184,7 +184,9 @@ COVERAGE_RULES: tuple[CoverageRule, ...] = (
 def coverage_for_path(path: str) -> CoverageRule | None:
     """Return the first, most-specific coverage rule for ``path``."""
 
-    normalized = path.replace("\\", "/").lstrip("./")
+    normalized = path.replace("\\", "/")
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
     for rule in COVERAGE_RULES:
         if rule.matches(normalized):
             return rule
