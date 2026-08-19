@@ -17,9 +17,9 @@ SudokuNova is a modern, open-source Android Sudoku application built with Kotlin
 
 **v1.0 RC1 repository-side preparation is also verified and merged.** Final PR #27 head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` passed Android CI run `32151771317` and API-35 connected instrumentation run `32151771297`, then merged as `2329881aff8dabaf8d040918e16b6113e3900245`. The merged candidate metadata is `versionCode 1000` / `versionName 1.0.0-rc.1`.
 
-The repository now includes verified RC artifact structure/version checks, SHA-256 evidence, release-verifier tests, fail-closed partial-signing checks, optional secret-backed production signing configuration, mandatory signed-artifact verification mode for protected release environments, Play Store preparation, generated release-note configuration, repository-settings guidance, and real-device/manual evidence worksheets.
+Post-RC repository hardening adds a protected manual production-release validation workflow and stronger artifact identity checks. Release verification can now require the exact production `applicationId`, cryptographic APK/AAB signatures, and expected APK/AAB signer-certificate SHA-256 fingerprints, while retaining archive/version/R8/hash evidence. The protected workflow is intentionally separate from ordinary pull-request CI and does not turn repository automation into an automatic publication system.
 
-Stable `v1.0.0` is **not yet claimed**. Issue #5 remains open for TalkBack, representative 200% font/device/window QA, measured performance/ANR evidence, process-death scenarios, GitHub `main` protection/ruleset administration, actual production signing, signed artifact verification, real store/repository assets/declarations, final stable metadata, and publication evidence.
+Stable `v1.0.0` is **not yet claimed**. Issue #5 remains open for TalkBack, representative 200% font/device/window QA, measured performance/ANR evidence, process-death scenarios, GitHub `main` protection/ruleset administration, actual production signing and a real protected validation run, signed artifact installation/distribution verification, real store/repository assets/declarations, final stable metadata, and publication evidence.
 
 ## Complete Documentation
 
@@ -34,6 +34,7 @@ High-value entry points:
 - [v1.0 Release Evidence Ledger](docs/V1_RELEASE_EVIDENCE.md)
 - [v1.0 Release Notes Source](docs/V1_RELEASE_NOTES.md)
 - [Production Signing](docs/PRODUCTION_SIGNING.md)
+- [Production Release Validation](docs/PRODUCTION_RELEASE_VALIDATION.md)
 - [Play Store Release Preparation](docs/PLAY_STORE_RELEASE.md)
 - [GitHub Repository Settings](docs/GITHUB_REPOSITORY_SETTINGS.md)
 - [User Guide](docs/USER_GUIDE.md)
@@ -159,10 +160,12 @@ See [docs/LEARNING_AND_HINTS.md](docs/LEARNING_AND_HINTS.md).
 - Debug/release lint and release APK/AAB/R8 verification
 - Repository secret/signing-material guard
 - API-35 connected Compose/Room instrumentation gate
-- Release APK/AAB structural/version verification and SHA-256 evidence in the v1.0 RC line
+- Release APK/AAB structural/application/version verification and SHA-256 evidence in the v1.0 line
 - Partial production-signing configuration fails closed in CI
 - Optional secret-backed production signing without committed credentials
-- Optional mandatory APK/AAB signature-verification mode for protected signed-release validation
+- Protected manual signed-release workflow using a restricted GitHub Environment
+- Certificate-bound APK/AAB verification against trusted expected SHA-256 signer identities
+- Pinned production application-ID validation for release outputs
 - Structured bug/feature/accessibility/performance/documentation issue forms
 - Pull-request template and contributor policies
 - Weekly Dependabot checks for Gradle and GitHub Actions
@@ -241,13 +244,13 @@ Still requiring actual real-world evidence before stable v1.0:
 - measured startup/frame/memory/ANR traces;
 - process-death/lifecycle manual scenarios;
 - GitHub `main` protection/ruleset administration;
-- secure production/upload-key signing;
+- secure production/upload-key signing and a real protected validation run;
 - signed production artifact installation/signature verification and expected certificate confirmation;
 - final R8 smoke QA on signed artifacts;
 - real store/repository screenshots, listing text, privacy declarations and release assets;
 - final stable version code, `versionName = 1.0.0`, fresh stable exact-head CI/API-35 verification, SHIP decision, tag and publication.
 
-See [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md), [docs/V1_RELEASE_EVIDENCE.md](docs/V1_RELEASE_EVIDENCE.md), [docs/V1_RELEASE_CANDIDATE.md](docs/V1_RELEASE_CANDIDATE.md), and issue #5.
+See [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md), [docs/V1_RELEASE_EVIDENCE.md](docs/V1_RELEASE_EVIDENCE.md), [docs/V1_RELEASE_CANDIDATE.md](docs/V1_RELEASE_CANDIDATE.md), [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md), and issue #5.
 
 ## Technology Stack
 
@@ -330,7 +333,7 @@ python scripts/verify_translations.py
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-The v1.0 RC CI verifies the built release outputs through `scripts/verify_release_outputs.py` and records SHA-256 evidence. Protected signed-release validation can additionally run the same verifier with `--require-signatures`. More build types, executable outputs, tooling requirements, signing rules, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
+The v1.0 CI verifies the built release outputs through `scripts/verify_release_outputs.py`, pins `applicationId = in.sanskar.sudokunova`, and records SHA-256 evidence. Protected signed-release validation can additionally require APK/AAB signatures and trusted expected signer-certificate SHA-256 fingerprints through `.github/workflows/release-validation.yml`. More build types, executable outputs, tooling requirements, signing rules, and release commands are documented in [docs/BUILDING.md](docs/BUILDING.md), [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md), [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md), and [docs/V1_RELEASE_PREP.md](docs/V1_RELEASE_PREP.md).
 
 ## Testing
 
@@ -347,7 +350,7 @@ Important suites include:
 - controlled Hidden Pair, Naked Triple, Hidden Triple, and X-Wing evidence tests;
 - practice-catalog completeness/determinism tests;
 - learning-progress JVM tests;
-- release artifact verifier unit tests;
+- release artifact verifier unit tests, including package and certificate identity checks;
 - release signing fail-closed CI regression;
 - Compose/Room connected tests on API 35;
 - selected Sudoku-cell semantics regression coverage;
@@ -361,6 +364,8 @@ Latest fully verified merged repository-side release evidence:
 - Android CI `32151771317`;
 - API-35 connected instrumentation `32151771297`;
 - merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
+
+Post-RC validation hardening must receive its own exact-final-head workflow evidence before merge; the RC1 run IDs above are historical evidence and are not reused for newer source commits.
 
 See [docs/TESTING.md](docs/TESTING.md) and [docs/CI_CD.md](docs/CI_CD.md).
 
@@ -405,6 +410,8 @@ Do not report exploitable vulnerabilities in public issues. Follow [SECURITY.md]
 Technical design: [docs/SECURITY.md](docs/SECURITY.md)
 
 Production signing: [docs/PRODUCTION_SIGNING.md](docs/PRODUCTION_SIGNING.md)
+
+Protected release validation: [docs/PRODUCTION_RELEASE_VALIDATION.md](docs/PRODUCTION_RELEASE_VALIDATION.md)
 
 ## Support SudokuNova
 
