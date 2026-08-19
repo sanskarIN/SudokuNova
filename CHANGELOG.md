@@ -4,6 +4,54 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ## [Unreleased]
 
+### v1.0 Post-RC Validation Hardening — Verified and Merged
+
+PR #28 hardened the repository-side release-validation and performance-evidence path after RC1. The exact final head `c3e0e3fc217062e374a434cfea46235fd6595f83` passed Android CI run #706 / `32211246803` and API-35 connected instrumentation run #229 / `32211246802`, then merged as `27640cb9089ddae4a9242bb84a8927c3761201f4`.
+
+#### Added
+- Certificate-bound signed-release verification for expected APK and AAB signer SHA-256 identities.
+- Exact production `applicationId` verification for release outputs.
+- Protected manual `.github/workflows/release-validation.yml` using the `production-release` GitHub Environment contract.
+- Dedicated `:macrobenchmark` Android test module for release-like cold startup, warm startup, and cold-start frame timing.
+- Release-like non-debuggable `benchmark` app variant with release R8/resource shrinking and benchmark-only profiling access.
+- AndroidX ProfileInstaller support for benchmark profile/reset operations without claiming a project-generated Baseline Profile.
+- Deterministic Markdown documentation-link verifier and regression tests.
+- Deterministic source/workflow release-contract verifier and regression tests.
+- `docs/PERFORMANCE_BENCHMARKING.md`, `docs/PRODUCTION_RELEASE_VALIDATION.md`, `docs/REPOSITORY_GUARDS.md`, `docs/QUALITY_GATES.md`, and `docs/POST_RC_VALIDATION_EVIDENCE.md`.
+
+#### Changed
+- Standard Android CI compiles `:macrobenchmark:assembleBenchmark`.
+- Standard Android CI runs repository-guard regression suites and direct documentation/release-contract guards before Gradle build work.
+- Protected production validation runs the release-contract regression suite and direct guard before signing work.
+- Production signing secrets remain step-scoped, the materialized keystore stays under `$RUNNER_TEMP`, and cleanup runs in `always()`.
+- Direct AndroidX Test Runner dependency is declared by the Macrobenchmark module so its instrumentation runner and `LargeTest` annotation contract do not rely on incidental transitive dependencies.
+- Release, CI/CD, testing, performance, signing, repository-settings, evidence, README, roadmap, and third-party-notice documentation was synchronized with the post-RC source contract.
+
+#### Regression defect found and fixed
+- Historical Android CI run #697 / `32208530447` failed at `:macrobenchmark:compileBenchmarkKotlin` because `StartupBenchmark.kt` used `androidx.test.filters.LargeTest` without an explicit AndroidX Test Runner dependency.
+- `fd95be04b251f6a1189c32a21ca3960a4c9e276d` exposed the direct version-catalog dependency.
+- `c4afa584f80bb53de58472da13b75580750994d8` added the dependency to `:macrobenchmark`.
+- Final Android CI #706 passed `:macrobenchmark:assembleBenchmark` on the exact merged head.
+
+#### Repository enforcement audit
+- `b2c5f8ef187a0aa5fed627d79ac138d055473b54` made ordinary Android CI execute the repository consistency guard regression suites and direct guard commands.
+- `5b971059c59ac8a7d4600938c4087a647b4a1416` made protected release validation execute the source/workflow release contract before signing.
+- `c3e0e3fc217062e374a434cfea46235fd6595f83` synchronized third-party notices for the direct test-runner dependency.
+
+#### Exact-head evidence
+- **Final verified PR #28 head:** `c3e0e3fc217062e374a434cfea46235fd6595f83`.
+- **Android CI:** run #706 / ID `32211246803` — GREEN.
+- **API-35 connected instrumentation:** run #229 / ID `32211246802` — GREEN.
+- `unsigned-release-builds` artifact ID `9351009095`, size `12,794,807` bytes, digest `sha256:432c0741cf94ee459fcb58c07eaa5316776f38abd15f91827fd04a2e4fb2225c`.
+- `verification-reports` artifact ID `9351008412`, size `578,445` bytes, digest `sha256:8374a7a82fe604e0b516d7768a8c563d16030bdbe4862cc26509ce5ce83cf651`.
+- **PR #28 merge commit:** `27640cb9089ddae4a9242bb84a8927c3761201f4`.
+
+#### Evidence boundary
+- Stable `v1.0.0` remains unclaimed.
+- Macrobenchmark compilation is not physical-device timing evidence.
+- Repository workflow source is not evidence that `main` protection/rulesets, the protected environment, reviewers, ref restrictions, or signing secrets are configured.
+- Production signing, signed APK/AAB verification, physical-device performance/memory/ANR measurement, TalkBack/large-text/window/contrast/motion/process-death QA, store validation, final stable metadata, SHIP decision, tag, GitHub Release, and publication remain pending in issue #5.
+
 ### v1.0 RC1 — Repository-Side Stable Release Preparation
 
 The first v1.0 repository-side release-candidate preparation is now **verified and merged**. Stable `v1.0.0` is still pending the real manual, repository-admin, production-signing, signed-artifact, store, final-stable-metadata, and publication evidence tracked in issue #5.
