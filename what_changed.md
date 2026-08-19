@@ -1,25 +1,45 @@
 # What Changed
 
-## Current Development State
+## Current Development State — 2026-08-19
 
 **Repository:** `https://github.com/sanskarIN/SudokuNova`  
-**Latest merged milestone on `main`:** `v0.9.0 — Release Hardening`  
+**Current merged release line on `main`:** `v1.0 RC1 + post-RC validation/performance tooling`  
+**Current stable-release tracker:** `#5` — `v1.0: stable release validation and production readiness` — open  
+**Verified RC1 PR:** `#27` — merged  
+**Final verified PR #27 head:** `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`  
+**PR #27 merge commit:** `2329881aff8dabaf8d040918e16b6113e3900245`  
+**Verified post-RC hardening PR:** `#28` — merged  
+**Final verified PR #28 head:** `c3e0e3fc217062e374a434cfea46235fd6595f83`  
+**PR #28 merge commit:** `27640cb9089ddae4a9242bb84a8927c3761201f4`  
+**Final PR #28 Android CI:** run `#706 / 32211246803` — GREEN  
+**Final PR #28 API-35 instrumentation:** run `#229 / 32211246802` — GREEN  
+**Documentation-completion pull request:** `#30` — `docs: enforce complete repository documentation coverage` — open while this record is written  
+**Documentation-completion branch:** `docs/complete-repository-coverage`  
+**Android application ID:** `in.sanskar.sudokunova`  
+**Kotlin source namespace:** `com.sanskar.sudokunova`  
+**Android versionCode:** `1000`  
+**Android versionName:** `1.0.0-rc.1`  
+**License:** MIT  
+**Project commit email:** `sanskarin@outlook.in`
+
+SudokuNova's cumulative implementation through RC1 and the post-RC validation/performance-tooling line is merged on `main`. Stable `v1.0.0` publication is still deliberately unclaimed because issue #5 retains real repository-admin, production-signing, physical-device/manual accessibility/performance/lifecycle, store, stable-promotion, and publication evidence requirements. The current documentation-completion line adds enforceable documentation ownership for every Git-tracked file instead of treating documentation completeness as a one-time manual assertion.
+
+## Historical v0.9 Development-State Snapshot
+
+The following metadata is retained as the historical state immediately after the verified v0.9 hardening merge and before the later RC1/post-RC work:
+
+**Latest merged milestone at that snapshot:** `v0.9.0 — Release Hardening`  
 **v0.9 focused issue:** `#23` — completed after verified merge  
 **v0.9 pull request:** `#25` — merged  
 **Final verified v0.9 PR head:** `7bc5d095cfdde17dc92250581e3bc28a6fbc54c9`  
 **v0.9 merge commit:** `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`  
 **Final v0.9 Android CI:** run `32139568718` — GREEN  
 **Final v0.9 API-35 instrumentation:** run `32139568591` — GREEN  
-**Current focused milestone:** `v1.0 — Stable Release Validation and Production Readiness`  
-**Current focused issue:** `#5` — `v1.0: stable release validation and production readiness`  
-**Android application ID:** `in.sanskar.sudokunova`  
-**Kotlin source namespace:** `com.sanskar.sudokunova`  
-**Android versionCode:** `900`  
-**Android versionName:** `0.9.0`  
-**License:** MIT  
-**Project commit email:** `sanskarin@outlook.in`
+**Next focused milestone at that snapshot:** `v1.0 — Stable Release Validation and Production Readiness`  
+**Android versionCode at that snapshot:** `900`  
+**Android versionName at that snapshot:** `0.9.0`
 
-SudokuNova now has one cumulative verified v0.1–v0.9 line on `main`. v0.9 was merged only after the exact final PR head passed both required workflows. The remaining work is not another uncontrolled feature-expansion phase: issue #5 now tracks real manual/production evidence required before a credible v1.0 stable release.
+SudokuNova had one cumulative verified v0.1–v0.9 line on `main`. v0.9 was merged only after the exact final PR head passed both required workflows. Issue #5 then became the evidence-driven path toward a credible v1.0 stable release.
 
 ## v0.9 Release-Hardening Work In Progress
 
@@ -1349,3 +1369,96 @@ Still unclaimed and pending real evidence:
 - immutable `v1.0.0` tag, GitHub Release, and Android/store publication.
 
 The remaining work now depends on real repository administration, protected signing material, physical devices/manual QA, and store/publication actions. Those claims must not be fabricated merely to increase commit count.
+
+## Complete Tracked-File Documentation Coverage Pass — 2026-08-19
+
+A new focused documentation-completion line was started from the current `main` head to make deep repository documentation enforceable across the complete tracked tree rather than relying only on human memory.
+
+### Branch and pull request
+
+- branch: `docs/complete-repository-coverage`;
+- pull request: `#30` — `docs: enforce complete repository documentation coverage`;
+- base `main` at PR creation: `4b42c009e6efc9a03806d5cf0122802c0cee7203`;
+- stable `v1.0.0` remains unclaimed;
+- issue #5 remains the production-readiness tracker.
+
+### Complete tracked-file documentation ownership guard
+
+Added `scripts/verify_documentation_coverage.py`.
+
+The verifier:
+
+- obtains the authoritative current file set with `git ls-files -z`;
+- evaluates ordered, narrow-first ownership rules for Android instrumentation tests, JVM tests, Room schemas, Android resources, benchmark overlays, application source, application module configuration, Sudoku engine tests/source/configuration, Macrobenchmark, repository scripts/tests, GitHub workflows/metadata, Gradle/build files, editor/ignore configuration, root policy/project files, and the complete `docs/` library;
+- fails when any tracked path has no documentation coverage rule;
+- fails when an ownership rule points at a canonical documentation file that is no longer tracked;
+- supports `--verbose` to print every tracked file and its canonical documentation ownership;
+- supports `--markdown` to render a deterministic per-file audit table;
+- fails closed on new top-level/path families until their ownership is documented deliberately.
+
+This guard means the repository can no longer claim “every tracked file is documented” solely from a manual tree review. A future uncovered tracked path becomes a deterministic CI defect.
+
+### Regression tests and defect found during implementation
+
+Added `scripts/tests/test_verify_documentation_coverage.py` covering representative repository areas, unknown-path rejection, missing canonical-document rejection, Markdown report rendering, and Windows-style path normalization.
+
+The test design exposed a real bug in the first implementation: using `lstrip("./")` removed the leading dot from paths such as `.github/workflows/ci.yml`, preventing hidden GitHub paths from resolving correctly. Commit `15bf93f578d37b16b9515ecc62a284e9a5574765` changed normalization to remove only a literal leading `./`, preserving `.github` and other legitimate dot-prefixed tracked paths.
+
+### Deep repository file reference
+
+Added `docs/REPOSITORY_FILE_REFERENCE.md` as the canonical path-oriented guide for the complete tracked repository.
+
+It documents:
+
+- root project/community/policy files;
+- Gradle wrapper/version catalog/root build configuration;
+- editor/ignore configuration;
+- GitHub Actions and collaboration metadata;
+- Android application source, persistence, gameplay/navigation, teaching presentation, resources, Room schema history, JVM tests, connected tests, benchmark overlay, and module configuration;
+- platform-independent Sudoku engine implementation/tests/configuration;
+- Macrobenchmark module;
+- deterministic verification/maintenance scripts and their tests;
+- the complete detailed documentation library;
+- procedures for adding, moving, renaming, and deleting tracked files;
+- audit commands;
+- the evidence boundary between documentation ownership and real build/device/signing/store verification.
+
+### CI enforcement
+
+Standard `.github/workflows/ci.yml` now runs:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python scripts/verify_documentation_coverage.py
+```
+
+The regression suite runs with the other repository-guard tests, and the direct full-tree verifier runs with the repository consistency guards before the expensive Gradle work.
+
+### Documentation authorities synchronized
+
+Updated:
+
+- `docs/REPOSITORY_GUARDS.md` — defines coverage semantics, audit modes, CI policy, and relationship to link/release/security/translation/artifact guards;
+- `docs/DOCUMENTATION_STANDARDS.md` — makes tracked-file documentation ownership a mandatory standard and release/documentation review item;
+- `docs/README.md` — indexes the repository file reference and guard throughout contributor/release/maintenance paths;
+- `docs/CI_CD.md` — synchronizes the actual 21-stage standard CI flow, adds documentation/link/release-contract guard commands, and records PR #28 as merged/verified;
+- `docs/V1_RELEASE_CANDIDATE.md` — fixes stale text that still described PR #28 exact-head verification/merge as pending and fills the already-established verified head/run/artifact/merge evidence while preserving production/manual blockers.
+
+### Focused commits before this handoff record
+
+- `e1306c5176107b10f18230f9886ec5c18062e0ba` — `test(docs): add tracked-file documentation coverage guard`;
+- `1aa77f0082e8f9b74b3ad37640a994173a57599f` — `test(docs): cover tracked-file documentation ownership`;
+- `15bf93f578d37b16b9515ecc62a284e9a5574765` — `fix(docs): preserve hidden paths in coverage resolution`;
+- `c41b63fa688f5e0538a3d541ba9e9d8d2878f0f1` — `docs(reference): add complete tracked-file ownership map`;
+- `7aaa4341253be9564609eb498b47acddfc6b052e` — `ci(docs): enforce complete tracked-file documentation coverage`;
+- `42f028586dce8c4ef2a74ced8c9274edd6fec2e2` — `docs(guards): document tracked-file coverage enforcement`;
+- `a18f46c24191cec57cfdcd5aeaa2834d56886bea` — `docs(standards): require documentation ownership for every tracked file`;
+- `3fabe113050365f2d24b3cd046b62c9800e89206` — `docs(index): index complete repository file coverage`;
+- `93953071f1ee1cca3dcc4aaa94731a2c014b1b36` — `docs(release): correct merged PR 28 evidence in RC worksheet`;
+- `f83ba7fbd6afd65c25b0b298cf440bcf50625551` — `docs(ci): document documentation-coverage quality gates`.
+
+### Verification boundary for PR #30
+
+Opening PR #30 triggered standard Android CI and API-35 Android Instrumentation. Earlier runs attached to pre-handoff heads are not final evidence once this `what_changed.md` commit changes the pull-request head. The exact final PR #30 head must independently pass the required workflow pair before merge.
+
+No claim is made here that this documentation work completes the still-pending stable-release device, production-signing, repository-admin, physical-performance, store, or publication evidence in issue #5.
