@@ -62,41 +62,37 @@ Read:
 7. [`../SECURITY.md`](../SECURITY.md)
 8. [Testing](TESTING.md)
 
-### I am preparing v1.0 or another release
+### I am preparing 2.0.12 or a later release
 
 Read in this order:
 
-1. [v1.0 RC Preparation](V1_RELEASE_PREP.md)
-2. [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
-3. [Building](BUILDING.md)
-4. [Production Signing](PRODUCTION_SIGNING.md)
-5. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
-6. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-7. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
-8. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
-9. [v1.0 Release Notes Source](V1_RELEASE_NOTES.md)
-10. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
-11. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
-12. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
-13. [Releasing](RELEASING.md)
-14. [Release Checklist](RELEASE_CHECKLIST.md)
-15. [Release QA](RELEASE_QA.md)
-16. [QA Matrix](QA_MATRIX.md)
-17. [Quality Gates](QUALITY_GATES.md)
-18. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
-19. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
-20. [CI/CD](CI_CD.md)
-21. [Testing](TESTING.md)
-22. [Performance](PERFORMANCE.md)
-23. [Accessibility](ACCESSIBILITY.md)
-24. [Privacy](PRIVACY.md)
-25. [`../SECURITY.md`](../SECURITY.md)
-26. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-27. [`../CHANGELOG.md`](../CHANGELOG.md)
-28. [`../ROADMAP.md`](../ROADMAP.md)
-29. [`../what_changed.md`](../what_changed.md)
+1. [2.0.12 Release Line](V2_0_12_RELEASE.md)
+2. [Building](BUILDING.md)
+3. [Production Signing](PRODUCTION_SIGNING.md)
+4. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
+5. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+6. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+7. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+8. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+9. [Releasing](RELEASING.md)
+10. [Release Checklist](RELEASE_CHECKLIST.md)
+11. [Release QA](RELEASE_QA.md)
+12. [QA Matrix](QA_MATRIX.md)
+13. [Quality Gates](QUALITY_GATES.md)
+14. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+15. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+16. [CI/CD](CI_CD.md)
+17. [Testing](TESTING.md)
+18. [Performance](PERFORMANCE.md)
+19. [Accessibility](ACCESSIBILITY.md)
+20. [Privacy](PRIVACY.md)
+21. [`../SECURITY.md`](../SECURITY.md)
+22. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+23. [`../CHANGELOG.md`](../CHANGELOG.md)
+24. [`../ROADMAP.md`](../ROADMAP.md)
+25. [`../what_changed.md`](../what_changed.md)
 
-For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md) and the completed [PR #28 Branch Freeze](BRANCH_FREEZE.md) record.
+For historical release evidence, also read [v1.0 RC Preparation](V1_RELEASE_PREP.md), [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md), [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md), [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md), [v1.0 Release Notes Source](V1_RELEASE_NOTES.md), [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md), and the completed [PR #28 Branch Freeze](BRANCH_FREEZE.md) record.
 
 ## Product and User Documentation
 
@@ -230,7 +226,7 @@ Current JDK/Gradle/AGP/Kotlin/SDK requirements, debug/release APK, release AAB, 
 
 ### [Testing](TESTING.md)
 
-Complete engine/JVM/instrumentation/release-tooling/Macrobenchmark/lint/release/manual QA strategy. v1.0 RC adds artifact-verifier, package/certificate identity, signing fail-closed and benchmark-compilation checks on top of the verified v0.9 suites.
+Complete engine/JVM/instrumentation/release-tooling/Macrobenchmark/lint/release/manual QA strategy. The current 2.0.12 line retains the verified v1 hardening foundations and requires exact package/version/SDK/artifact validation for `versionCode 2012` / `versionName 2.0.12`.
 
 ### [Quality Gates](QUALITY_GATES.md)
 
@@ -246,7 +242,7 @@ GitHub Actions quality gates, exact-head verification, repository guards, Macrob
 
 ### [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
 
-General rule that required workflow evidence applies only to the exact commit it tested, with the verified PR #28 merge retained as a historical example.
+General rule that required workflow evidence applies only to the exact commit it tested, with verified earlier release pull requests retained as historical examples.
 
 ### [Performance](PERFORMANCE.md)
 
@@ -314,19 +310,23 @@ Concrete source-audit findings and fixes for main-thread work, stale async resul
 
 ### [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
 
-Exact PR #28 head, Android CI/API-35 run IDs, artifact digests, Macrobenchmark compile-defect repair, repository-guard enforcement audit, merge SHA, and stable-release evidence boundary.
+Exact PR #28 head, Android CI/API-35 run IDs, artifact digests, Macrobenchmark compile-defect repair, repository-guard enforcement audit, merge SHA, and historical stable-release evidence boundary.
 
 ### [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
 
 Reusable merge-evidence rule for all future pull requests and release lines whose workflow results are used as final evidence.
 
+### [2.0.12 Release Line](V2_0_12_RELEASE.md)
+
+Current release authority for `versionCode 2012` / `versionName 2.0.12`, including repository gates, protected signing validation, physical-device/manual/store evidence requirements, and final SHIP/tag/publication boundaries.
+
 ### [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
 
-Authoritative real-target worksheet for installation, gameplay, TalkBack, 200% font/adaptive layouts, contrast/motion, keyboard, process death, measured performance/ANR/memory, production signing, signed artifacts, store assets and final ship/no-ship decision.
+Historical real-target worksheet prepared for the v1.0 RC line. It remains useful as evidence/process history but is no longer the current version authority.
 
 ### [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
 
-Concise exact-evidence ledger separating verified RC1 repository evidence, post-RC validation/performance tooling, and still-pending signed, physical-device, administrative and store evidence.
+Historical exact-evidence ledger for verified v1 RC/post-RC work and the production evidence that remained pending at that checkpoint.
 
 ### [Accessibility](ACCESSIBILITY.md)
 
@@ -342,17 +342,21 @@ Authoritative source for representative physical-device startup/frame measuremen
 
 ## Release and Planning
 
+### [2.0.12 Release Line](V2_0_12_RELEASE.md)
+
+Current source/version/release authority for SudokuNova 2.0.12. Use it for the 2012/2.0.12 contract and current release evidence boundary.
+
 ### [v1.0 RC Preparation](V1_RELEASE_PREP.md)
 
-Verified repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
+Historical verified repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
 
 ### [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
 
-Verified exact-head repository evidence for PR #28 and its merge, with all production/manual/admin/store boundaries retained.
+Historical verified exact-head repository evidence for PR #28 and its merge, with production/manual/admin/store boundaries retained.
 
 ### [v1.0 Release Notes Source](V1_RELEASE_NOTES.md)
 
-Canonical truthful stable-release notes source. It must be synchronized with the exact stable source before publication and must not claim unverified production evidence.
+Historical canonical v1 stable-release notes source. It is preserved as release-line history and is not the 2.0.12 publication authority.
 
 ### [Production Signing](PRODUCTION_SIGNING.md)
 
@@ -380,7 +384,7 @@ Historical record of the PR #28 freeze rule and the exact verified head/workflow
 
 ### [Releasing](RELEASING.md)
 
-End-to-end RC/stable process from scope freeze through package/version/artifact verification, production signing, certificate identity, physical/manual QA and performance evidence, exact-head verification, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
+End-to-end release process from scope freeze through package/version/artifact verification, production signing, certificate identity, physical/manual QA and performance evidence, exact-head verification, tag, GitHub Release, store submission and fix-forward handling.
 
 ### [Release Checklist](RELEASE_CHECKLIST.md)
 
@@ -400,7 +404,7 @@ Authoritative current product milestone roadmap.
 
 ### [Changelog](../CHANGELOG.md)
 
-Release history and current unreleased RC work.
+Release history and current unreleased work.
 
 ### [What Changed](../what_changed.md)
 
@@ -419,6 +423,7 @@ Detailed implementation/verification/handoff history.
 - [Changelog](../CHANGELOG.md)
 - [Roadmap](../ROADMAP.md)
 - [Implementation Log](../what_changed.md)
+- [2.0.12 Release Line](V2_0_12_RELEASE.md)
 - [Repository File Reference](REPOSITORY_FILE_REFERENCE.md)
 - [Repository Consistency Guards](REPOSITORY_GUARDS.md)
 - [Quality Gates](QUALITY_GATES.md)
@@ -434,7 +439,7 @@ Detailed implementation/verification/handoff history.
 
 The archived development ledger is preserved at [archive/what_changed_through_2026-08-19.md](archive/what_changed_through_2026-08-19.md). It is immutable historical context; current work continues in [`../what_changed.md`](../what_changed.md).
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md`, `V09_HARDENING_AUDIT.md`, and `BRANCH_FREEZE.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `QUALITY_GATES.md`, `EXACT_HEAD_VERIFICATION.md`, `REPOSITORY_FILE_REFERENCE.md`, `REPOSITORY_GUARDS.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `V1_RELEASE_NOTES.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+`V2_0_12_RELEASE.md` is the current release-version authority. Files such as `V1_RELEASE_PREP.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `V1_RELEASE_NOTES.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `TRANSFER_BACKUP_V07.md`, `V09_HARDENING_AUDIT.md`, and `BRANCH_FREEZE.md` intentionally preserve milestone-specific history. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `QUALITY_GATES.md`, `EXACT_HEAD_VERIFICATION.md`, `REPOSITORY_FILE_REFERENCE.md`, `REPOSITORY_GUARDS.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V2_0_12_RELEASE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract.
 
 ## Documentation Maintenance Rule
 
