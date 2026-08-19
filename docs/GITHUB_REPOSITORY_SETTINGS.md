@@ -29,9 +29,33 @@ Do **not** require one approving review unless another trusted reviewer/collabor
 The current versioned workflows are:
 
 - `.github/workflows/ci.yml` — security guard, release-verifier tests, signing fail-closed regression, translation parity, engine tests, app JVM tests, AndroidTest compilation, debug/release lint, debug APK, R8 release APK, release AAB, release artifact verification and SHA-256 evidence;
-- `.github/workflows/instrumentation.yml` — API-35 connected Compose/Room tests.
+- `.github/workflows/instrumentation.yml` — API-35 connected Compose/Room tests;
+- `.github/workflows/release-validation.yml` — manually dispatched, protected production-signed artifact validation. This is a release-operation workflow, not a pull-request required check.
 
-Repository settings should require both workflow jobs for release branches/PRs before merge.
+Repository settings should require the standard CI and instrumentation jobs for release branches/PRs before merge. Do not make the protected production-validation workflow a normal PR requirement because it intentionally depends on production signing material and a trusted release environment.
+
+## `production-release` GitHub Environment
+
+The source-controlled workflow expects an environment named exactly:
+
+`production-release`
+
+This environment is an independent release security boundary and should be configured before the first production-signed validation run.
+
+Recommended controls:
+
+- restrict deployment branches/tags to explicitly trusted release refs rather than every branch;
+- permit environment use only to trusted maintainers;
+- add required reviewers when the account/repository plan and maintainer model support an independent approval path;
+- prevent self-review where GitHub offers that control and an independent reviewer exists;
+- store signing credentials as **environment secrets**, not repository variables or ordinary workflow inputs;
+- keep environment secrets unavailable to ordinary pull-request workflows;
+- audit the environment’s allowed refs/reviewers immediately before stable publication;
+- remove obsolete maintainers and rotate/recover credentials through the project’s secure key-management process when necessary.
+
+Expected environment secrets are documented in `PRODUCTION_RELEASE_VALIDATION.md` and `PRODUCTION_SIGNING.md`. The protected workflow scopes secret values to the smallest practical set of steps, but this source-level least-privilege measure does **not** replace environment ref/access restrictions: the signed Gradle build necessarily executes code from the selected ref while signing credentials are available.
+
+Do not mark the environment configured merely because `.github/workflows/release-validation.yml` names it. GitHub administration must actually contain the environment, its secret values, and its intended restrictions.
 
 ## Merge methods
 
@@ -57,14 +81,15 @@ Do not delete a branch before:
 
 Repository workflows currently request `contents: read`. Keep the default workflow token as least-privileged as practical.
 
-For future production release automation:
+For production release automation:
 
 - do not expose production signing secrets to ordinary pull-request workflows;
-- use a protected GitHub Environment or equivalent secret-management boundary;
+- use the protected `production-release` GitHub Environment or an equivalent secret-management boundary;
 - require deliberate/manual approval for production publication where practical;
 - avoid `pull_request_target` for workflows that execute untrusted PR code with privileged secrets;
 - pin/maintain third-party actions deliberately and review Dependabot updates;
-- keep artifact retention finite unless legal/release evidence requires longer archival elsewhere.
+- keep artifact retention finite unless legal/release evidence requires longer archival elsewhere;
+- keep signed binary upload opt-in when the validation objective can be satisfied with hashes/signature evidence alone.
 
 ## Security features
 
@@ -121,6 +146,8 @@ After enabling repository settings, record:
 - required checks;
 - approval requirement;
 - bypass policy;
+- `production-release` environment allowed refs/reviewers;
+- confirmation that required environment secrets are configured without recording secret values;
 - screenshot or exported settings evidence if useful and non-sensitive.
 
 Then update `what_changed.md` with the fact that settings were actually enabled. Do not mark this checklist complete merely because the file exists.
