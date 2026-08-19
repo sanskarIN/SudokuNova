@@ -6,8 +6,11 @@ This is the concise exact-evidence ledger for the first stable SudokuNova releas
 
 - Preparation branch: `release/v1.0-rc1-prep`
 - PR #27: **verified and merged**
-- Final verified PR head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
+- Final verified PR #27 head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`
 - PR #27 merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`
+- Post-RC hardening PR #28: **verified and merged**
+- Final verified PR #28 head: `c3e0e3fc217062e374a434cfea46235fd6595f83`
+- PR #28 merge commit: `27640cb9089ddae4a9242bb84a8927c3761201f4`
 - Candidate versionName: `1.0.0-rc.1`
 - Candidate versionCode: `1000`
 - Application ID: `in.sanskar.sudokunova`
@@ -75,9 +78,9 @@ Exact evidence from the verified PR #27 head:
 
 These are unsigned repository-CI verification artifacts. They are not production-signed release evidence.
 
-## Post-RC release-validation hardening — TOOLING ONLY
+## Post-RC release-validation hardening — VERIFIED AND MERGED
 
-PR #28 adds stricter release validation and reproducible performance infrastructure without claiming that production signing, physical-device benchmarks or manual QA have already happened.
+PR #28 added stricter release validation and reproducible performance infrastructure without claiming that production signing, physical-device benchmarks or manual QA have already happened.
 
 ### Release identity tooling
 
@@ -116,18 +119,54 @@ ProfileInstaller presence is benchmark/runtime-profile infrastructure; it is **n
 
 A successful CI compile proves only that the benchmark harness builds. It is not representative physical-device timing evidence.
 
-## PR #28 exact-head repository verification
+## PR #28 exact-head repository verification — VERIFIED
 
-Status: **PENDING exact-final-head workflows**.
+All PR #28 repository gates below were verified on the same exact final head `c3e0e3fc217062e374a434cfea46235fd6595f83` before merge.
 
-The post-RC branch must independently pass, on the exact final head:
+| Gate | Exact head | Run/evidence | Result |
+|---|---|---|---|
+| Repository secret guard | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Release-verifier Python tests | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Repository guard regression tests | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Partial signing fails closed | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Documentation/release-contract direct guards | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| English/Hindi parity | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Sudoku engine tests | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Android JVM tests | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| AndroidTest compilation | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Macrobenchmark harness compilation | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Debug + release lint | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Debug APK | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| R8/resource-shrunk release APK | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| Release AAB | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| APK/AAB/R8 structure/package/version check | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| SHA-256/size evidence generation | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android CI `32211246803` | PASS |
+| API-35 connected Compose/Room | `c3e0e3fc217062e374a434cfea46235fd6595f83` | Android Instrumentation `32211246802` | PASS |
 
-- Android CI, including release-verifier tests, Macrobenchmark harness compilation, lint/build/R8/AAB/package/version/hash gates;
-- Android Instrumentation API-35 connected Compose/Room tests.
+Android CI: run #706 / `32211246803` — GREEN.  
+Android Instrumentation: run #229 / `32211246802` — GREEN.
 
-PR #27's green run IDs remain historical RC1 evidence and cannot be reused for PR #28.
+The prior Android CI failure #697 / `32208530447` is retained as historical defect evidence. It exposed a missing direct AndroidX Test Runner dependency for the Macrobenchmark `LargeTest` annotation; the final exact-head run passed `:macrobenchmark:assembleBenchmark` after the dependency repair.
 
-Record the final PR #28 SHA/run IDs here only after the branch stops changing and both workflows actually succeed.
+PR #28 was merged using expected head `c3e0e3fc217062e374a434cfea46235fd6595f83` as merge commit `27640cb9089ddae4a9242bb84a8927c3761201f4`.
+
+### PR #28 repository CI artifact evidence
+
+`unsigned-release-builds`:
+
+- artifact ID: `9351009095`;
+- artifact size: `12,794,807` bytes;
+- GitHub artifact digest: `sha256:432c0741cf94ee459fcb58c07eaa5316776f38abd15f91827fd04a2e4fb2225c`;
+- recorded expiry: `2026-09-02`.
+
+`verification-reports`:
+
+- artifact ID: `9351008412`;
+- artifact size: `578,445` bytes;
+- GitHub artifact digest: `sha256:8374a7a82fe604e0b516d7768a8c563d16030bdbe4862cc26509ce5ce83cf651`;
+- recorded expiry: `2026-09-02`.
+
+These remain unsigned repository-CI evidence rather than final production-signed release evidence. See `POST_RC_VALIDATION_EVIDENCE.md` for the focused post-RC verification record.
 
 ## Production-signed artifact evidence
 
@@ -261,9 +300,9 @@ See `PLAY_STORE_RELEASE.md`.
 Promote to stable `1.0.0` only when:
 
 1. repository-side RC preparation is merged from an exact green head — **completed for PR #27**;
-2. post-RC release-validation/performance tooling is merged from its own exact green head if included in stable source — **pending for PR #28 until its final head passes both required workflows**;
+2. post-RC release-validation/performance tooling is merged from its own exact green head if included in stable source — **completed for PR #28**;
 3. any later stable-metadata/source changes receive fresh exact-head Android CI and API-35 verification;
-4. release APK/AAB/R8 integrity/hash evidence exists — **completed for the unsigned RC verification artifacts; must be repeated for final signed stable artifacts**;
+4. release APK/AAB/R8 integrity/hash evidence exists — **completed for unsigned RC/repository verification artifacts; must be repeated for final signed stable artifacts**;
 5. required device/accessibility/lifecycle QA is recorded;
 6. representative measured release performance has no release-blocking defect;
 7. production signing is configured outside Git and signed artifacts are verified against the intended certificate identities;
