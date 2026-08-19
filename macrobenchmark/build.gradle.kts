@@ -7,7 +7,9 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        minSdk = 26
+        // Release evidence should use modern physical devices where shell profiling of a
+        // non-debuggable app is supported through the benchmark-only <profileable> manifest.
+        minSdk = 29
         targetSdk = 37
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
