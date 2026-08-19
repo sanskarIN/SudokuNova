@@ -432,12 +432,29 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError(
                 "certificate expectations/signature evidence require --require-signatures"
             )
-        if (args.expected_min_sdk or args.expected_target_sdk or args.apk_identity_output) and not args.require_apk_manifest:
+        manifest_expectations = (
+            args.expected_min_sdk is not None
+            or args.expected_target_sdk is not None
+            or args.apk_identity_output is not None
+        )
+        if manifest_expectations and not args.require_apk_manifest:
             raise ValueError(
                 "APK SDK expectations/identity evidence require --require-apk-manifest"
             )
         if args.require_apk_manifest and not args.expected_application_id:
             raise ValueError("--require-apk-manifest requires --expected-application-id")
+        for label, value in (
+            ("--expected-min-sdk", args.expected_min_sdk),
+            ("--expected-target-sdk", args.expected_target_sdk),
+        ):
+            if value is not None and value <= 0:
+                raise ValueError(f"{label} must be a positive integer")
+        if (
+            args.expected_min_sdk is not None
+            and args.expected_target_sdk is not None
+            and args.expected_target_sdk < args.expected_min_sdk
+        ):
+            raise ValueError("--expected-target-sdk must be greater than or equal to --expected-min-sdk")
 
         validate_zip(args.apk, "Release APK", APK_REQUIRED_ENTRIES)
         validate_zip(args.aab, "Release AAB", AAB_REQUIRED_ENTRIES)
