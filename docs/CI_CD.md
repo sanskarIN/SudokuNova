@@ -26,7 +26,7 @@ Current v1.0 RC stages include:
 12. debug APK assembly;
 13. release APK assembly with R8/resource shrinking;
 14. release Android App Bundle assembly;
-15. release APK/AAB/R8 mapping structural/version verification;
+15. release APK/AAB/R8 mapping structural/application/version verification;
 16. SHA-256/byte-size release evidence generation;
 17. report/test-result artifact upload;
 18. successful release APK/AAB/R8 mapping/checksum artifact upload for short-lived verification evidence.
@@ -49,7 +49,7 @@ This gate is particularly important for:
 
 This is a separate manually dispatched workflow for trusted signed-release validation. It uses the `production-release` GitHub Environment and is intentionally outside ordinary pull-request execution.
 
-It requires protected signing secrets, reconstructs the keystore only in `$RUNNER_TEMP`, builds signed R8 APK/AAB outputs, verifies their signatures, binds both artifacts to protected expected signer-certificate SHA-256 fingerprints, records hashes/sizes/signature fingerprints/exact workflow context, and removes the temporary keystore in cleanup.
+It requires protected signing secrets, validates the operator-supplied version inputs, reconstructs the keystore only in `$RUNNER_TEMP`, builds signed R8 APK/AAB outputs, requires production `applicationId = in.sanskar.sudokunova`, verifies signatures, binds both artifacts to protected expected signer-certificate SHA-256 fingerprints, records hashes/sizes/signature fingerprints/exact workflow context, and removes the temporary keystore in cleanup.
 
 The workflow uploads non-secret production validation evidence after success. Signed APK/AAB upload is opt-in and short-lived rather than automatic.
 
@@ -97,6 +97,8 @@ Coverage includes:
 - missing required archive entry rejection;
 - single release metadata parsing;
 - multiple release metadata element rejection;
+- production application ID parsing/rejection when missing;
+- wrong expected application ID rejection;
 - deterministic checksum-manifest content;
 - certificate-fingerprint normalization;
 - `apksigner` certificate-digest parsing;
@@ -202,8 +204,9 @@ The AAB is the expected store-oriented Android bundle format. Final production d
 
 ## Release-Output Verification Gate
 
-After release APK/AAB/R8 mapping generation, ordinary CI runs `scripts/verify_release_outputs.py` with the exact expected RC metadata:
+After release APK/AAB/R8 mapping generation, ordinary CI runs `scripts/verify_release_outputs.py` with the exact expected RC identity:
 
+- `applicationId in.sanskar.sudokunova`;
 - `versionCode 1000`;
 - `versionName 1.0.0-rc.1`.
 
@@ -216,6 +219,7 @@ The verifier requires:
 - AAB bundle config, base manifest and base DEX entries;
 - non-empty R8 `mapping.txt`;
 - exactly one APK release metadata element;
+- exact expected application ID;
 - exact expected version code/name.
 
 It then writes SHA-256 and byte-size evidence for APK, AAB and mapping to:
@@ -228,16 +232,17 @@ A successful ordinary verifier result does **not** prove production certificate 
 
 ### Signed/certificate-bound mode
 
-A protected release environment can add:
+A protected release environment additionally uses:
 
 ```text
+--expected-application-id in.sanskar.sudokunova
 --require-signatures
 --expected-apk-cert-sha256 <trusted fingerprint>
 --expected-aab-cert-sha256 <trusted fingerprint>
 --signature-output <path>
 ```
 
-In this mode the verifier requires `apksigner`, `jarsigner`, and `keytool`, verifies cryptographic signatures, extracts normalized signer SHA-256 fingerprints, and fails when they do not match the trusted expected identities.
+In this mode the verifier requires the production package identity, requires `apksigner`, `jarsigner`, and `keytool`, verifies cryptographic signatures, extracts normalized signer SHA-256 fingerprints, and fails when identities do not match the trusted expected values.
 
 The expected fingerprints must come from a trusted release record or platform certificate record—not from the artifact being tested.
 
@@ -269,7 +274,7 @@ The protected production-validation workflow may upload:
 
 These artifacts are verification evidence and have limited retention. They should not automatically be described as published production releases.
 
-Do not publish a CI-built artifact as production unless signing, certificate identity, provenance, manual QA, legal/store metadata and the exact final artifact have been validated.
+Do not publish a CI-built artifact as production unless application/package identity, signing, certificate identity, provenance, manual QA, legal/store metadata and the exact final artifact have been validated.
 
 ## Production Signing Boundary
 
@@ -277,7 +282,7 @@ Normal pull-request CI intentionally receives no production signing secrets.
 
 The build supports secret-backed signing only when all four required `SUDOKUNOVA_*` build environment values are available in a controlled release environment. Ordinary PRs, forks and untrusted code must not receive those secrets.
 
-The protected workflow additionally requires a base64 keystore secret and expected APK/AAB signer certificate SHA-256 fingerprints in the `production-release` GitHub Environment.
+The protected workflow additionally requires a base64 keystore secret and expected APK/AAB signer certificate SHA-256 fingerprints in the `production-release` GitHub Environment. The workflow pins the application ID itself rather than accepting it as a dispatch input.
 
 See:
 
@@ -299,6 +304,6 @@ A green ordinary CI run does not authorize the system to:
 - claim TalkBack/200% font/performance/process-death validation;
 - claim signed artifact identity.
 
-A successful protected production-validation run can establish signed artifact identity for the exact generated artifacts, but it still does not authorize store publication or substitute for the remaining manual/admin/store evidence.
+A successful protected production-validation run can establish package/version/signature/certificate identity for the exact generated artifacts, but it still does not authorize store publication or substitute for the remaining manual/admin/store evidence.
 
 Release/publishing remains a controlled maintainer action documented in the release guides.
