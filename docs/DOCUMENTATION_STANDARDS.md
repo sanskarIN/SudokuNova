@@ -35,6 +35,28 @@ Keep root files focused on repository-wide entry points/policies:
 
 Put detailed guides/reference material under `docs/` and link them from `docs/README.md`.
 
+## Tracked-File Documentation Ownership
+
+Every Git-tracked repository file must belong to a documented area. The authoritative coverage contract is [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md), enforced by:
+
+```bash
+python scripts/verify_documentation_coverage.py
+```
+
+The verifier obtains the current file set from `git ls-files -z`; it does not rely on a manually frozen repository tree. Every path must resolve to a coverage rule, and each rule must point to canonical documentation files that are themselves tracked.
+
+Use:
+
+```bash
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+to print the documentation owner for every tracked path during an audit.
+
+When adding a new path family or top-level module, do not hide it under an unrelated broad rule simply to make CI pass. Add a precise ownership rule, regression coverage, and the corresponding documentation before merge.
+
+Coverage establishes **ownership**, not factual correctness. A passing coverage check must therefore be combined with implementation review, local-link verification, tests/builds, privacy/security review, and exact release evidence where applicable.
+
 ## Audience Categories
 
 Every document should primarily serve one or more audiences:
@@ -125,6 +147,8 @@ It must not include fabricated green tests, device results, signed-release claim
 
 Keep historical sections unless there is a factual correction. Do not erase prior milestone history just to shorten the file.
 
+The top/current-state block must be synchronized with the actual current build/release line. Historical version facts belong in historical sections instead of remaining as a misleading “current” header.
+
 ## Changelog Rules
 
 `CHANGELOG.md` should emphasize user/developer-visible release changes, not every tiny commit.
@@ -172,6 +196,15 @@ For repository-internal docs, prefer relative links:
 Use absolute external URLs for project/contact links only when appropriate.
 
 After renaming/deleting docs, search for broken references.
+
+Run both documentation guards after structural documentation work:
+
+```bash
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+```
+
+The first catches missing local Markdown targets; the second catches tracked files with no documentation owner.
 
 ## Security-Sensitive Documentation
 
@@ -241,7 +274,10 @@ Before release/tagging, cross-check:
 - `PRIVACY.md`;
 - `SECURITY.md`;
 - `THIRD_PARTY_NOTICES.md`;
+- `REPOSITORY_FILE_REFERENCE.md` when repository structure changed;
 - `what_changed.md`.
+
+Also run the documentation coverage and link guards against the exact release source so repository structure and references are included in release readiness.
 
 ## New Documentation Checklist
 
@@ -255,6 +291,7 @@ Before adding a new page:
 6. Is it linked from `docs/README.md`?
 7. Does it create duplication that will drift?
 8. Does it expose security/private data?
+9. Does the repository coverage guard still pass?
 
 ## Documentation Review Checklist
 
@@ -266,6 +303,7 @@ For substantial releases, audit:
 - obsolete commands;
 - missing new screens/features;
 - broken file links;
+- tracked files without documentation ownership;
 - incorrect package/module names;
 - build-stack mismatches;
 - data-format mismatches;
