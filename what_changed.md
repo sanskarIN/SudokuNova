@@ -1250,3 +1250,102 @@ The following are deliberately still unclaimed:
 - immutable `v1.0.0` tag, GitHub Release, and Android/store publication.
 
 The post-RC branch materially reduces the work required to produce trustworthy signing and performance evidence, but it intentionally does not convert tooling existence into a stable-production claim.
+
+## PR #28 Exact-Head Verification and Merge — 2026-08-19
+
+The post-RC validation-hardening line has now completed its repository-side merge gate without converting source-controlled tooling into production evidence.
+
+### Defects and enforcement gaps repaired before final verification
+
+Exact-head validation exposed a real Macrobenchmark compile failure in Android CI run #697 / ID `32208530447` on head `d5016fbdc530b41413a26d8da3476895e03a463b`: `StartupBenchmark.kt` imported `androidx.test.filters.LargeTest` without an explicit AndroidX Test Runner dependency.
+
+Focused repair commits were:
+
+- `fd95be04b251f6a1189c32a21ca3960a4c9e276d` — `build(deps): expose AndroidX test runner for macrobenchmarks`;
+- `c4afa584f80bb53de58472da13b75580750994d8` — `fix(benchmark): add test runner annotation dependency`.
+
+A source/workflow audit then found that repository documentation-link and release-contract guards existed but ordinary/protected workflow enforcement did not fully match the documented contract. That gap was closed through:
+
+- `b2c5f8ef187a0aa5fed627d79ac138d055473b54` — `ci(guards): execute repository consistency regression suites`;
+- `5b971059c59ac8a7d4600938c4087a647b4a1416` — `ci(release): enforce source workflow contract before signing`;
+- `c3e0e3fc217062e374a434cfea46235fd6595f83` — `docs(licenses): record direct AndroidX test runner usage`.
+
+### Exact final head — GREEN
+
+**Verified head:** `c3e0e3fc217062e374a434cfea46235fd6595f83`
+
+Android CI:
+
+- run number: `706`;
+- run ID: `32211246803`;
+- result: GREEN.
+
+The exact head passed repository security, release-verifier tests, repository-guard regression tests, partial-signing fail-closed verification, direct documentation-link/release-contract guards, English/Hindi parity, engine tests, Android JVM tests, instrumentation-test compilation, the repaired Macrobenchmark compilation gate, debug/release lint, debug APK, R8 release APK, release AAB, release-output verification/evidence generation, artifact upload, and cleanup.
+
+API-35 Android Instrumentation:
+
+- run number: `229`;
+- run ID: `32211246802`;
+- result: GREEN.
+
+The exact head passed the API-35 x86_64 connected Compose/Room suite and report upload.
+
+### Exact-head CI artifacts
+
+`unsigned-release-builds`:
+
+- artifact ID: `9351009095`;
+- size: `12,794,807` bytes;
+- GitHub digest: `sha256:432c0741cf94ee459fcb58c07eaa5316776f38abd15f91827fd04a2e4fb2225c`;
+- recorded expiry: `2026-09-02`.
+
+`verification-reports`:
+
+- artifact ID: `9351008412`;
+- size: `578,445` bytes;
+- GitHub digest: `sha256:8374a7a82fe604e0b516d7768a8c563d16030bdbe4862cc26509ce5ce83cf651`;
+- recorded expiry: `2026-09-02`.
+
+These remain repository-CI evidence rather than production-signed artifacts.
+
+### Merge
+
+PR #28 was merged only after both exact-final-head workflows were green.
+
+- expected verified head: `c3e0e3fc217062e374a434cfea46235fd6595f83`;
+- merge method: merge commit;
+- merge commit: `27640cb9089ddae4a9242bb84a8927c3761201f4`.
+
+Post-merge evidence/documentation commits on `main` include:
+
+- `a1d85e854170ebd6fa1316224f59e15699e06dd7` — `docs(release): record verified post-RC validation merge`;
+- `85cd1ce19cf3e6057fe2e51cb6a13cdf8b62b4e3` — `docs(index): link verified post-RC evidence record`.
+
+Issue #5 received the exact verified head/run/artifact/merge evidence and remains intentionally open.
+
+### Stable-production boundary after PR #28
+
+Still unclaimed and pending real evidence:
+
+- `main` branch/ruleset protection and required-check administration;
+- actual `production-release` GitHub Environment access/ref/reviewer configuration and protected signing secrets;
+- production/upload signing key material and recovery process;
+- real protected Production Release Validation execution on the intended release ref;
+- production signer/upload certificate evidence;
+- signed APK installation smoke and distribution-platform AAB validation;
+- representative physical-device Macrobenchmark startup/frame results and retained traces;
+- memory and ANR evidence;
+- real TalkBack traversal/focus-order QA;
+- representative 200% font, phone/tablet/window/orientation QA;
+- high-contrast and reduced-motion device QA;
+- process-death/lifecycle real-target QA;
+- final signed-artifact R8 smoke QA;
+- current store screenshots/listing/privacy/data/content/target-API validation;
+- final stable Android versionCode decision;
+- stable `versionName = 1.0.0` promotion;
+- fresh exact-head stable CI/API-35 verification after stable changes;
+- final signed artifact hashes/signature evidence;
+- final `SHIP` decision;
+- immutable `v1.0.0` tag, GitHub Release, and Android/store publication.
+
+The remaining work now depends on real repository administration, protected signing material, physical devices/manual QA, and store/publication actions. Those claims must not be fabricated merely to increase commit count.
