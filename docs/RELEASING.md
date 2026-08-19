@@ -1,76 +1,100 @@
 # Releasing SudokuNova
 
-SudokuNova has completed repository-side preparation for its first v1.0 release candidate. This document defines the controlled path from that verified RC state to a stable release. It does not imply that a production package has already been signed, Play-listed, manually device-verified, or published.
+This document defines the controlled path from a verified source line to a production SudokuNova release. The current source target is **2.0.12** with `versionCode 2012` / `versionName 2.0.12`.
+
+Source metadata and release tooling do **not** imply that a production package has already been signed, device-verified, store-accepted, tagged, or published. Those claims require exact evidence.
+
+The current release authority is [SudokuNova 2.0.12 Release Line](V2_0_12_RELEASE.md). Historical v1 RC documents remain preserved as release-engineering evidence.
 
 ## Release Principles
 
 A release is acceptable only when:
 
 - Sudoku correctness is preserved;
-- user data/migrations are safe;
+- user data and migrations are safe;
 - privacy/security documentation matches the binary;
 - required automated gates pass on the exact release commit;
 - release APK/AAB/R8 processing succeeds;
-- release artifacts match the expected application ID and version metadata and checksum evidence exists;
+- release artifacts match the expected application ID, version, SDK, and non-debuggable identity;
+- checksum/identity evidence exists;
 - required manual QA is performed and recorded;
 - signing material stays outside version control;
 - signed artifact identity is verified against trusted certificate fingerprints;
-- release notes describe actual shipped behavior.
+- release notes describe actual shipped behavior;
+- repository/store administrative claims are supported by real evidence;
+- tagging/publication occurs only after a deliberate `SHIP` decision.
 
 Do not lower these requirements to meet an arbitrary date.
 
-## Current v1.0 RC line
+## Current 2.0.12 Source Line
 
-The repository-side RC1 preparation completed as:
+Current source contract:
 
-- preparation branch: `release/v1.0-rc1-prep`;
-- PR #27: **verified and merged**;
-- final verified PR head: `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea`;
-- PR #27 merge commit: `2329881aff8dabaf8d040918e16b6113e3900245`;
+- final source PR: `#30`;
 - `applicationId = "in.sanskar.sudokunova"`;
-- `versionCode = 1000`;
-- `versionName = "1.0.0-rc.1"`.
+- `versionCode = 2012`;
+- `versionName = "2.0.12"`;
+- `minSdk = 26`;
+- `targetSdk = 37`;
+- `compileSdk = 37`.
 
-If version code `1000` is accepted by a distribution track during RC testing, the final stable build must use a strictly higher version code.
+The ordinary CI and protected production-validation workflow use matching expected values. `scripts/verify_release_contract.py` fails when Gradle source, ordinary CI, and protected workflow expectations drift.
 
-Stable `v1.0.0` must not be tagged simply because RC1 compiles or because repository-side RC preparation merged. Use [v1.0 RC Preparation](V1_RELEASE_PREP.md), [v1.0 RC Evidence](V1_RELEASE_CANDIDATE.md), and [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md) as promotion gates.
+The previous `versionCode 1000` / `versionName 1.0.0-rc.1` line is historical v1 RC evidence. Its successful workflow runs do not count as final verification for 2.0.12.
+
+## Historical v1 Foundation
+
+The current release process inherits verified source/tooling from earlier v1 work:
+
+- PR #27 final head `7016e21f36c8ecb8a495c446ffd8b57e9f20a4ea` passed Android CI `32151771317` and API-35 instrumentation `32151771297`, then merged as `2329881aff8dabaf8d040918e16b6113e3900245`;
+- PR #28 final head `c3e0e3fc217062e374a434cfea46235fd6595f83` passed Android CI `32211246803` and API-35 instrumentation `32211246802`, then merged as `27640cb9089ddae4a9242bb84a8927c3761201f4`.
+
+Those historical runs prove only those exact source heads. The current 2.0.12 line requires fresh exact-head evidence.
 
 ## Versioning
 
-Use Semantic Versioning where practical:
-
-- `0.x.y` — pre-1.0 development;
-- `1.0.0-rc.N` — stable-release candidate;
-- `1.0.0` — first stable Classic Sudoku release;
-- `1.x.0` — backward-compatible feature release;
-- `1.x.y` — bug/security/maintenance fix;
-- `2.0.0` — intentional incompatible product/data/API change when justified.
+Use Semantic Versioning where practical.
 
 Android `versionCode` must increase monotonically for distributed builds and must not reuse a code already accepted by a store/distribution track.
 
+For the current source line:
+
+```text
+versionCode = 2012
+versionName = 2.0.12
+```
+
+Any later distributed build must use a version code higher than every code already accepted by the intended distribution platform.
+
 ## 1. Freeze Scope
 
-Before creating or refreshing a release candidate:
+Before final release verification:
 
 - stop adding unrelated features;
 - identify the intended release branch/commit;
 - ensure root `ROADMAP.md` matches included/deferred scope;
 - resolve release-blocking issues;
 - review open PRs/issues for known blockers;
-- avoid dependency/toolchain churn unless required for release correctness/security;
-- keep the Classic 9×9 product contract stable.
+- avoid dependency/toolchain churn unless required for correctness/security;
+- keep the Classic 9×9 product/data contract stable unless an intentional migration is fully designed and tested;
+- confirm all new tracked paths have documentation ownership;
+- confirm all detailed documentation pages are discoverable from `docs/README.md`.
 
 ## 2. Documentation Audit
 
 Review at minimum:
 
-- `README.md`;
+- root `README.md`;
 - `docs/README.md`;
+- `V2_0_12_RELEASE.md`;
 - `FEATURES.md`;
 - `USER_GUIDE.md`;
 - `BUILDING.md`;
 - `TESTING.md`;
 - `CI_CD.md`;
+- `REPOSITORY_GUARDS.md`;
+- `REPOSITORY_FILE_REFERENCE.md`;
+- `EXACT_HEAD_VERIFICATION.md`;
 - `ACCESSIBILITY.md`;
 - `LOCALIZATION.md`;
 - `DATA_STORAGE.md`;
@@ -78,34 +102,41 @@ Review at minimum:
 - `PRIVACY.md`;
 - root `SECURITY.md`;
 - `THIRD_PARTY_NOTICES.md`;
-- `CHANGELOG.md`;
-- `ROADMAP.md`;
+- root `CHANGELOG.md`;
+- root `ROADMAP.md`;
 - `RELEASE_CHECKLIST.md`;
 - `RELEASE_QA.md`;
-- `V1_RELEASE_PREP.md`;
-- `V1_RELEASE_CANDIDATE.md`;
-- `V1_RELEASE_EVIDENCE.md`;
 - `PRODUCTION_SIGNING.md`;
 - `PRODUCTION_RELEASE_VALIDATION.md`;
+- `PERFORMANCE_BENCHMARKING.md`;
 - `PLAY_STORE_RELEASE.md`;
 - `GITHUB_REPOSITORY_SETTINGS.md`;
-- `what_changed.md`.
+- root `what_changed.md`.
 
-Remove stale “planned” statements for implemented work and stale “implemented” statements for removed work.
+Historical v1 files (`V1_RELEASE_PREP.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `V1_RELEASE_NOTES.md`, `POST_RC_VALIDATION_EVIDENCE.md`) should remain truthful historical records rather than being rewritten as 2.0.12 work.
 
-## 3. Repository Security and Release-Verifier Tests
+Remove stale “planned” statements for implemented work and stale “implemented” statements for removed work. Do not convert a checklist into a claim that a real check happened.
+
+## 3. Repository Consistency and Security Gates
 
 Run:
 
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_documentation_links
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python -m unittest scripts.tests.test_verify_release_contract
 python -m unittest scripts.tests.test_verify_release_outputs
+python -m unittest scripts.tests.test_verify_release_cli_validation
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+python scripts/verify_release_contract.py
 python scripts/verify_translations.py
 ```
 
-The normal CI also verifies that a partial release-signing environment fails closed.
+The documentation-coverage verifier reads the authoritative tracked-file set with `git ls-files -z`. A new unowned path, missing canonical guide, or unindexed detailed documentation page fails closed.
 
-Release-verifier regression tests cover archive structure, version metadata, production `applicationId`, checksum evidence, signature tool failure modes, signer SHA-256 parsing, expected-certificate mismatch rejection, and normalized signature evidence.
+The normal CI also verifies that a partial release-signing environment fails closed.
 
 ## 4. Local/CI Verification
 
@@ -113,11 +144,19 @@ Recommended broad local non-connected verification:
 
 ```bash
 python scripts/verify_no_secrets.py
+python -m unittest scripts.tests.test_verify_documentation_links
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python -m unittest scripts.tests.test_verify_release_contract
 python -m unittest scripts.tests.test_verify_release_outputs
+python -m unittest scripts.tests.test_verify_release_cli_validation
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+python scripts/verify_release_contract.py
 python scripts/verify_translations.py
 ./gradlew :sudoku-engine:test \
   :app:testDebugUnitTest \
   :app:assembleDebugAndroidTest \
+  :macrobenchmark:assembleBenchmark \
   :app:lintDebug \
   :app:lintRelease \
   :app:assembleDebug \
@@ -128,16 +167,16 @@ python scripts/verify_translations.py
 
 Windows can use `gradlew.bat` with the same Gradle tasks.
 
-The pull request must then pass on the exact final head:
+The pull request must then pass on the **exact final head**:
 
 - Android CI;
 - Android Instrumentation (API-35 connected suite).
 
-No earlier-head run counts after the candidate changes.
+No earlier-head run counts after the source/documentation head changes.
 
-## 5. Verify Release Outputs
+## 5. Verify 2.0.12 Release Outputs
 
-For the unsigned RC verification path, after release APK/AAB/mapping are built:
+For the ordinary unsigned verification path, after release APK/AAB/mapping are built:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -145,13 +184,28 @@ python scripts/verify_release_outputs.py \
   --aab app/build/outputs/bundle/release/app-release.aab \
   --mapping app/build/outputs/mapping/release/mapping.txt \
   --metadata app/build/outputs/apk/release/output-metadata.json \
-  --expected-version-code 1000 \
-  --expected-version-name 1.0.0-rc.1 \
+  --expected-version-code 2012 \
+  --expected-version-name 2.0.12 \
   --expected-application-id in.sanskar.sudokunova \
-  --output app/build/outputs/release-evidence/sha256.txt
+  --require-apk-manifest \
+  --expected-min-sdk 26 \
+  --expected-target-sdk 37 \
+  --output app/build/outputs/release-evidence/sha256.txt \
+  --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
 ```
 
-The verifier checks archive structure, exact APK output version metadata, exact production application ID, a non-empty R8 mapping, and SHA-256/size evidence.
+The verifier checks:
+
+- non-empty APK/AAB/R8 outputs;
+- ZIP/archive structure and required entries;
+- exact APK output metadata;
+- exact production application ID;
+- exact `2012 / 2.0.12` version identity;
+- embedded application/version/minSdk/targetSdk values from the APK;
+- embedded `debuggable=false`;
+- a non-empty R8 mapping;
+- SHA-256/size evidence;
+- deterministic APK identity evidence.
 
 This is build/artifact evidence, not production-signing evidence.
 
@@ -189,9 +243,16 @@ Production signing must come from a controlled local/CI secret environment with 
 
 The repository includes `.github/workflows/release-validation.yml`, a manually dispatched **Production Release Validation** workflow. Configure and restrict a GitHub Environment named `production-release` according to [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md).
 
-That workflow is deliberately separate from ordinary PR CI. It requires protected signing material and trusted expected signer-certificate fingerprints, builds signed R8 APK/AAB outputs, verifies package/version/signature/certificate identity, records non-secret evidence, and removes the temporary keystore.
+The current workflow defaults are:
 
-The existence of the workflow is not evidence that production signing has been configured or executed. Only a real successful protected run on the exact intended release ref can satisfy the corresponding release-evidence rows.
+```text
+expected_version_code = 2012
+expected_version_name = 2.0.12
+```
+
+The workflow is deliberately separate from ordinary PR CI. It requires protected signing material and trusted expected signer-certificate fingerprints, builds signed R8 APK/AAB outputs, verifies package/version/SDK/debuggable/signature/certificate identity, records non-secret evidence, and removes the temporary keystore.
+
+The existence of the workflow is not evidence that production signing has been configured or executed. Only a real successful protected run on the exact intended 2.0.12 release ref can satisfy the corresponding release-evidence rows.
 
 ## 7. Verify Signed Artifact Identity
 
@@ -209,15 +270,21 @@ python scripts/verify_release_outputs.py \
   --aab path/to/signed-release.aab \
   --mapping path/to/mapping.txt \
   --metadata path/to/output-metadata.json \
-  --expected-version-code <final-version-code> \
-  --expected-version-name 1.0.0 \
+  --expected-version-code 2012 \
+  --expected-version-name 2.0.12 \
   --expected-application-id in.sanskar.sudokunova \
+  --require-apk-manifest \
+  --expected-min-sdk 26 \
+  --expected-target-sdk 37 \
+  --apk-identity-output path/to/apk-identity.txt \
   --output path/to/sha256.txt \
   --require-signatures \
   --expected-apk-cert-sha256 <trusted-apk-cert-sha256> \
   --expected-aab-cert-sha256 <trusted-aab-cert-sha256> \
   --signature-output path/to/signatures.txt
 ```
+
+Mandatory signed-release validation requires at least one verified APK v2-or-newer signature scheme.
 
 Do not obtain the “expected” certificate value from the same artifact being validated. The comparison value must come from a trusted release/key/platform record.
 
@@ -247,7 +314,7 @@ If a release-only defect occurs, add the narrowest correct keep/consumer rule or
 
 ## 9. Manual Release QA
 
-Use [v1.0 Release Candidate Evidence](V1_RELEASE_CANDIDATE.md) as the authoritative worksheet. `RELEASE_QA.md` and `QA_MATRIX.md` remain useful supporting matrices.
+Use [SudokuNova 2.0.12 Release Line](V2_0_12_RELEASE.md) as the current authoritative release worksheet. `RELEASE_QA.md` and `QA_MATRIX.md` remain useful supporting matrices.
 
 Manual categories include:
 
@@ -284,15 +351,15 @@ Before release verify:
 - Room migrations are explicit and tested;
 - dependencies/licenses/notices are current;
 - no secrets/signing files are committed;
-- current store privacy/data declarations match the exact stable binary.
+- current store privacy/data declarations match the exact 2.0.12 binary.
 
 ## 11. GitHub Repository Settings
 
 Follow [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md).
 
-At v1.0 RC-prep start, GitHub reported `main` as unprotected. Before stable release, enable an appropriate branch-protection/ruleset configuration where repository administration permits it.
+Historical audits reported `main` as unprotected. Before production publication, configure/review an appropriate branch-protection/ruleset configuration where repository administration permits it.
 
-Recommended required checks:
+Recommended required checks include:
 
 - `Android CI` / `verify`;
 - `Android Instrumentation` / `connected-tests`.
@@ -301,7 +368,31 @@ Also restrict the `production-release` GitHub Environment to trusted maintainers
 
 Do not claim repository/environment protection until it has actually been enabled in GitHub settings.
 
-## 12. Store Metadata Preparation
+## 12. Performance Evidence
+
+Ordinary CI compiles the Macrobenchmark harness but does not provide representative physical-device timing evidence.
+
+For the production evidence path, run on representative physical hardware:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+Record:
+
+- exact source commit;
+- device model;
+- OS/API level;
+- cold-start measurements;
+- warm-start measurements;
+- cold-start frame measurements;
+- relevant traces;
+- memory observations;
+- ANR/crash findings.
+
+Do not present emulator timing or compilation success as representative production-device performance evidence.
+
+## 13. Store Metadata Preparation
 
 Use [Play Store Release Preparation](PLAY_STORE_RELEASE.md).
 
@@ -312,7 +403,7 @@ Prepare and validate:
 - app name;
 - short/full description;
 - icon/feature graphic;
-- real screenshots from the release build;
+- real screenshots from the 2.0.12 release build;
 - privacy policy URL;
 - data/privacy declarations matching the binary;
 - current content/app-access/other required declarations;
@@ -323,69 +414,72 @@ Prepare and validate:
 
 Do not use mock screenshots showing unimplemented features.
 
-## 13. Final Exact-Head Evidence
+## 14. Final Exact-Head Evidence
 
 Immediately before merge/tag/release record:
 
 - exact commit SHA;
 - application ID;
 - versionCode/versionName;
+- minSdk/targetSdk;
 - Android CI run ID/status;
 - API-35 instrumentation run ID/status;
-- protected signed-release validation run ID/status where used;
+- protected signed-release validation run ID/status;
 - APK/AAB/mapping SHA-256 evidence;
+- APK embedded identity evidence;
 - release build outputs verified;
 - expected APK/AAB certificate fingerprints verified against trusted records;
 - manual QA evidence actually completed;
+- performance evidence actually completed;
+- repository/store evidence actually completed;
 - known limitations/blockers.
 
-Record exact repository history/evidence in `what_changed.md` and release notes as appropriate.
+Record exact repository history/evidence in `what_changed.md`, issue #5, and release notes as appropriate.
 
 If the head changes after recording evidence, rerun the required gates and determine which manual checks must be repeated.
 
-## 14. Merge Verified Release-Hardening Changes
+## 15. Merge Verified 2.0.12 Source Changes
 
-PR #27 already completed and merged the repository-side RC1 preparation from an exact green head.
+PR #30 is the current final source-controlled release/hardening line.
 
-Any later release-hardening or stable-metadata pull request must independently pass the exact-final-head automated gates before merge. Do not reuse PR #27’s green status as evidence for newer source commits.
+It must independently pass the exact-final-head automated gates before merge. Do not reuse PR #27, PR #28, PR #29, or an earlier PR #30 run as evidence for a newer 2.0.12 head.
 
-Merging repository hardening does **not** automatically mean stable v1.0 is approved. Manual, signing, administrative and store evidence can remain open in issue #5 until actually completed.
+Merging repository hardening does **not** automatically mean 2.0.12 is approved for publication. Manual, signing, administrative, performance and store evidence can remain open in issue #5 until actually completed.
 
-## 15. Stable Promotion
+## 16. Final Production Decision
 
-Once the RC evidence worksheet reaches a real ship decision:
+Once all mandatory evidence exists:
 
-1. choose a stable version code strictly higher than every accepted distributed version code;
-2. set `versionName = "1.0.0"`;
-3. keep `applicationId = "in.sanskar.sudokunova"`;
-4. run all exact-head automated gates again;
-5. build and verify signed stable artifacts against trusted certificate identities;
-6. repeat manual checks affected by any post-RC changes;
-7. update changelog/roadmap/README/what_changed with actual stable evidence;
-8. confirm no release blocker remains.
+1. confirm `versionCode = 2012` and `versionName = "2.0.12"` are the intended distributed identity;
+2. confirm the exact release commit has fresh required automated evidence;
+3. confirm signed artifacts match trusted certificate identities;
+4. confirm manual/device/accessibility/performance/store evidence is complete;
+5. update changelog/roadmap/README/what_changed with actual final evidence if needed;
+6. confirm no release blocker remains;
+7. record the explicit decision as `SHIP` or `NO-SHIP`, with owner/date.
 
-Do not simply rename an unvalidated RC build to stable.
+Do not reinterpret a source-version change as a ship decision.
 
-## 16. Tag
+## 17. Tag
 
-After the exact stable release commit is final and verified:
+After the exact 2.0.12 release commit is final, verified, and the decision is `SHIP`:
 
 ```bash
-git tag -a v1.0.0 -m "SudokuNova v1.0.0"
-git push origin v1.0.0
+git tag -a v2.0.12 -m "SudokuNova v2.0.12"
+git push origin v2.0.12
 ```
 
 Do not tag an unverified intermediate commit.
 
 If a published tag is wrong, correct the release process deliberately; avoid silently moving published tags.
 
-## 17. GitHub Release
+## 18. GitHub Release
 
 `.github/release.yml` provides generated release-note categories, but generated notes are only a starting point.
 
 A GitHub Release should include:
 
-- exact tag/version;
+- exact `v2.0.12` tag/version;
 - release date;
 - concise notes derived from `CHANGELOG.md`;
 - minimum supported Android version;
@@ -399,7 +493,7 @@ If binary artifacts are attached, clearly state whether they are signed producti
 
 Never attach a keystore, secret, `local.properties`, private test data or internal-only log.
 
-## 18. Store Submission
+## 19. Store Submission
 
 Submit the final signed AAB that was actually validated.
 
@@ -413,7 +507,7 @@ After upload:
 
 Do not claim store publication until the store actually accepts/publishes the release.
 
-## 19. Post-Release Monitoring
+## 20. Post-Release Monitoring
 
 After release:
 
@@ -454,20 +548,24 @@ For a vulnerability:
 
 ## Release Documentation Authority
 
-Use these files together:
+Use these current files together:
 
-- `V1_RELEASE_PREP.md` — verified RC1 repository handoff;
+- `V2_0_12_RELEASE.md` — current 2.0.12 source/release/evidence authority;
 - `BUILDING.md` — build outputs and artifact verifier;
 - `PRODUCTION_SIGNING.md` — secret-backed signing and certificate checks;
 - `PRODUCTION_RELEASE_VALIDATION.md` — protected signed-release workflow setup and evidence;
-- `V1_RELEASE_CANDIDATE.md` — manual/production evidence worksheet;
-- `V1_RELEASE_EVIDENCE.md` — concise exact-evidence ledger;
+- `PERFORMANCE_BENCHMARKING.md` — representative physical-device performance evidence;
 - `PLAY_STORE_RELEASE.md` — listing/privacy/store preparation;
 - `GITHUB_REPOSITORY_SETTINGS.md` — branch/repository/environment protection checklist;
 - `CI_CD.md` — automated gates;
+- `REPOSITORY_GUARDS.md` — deterministic repository contracts;
+- `REPOSITORY_FILE_REFERENCE.md` — complete tracked-file documentation ownership;
 - `TESTING.md` — test strategy;
 - `RELEASE_CHECKLIST.md` — general checklist;
 - `RELEASE_QA.md` — supporting evidence matrix;
 - `RELEASING.md` — process/order (this file);
 - root `CHANGELOG.md` — shipped/unreleased changes;
+- root `ROADMAP.md` — current milestone state;
 - root `what_changed.md` — detailed exact evidence/history.
+
+Historical v1 release documents remain available for prior decisions/evidence but are not the current version authority.
