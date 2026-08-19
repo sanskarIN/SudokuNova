@@ -35,6 +35,8 @@ jobs:
 
     env:
       EXPECTED_APPLICATION_ID: in.sanskar.sudokunova
+      EXPECTED_MIN_SDK: '26'
+      EXPECTED_TARGET_SDK: '37'
       EXPECTED_VERSION_CODE: ${{ inputs.expected_version_code }}
       EXPECTED_VERSION_NAME: ${{ inputs.expected_version_name }}
 
@@ -137,7 +139,7 @@ jobs:
           SUDOKUNOVA_KEY_PASSWORD: ${{ secrets.SUDOKUNOVA_KEY_PASSWORD }}
         run: ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 
-      - name: Locate signed release outputs and apksigner
+      - name: Locate signed release outputs and Android verification tools
         shell: bash
         run: |
           set -euo pipefail
@@ -153,16 +155,31 @@ jobs:
             printf '%s\n' "${aabs[@]}" >&2
             exit 1
           fi
-          apksigner_path="$(find "$ANDROID_SDK_ROOT/build-tools" -maxdepth 2 -type f -name apksigner -print | sort -V | tail -n 1)"
+
+          apksigner_path="$(command -v apksigner || true)"
+          if [ -z "$apksigner_path" ]; then
+            apksigner_path="$(find "$ANDROID_SDK_ROOT/build-tools" -maxdepth 2 -type f -name apksigner -print | sort -V | tail -n 1)"
+          fi
           if [ -z "$apksigner_path" ]; then
             echo 'Unable to locate Android SDK apksigner.' >&2
             exit 1
           fi
+
+          apkanalyzer_path="$(command -v apkanalyzer || true)"
+          if [ -z "$apkanalyzer_path" ]; then
+            apkanalyzer_path="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name apkanalyzer -print | sort -V | tail -n 1)"
+          fi
+          if [ -z "$apkanalyzer_path" ]; then
+            echo 'Unable to locate Android SDK apkanalyzer.' >&2
+            exit 1
+          fi
+
           echo "$(dirname "$apksigner_path")" >> "$GITHUB_PATH"
+          echo "$(dirname "$apkanalyzer_path")" >> "$GITHUB_PATH"
           echo "RELEASE_APK=${apks[0]}" >> "$GITHUB_ENV"
           echo "RELEASE_AAB=${aabs[0]}" >> "$GITHUB_ENV"
 
-      - name: Verify signatures, certificate identities, metadata, R8, and hashes
+      - name: Verify signatures, embedded manifest, metadata, R8, and hashes
         shell: bash
         env:
           SUDOKUNOVA_APK_CERT_SHA256: ${{ secrets.SUDOKUNOVA_APK_CERT_SHA256 }}
@@ -179,6 +196,10 @@ jobs:
             --expected-version-code="$EXPECTED_VERSION_CODE" \
             --expected-version-name="$EXPECTED_VERSION_NAME" \
             --expected-application-id="$EXPECTED_APPLICATION_ID" \
+            --require-apk-manifest \
+            --expected-min-sdk="$EXPECTED_MIN_SDK" \
+            --expected-target-sdk="$EXPECTED_TARGET_SDK" \
+            --apk-identity-output "$evidence_dir/apk-identity.txt" \
             --require-signatures \
             --expected-apk-cert-sha256="$SUDOKUNOVA_APK_CERT_SHA256" \
             --expected-aab-cert-sha256="$SUDOKUNOVA_AAB_CERT_SHA256" \
@@ -200,6 +221,8 @@ jobs:
             printf 'expected_application_id=%s\n' "$EXPECTED_APPLICATION_ID"
             printf 'expected_version_code=%s\n' "$EXPECTED_VERSION_CODE"
             printf 'expected_version_name=%s\n' "$EXPECTED_VERSION_NAME"
+            printf 'expected_min_sdk=%s\n' "$EXPECTED_MIN_SDK"
+            printf 'expected_target_sdk=%s\n' "$EXPECTED_TARGET_SDK"
           } > "$evidence_dir/workflow-context.txt"
 
       - name: Upload production validation evidence
