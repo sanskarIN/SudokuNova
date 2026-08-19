@@ -75,9 +75,28 @@ Exact evidence from the verified PR #27 head:
 
 These are unsigned repository-CI verification artifacts. They are not production-signed release evidence.
 
+## Post-RC release-validation hardening — TOOLING ONLY
+
+A later repository hardening line adds stricter release validation without claiming that production signing or manual QA has already happened.
+
+The release verifier now supports:
+
+- exact `applicationId` validation through `--expected-application-id`;
+- APK signature verification through `apksigner`;
+- AAB signature verification through `jarsigner`;
+- AAB signer-certificate inspection through `keytool`;
+- expected APK signer SHA-256 identity through `--expected-apk-cert-sha256`;
+- expected AAB signer/upload SHA-256 identity through `--expected-aab-cert-sha256`;
+- normalized signer-certificate evidence through `--signature-output`;
+- fail-closed certificate mismatch handling.
+
+`.github/workflows/release-validation.yml` provides a manually dispatched protected validation path using the `production-release` GitHub Environment. It can build signed artifacts from protected secrets, verify their package/version/signature/certificate identities, record hashes and exact workflow context, and remove the temporary keystore afterward.
+
+**Important:** the existence of this tooling is not production evidence. A real successful protected run on the exact intended release ref is still required before any corresponding production row below can move from `PENDING` to `PASS`.
+
 ## Production-signed artifact evidence
 
-For the final signed artifacts, the same verifier can require platform signature checks:
+For the final signed artifacts, use the certificate-bound verifier path (or the protected Production Release Validation workflow):
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -87,21 +106,27 @@ python scripts/verify_release_outputs.py \
   --metadata path/to/output-metadata.json \
   --expected-version-code <final-code> \
   --expected-version-name 1.0.0 \
+  --expected-application-id in.sanskar.sudokunova \
   --output path/to/sha256.txt \
-  --require-signatures
+  --require-signatures \
+  --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
+  --expected-aab-cert-sha256 <expected-aab-cert-sha256> \
+  --signature-output path/to/signatures.txt
 ```
 
-`--require-signatures` requires:
-
-- `apksigner` verification for the APK;
-- `jarsigner` verification for the AAB.
+Certificate fingerprints must come from a trusted release/platform record rather than from the artifact being validated. With Play App Signing, distinguish the upload certificate used for the submitted AAB from the app-signing certificate used by Google Play for distributed APKs.
 
 Production evidence remains pending:
 
+- `production-release` GitHub Environment configured/restricted: `PENDING`
 - Production/upload signing configured outside Git: `PENDING`
+- Protected signed-release validation run on exact release ref: `PENDING`
+- APK application ID/version metadata verification on signed output: `PENDING`
 - APK signature verification: `PENDING`
 - AAB signature verification: `PENDING`
-- Expected certificate fingerprint/digest confirmed: `PENDING`
+- Expected APK certificate fingerprint/digest confirmed: `PENDING`
+- Expected AAB upload certificate fingerprint/digest confirmed: `PENDING`
+- Signed artifact SHA-256/size evidence recorded: `PENDING`
 - Signed APK install/launch smoke: `PENDING`
 - AAB testing/store-track validation: `PENDING`
 
@@ -159,8 +184,9 @@ At RC-prep start, GitHub reported `main` as unprotected. The connected repositor
 - Required `Android Instrumentation / connected-tests`: `PENDING`
 - Force-push/deletion restrictions reviewed: `PENDING`
 - Security/Dependabot/secret-scanning settings reviewed: `PENDING`
+- `production-release` environment access/reviewer/ref restrictions reviewed: `PENDING`
 
-See `GITHUB_REPOSITORY_SETTINGS.md`.
+See `GITHUB_REPOSITORY_SETTINGS.md` and `PRODUCTION_RELEASE_VALIDATION.md`.
 
 ## Store / publication evidence
 
@@ -190,11 +216,12 @@ Promote to stable `1.0.0` only when:
 3. release APK/AAB/R8 integrity/hash evidence exists — **completed for the unsigned RC verification artifacts; must be repeated for final signed stable artifacts**;
 4. required device/accessibility/lifecycle QA is recorded;
 5. measured release performance has no release-blocking defect;
-6. production signing is configured outside Git and signed artifacts are verified;
-7. repository/store release assets represent the actual release UI;
-8. no release-blocking issue remains;
-9. final versionCode is higher than every accepted distributed candidate code;
-10. README, changelog, roadmap, release notes and `what_changed.md` match the final stable source commit;
-11. final decision in `V1_RELEASE_CANDIDATE.md` is `SHIP`.
+6. production signing is configured outside Git and signed artifacts are verified against the intended certificate identities;
+7. the exact signed artifact application ID/version metadata is verified;
+8. repository/store release assets represent the actual release UI;
+9. no release-blocking issue remains;
+10. final versionCode is higher than every accepted distributed candidate code;
+11. README, changelog, roadmap, release notes and `what_changed.md` match the final stable source commit;
+12. final decision in `V1_RELEASE_CANDIDATE.md` is `SHIP`.
 
 Until those remaining conditions are satisfied, SudokuNova remains a verified repository-side release candidate rather than a stable-production claim.
