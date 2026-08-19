@@ -4,9 +4,11 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ## [Unreleased]
 
-### v1.0 Final Repository Verification and Documentation Coverage — Pending Exact-Head Verification
+### 2.0.12 Final Repository Verification and Release Promotion — Pending Exact-Head Verification
 
-PR #30 is the consolidated final repository-side hardening line for the current RC checkpoint. It combines complete Git-tracked documentation ownership/discoverability enforcement with the embedded APK/release-verifier hardening originally developed on PR #29. Stable `v1.0.0` remains unclaimed until the real manual, physical-device, production-signing, repository-admin, store, stable-metadata, and publication evidence in issue #5 is completed.
+PR #30 is the consolidated final source-controlled hardening and version-promotion line for SudokuNova **2.0.12**. It combines complete Git-tracked documentation ownership/discoverability enforcement, embedded APK/release-verifier hardening originally developed on PR #29, and the final release-contract promotion to `versionCode 2012` / `versionName 2.0.12`.
+
+2.0.12 is not yet claimed as published. Physical-device/manual QA, production signing, repository administration, distribution-platform/store validation, final exact-head workflow evidence, SHIP approval, tagging, GitHub Release creation, and publication remain evidence-driven requirements tracked in issue #5.
 
 #### Added
 - `scripts/verify_documentation_coverage.py` using `git ls-files -z` to fail closed when any tracked path lacks a maintained documentation owner or a coverage rule points to an untracked canonical document.
@@ -17,25 +19,31 @@ PR #30 is the consolidated final repository-side hardening line for the current 
 - Deterministic `apk-identity.txt` release evidence.
 - Release-verifier CLI-boundary regression tests.
 - APK signature-scheme parsing that requires a verified v2-or-newer scheme in mandatory signed-release validation.
+- `docs/V2_0_12_RELEASE.md` as the current release authority for the 2012/2.0.12 source line and its repository/manual/production/store evidence boundaries.
 
 #### Changed
-- `scripts/verify_release_contract.py` now synchronizes minSdk/targetSdk in addition to production application ID and version identity.
+- Android source metadata is promoted to `versionCode 2012` / `versionName 2.0.12`.
+- Ordinary Android CI verifies release APK/AAB/R8 outputs against exact `2012 / 2.0.12` metadata plus embedded application/version/minSdk/targetSdk/debuggable identity.
+- Protected Production Release Validation defaults are promoted to `2012 / 2.0.12` while application ID, minimum SDK and target SDK remain pinned to the source release contract.
+- `scripts/verify_release_contract.py` synchronizes minSdk/targetSdk in addition to production application ID and version identity.
 - Standard Android CI combines documentation-link, complete documentation-coverage, release-contract, security, translation, release-verifier, engine/JVM/instrumentation-compilation/Macrobenchmark-compilation, lint, build, and embedded APK identity gates.
 - Protected production validation binds SDK expectations to the source release contract, independently verifies the signed APK is non-debuggable, and records embedded identity evidence alongside signature/certificate/hash/workflow context.
-- `docs/CI_CD.md`, repository-guard/testing/maintainer/contributor documentation, the documentation hub, project-structure references, exact-head policy, quality gates, and release-candidate evidence guidance were synchronized with the combined final repository contract.
-- The cumulative historical development ledger is preserved under `docs/archive/what_changed_through_2026-08-19.md`; the root `what_changed.md` is the active final-hardening ledger.
+- `docs/README.md`, `docs/CI_CD.md`, `docs/PRODUCTION_RELEASE_VALIDATION.md`, root `README.md`, and `what_changed.md` now identify 2.0.12 as the current release line while preserving v1 documents as historical evidence.
+- The cumulative historical development ledger is preserved under `docs/archive/what_changed_through_2026-08-19.md`; the root `what_changed.md` remains the active final-hardening/release handoff ledger.
 
 #### Integration defect found and fixed
 - PR #29 and the original PR #30 both changed CI/documentation from the same earlier `main` checkpoint, so independent green results would not have proven their combined tree.
 - The release-hardening line added an archived Markdown ledger while the documentation-coverage line requires tracked detailed guides to be indexed.
 - The branches were consolidated on PR #30, the archived ledger was explicitly indexed, and CI/CD documentation was reconciled without weakening either guard.
+- Temporary PR #31 was used only to expose branch conflicts and was closed after consolidation; PR #29 was closed as superseded after its hardening was fully integrated.
 
 #### Verification boundary
-- PR #30 must pass both `Android CI` and API-35 `Android Instrumentation` on its exact final head after all final documentation commits.
-- Workflow results from PR #29, earlier PR #30 heads, or intermediate consolidation commits are historical only.
-- Repository hardening does not by itself prove physical-device accessibility/lifecycle/performance QA, production signing/certificate identity, repository-admin configuration, Play Console/store correctness, final stable metadata, tagging, release publication, or rollout.
+- PR #30 must pass both `Android CI` and API-35 `Android Instrumentation` on its exact final **2.0.12** head after all final source/documentation commits.
+- Workflow results from v1 PRs, PR #29, earlier PR #30 heads, or intermediate 2.0.12 commits are historical only.
+- Repository hardening does not by itself prove physical-device accessibility/lifecycle/performance QA, production signing/certificate identity, repository-admin configuration, distribution-platform/store correctness, tagging, release publication, or rollout.
+- The immutable `v2.0.12` tag, GitHub Release, and store publication must occur only after a documented `SHIP` decision with the required real evidence.
 
-### v1.0 Post-RC Validation Hardening — Verified and Merged
+### v1.0 Post-RC Validation Hardening — Verified and Merged — Historical Foundation
 
 PR #28 hardened the repository-side release-validation and performance-evidence path after RC1. The exact final head `c3e0e3fc217062e374a434cfea46235fd6595f83` passed Android CI run #706 / `32211246803` and API-35 connected instrumentation run #229 / `32211246802`, then merged as `27640cb9089ddae4a9242bb84a8927c3761201f4`.
 
@@ -78,14 +86,14 @@ PR #28 hardened the repository-side release-validation and performance-evidence 
 - **PR #28 merge commit:** `27640cb9089ddae4a9242bb84a8927c3761201f4`.
 
 #### Evidence boundary
-- Stable `v1.0.0` remains unclaimed.
+- This is historical v1 evidence and does not prove the current 2.0.12 head.
 - Macrobenchmark compilation is not physical-device timing evidence.
 - Repository workflow source is not evidence that `main` protection/rulesets, the protected environment, reviewers, ref restrictions, or signing secrets are configured.
-- Production signing, signed APK/AAB verification, physical-device performance/memory/ANR measurement, TalkBack/large-text/window/contrast/motion/process-death QA, store validation, final stable metadata, SHIP decision, tag, GitHub Release, and publication remain pending in issue #5.
+- Production signing, signed APK/AAB verification, physical-device performance/memory/ANR measurement, TalkBack/large-text/window/contrast/motion/process-death QA, store validation, SHIP decision, tag, GitHub Release, and publication require current release evidence.
 
-### v1.0 RC1 — Repository-Side Stable Release Preparation
+### v1.0 RC1 — Repository-Side Stable Release Preparation — Historical Foundation
 
-The first v1.0 repository-side release-candidate preparation is now **verified and merged**. Stable `v1.0.0` is still pending the real manual, repository-admin, production-signing, signed-artifact, store, final-stable-metadata, and publication evidence tracked in issue #5.
+The first v1.0 repository-side release-candidate preparation was **verified and merged**. Its source metadata and exact workflow evidence are preserved as historical release engineering evidence; the current release target is now 2.0.12.
 
 #### Added
 - `scripts/verify_release_outputs.py` to validate release APK/AAB archive structure, required entries, non-empty R8 mapping, exact Android output version metadata, and SHA-256/byte-size evidence.
@@ -95,14 +103,14 @@ The first v1.0 repository-side release-candidate preparation is now **verified a
 - `.github/release.yml` for generated GitHub release-note categories.
 - `docs/PRODUCTION_SIGNING.md` documenting secret-backed signing, certificate verification, mandatory signature-verifier mode, version-code rules, and CI boundaries.
 - `docs/PLAY_STORE_RELEASE.md` with store listing copy, asset/privacy/data-declaration preparation, release artifact checks, and rollout discipline.
-- `docs/V1_RELEASE_CANDIDATE.md` as the authoritative real-device/manual/production evidence worksheet.
-- `docs/V1_RELEASE_EVIDENCE.md` as the concise exact-head/run/artifact/signature/manual/store evidence ledger.
-- `docs/V1_RELEASE_NOTES.md` as the canonical truthful stable-release notes source.
-- `docs/GITHUB_REPOSITORY_SETTINGS.md` recording recommended `main` protection, required checks, Actions/security settings, and the current unprotected-branch evidence boundary.
+- `docs/V1_RELEASE_CANDIDATE.md` as the historical real-device/manual/production evidence worksheet for the v1 line.
+- `docs/V1_RELEASE_EVIDENCE.md` as the historical exact-head/run/artifact/signature/manual/store evidence ledger for the v1 line.
+- `docs/V1_RELEASE_NOTES.md` as the historical canonical v1 stable release-notes source.
+- `docs/GITHUB_REPOSITORY_SETTINGS.md` recording recommended `main` protection, required checks, Actions/security settings, and the repository-admin evidence boundary.
 - `docs/V1_RELEASE_PREP.md` summarizing RC architecture, automated gates, duplicate-RC consolidation, and stable-promotion rules.
 
 #### Changed
-- Android candidate metadata advanced to `versionCode 1000` / `versionName 1.0.0-rc.1`.
+- Android candidate metadata advanced to `versionCode 1000` / `versionName 1.0.0-rc.1` at that historical checkpoint.
 - Release signing is optional and secret-backed through `SUDOKUNOVA_KEYSTORE_PATH`, `SUDOKUNOVA_KEYSTORE_PASSWORD`, `SUDOKUNOVA_KEY_ALIAS`, and `SUDOKUNOVA_KEY_PASSWORD`.
 - Release signing fails during Gradle configuration when only a subset of those values is provided.
 - Standard Android CI unit-tests the release verifier, validates partial-signing fail-closed behavior, verifies built release APK/AAB/mapping outputs, checks exact RC metadata, generates SHA-256 evidence, and uploads short-lived verification artifacts.
@@ -136,13 +144,11 @@ The first v1.0 repository-side release-candidate preparation is now **verified a
 - PR #27 merged using the exact verified head as merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
 
 #### Evidence boundary
-- Stable `v1.0.0` is not yet claimed.
 - These RC artifacts are unsigned repository-CI verification outputs, not production-signed release artifacts.
-- TalkBack traversal, representative 200% font/device/window QA, high-contrast/reduced-motion device review, measured startup/frame/memory/ANR evidence, process-death scenarios, actual production/upload-key signing, signed-artifact certificate/install/distribution validation, final signed R8 smoke QA, current store requirements/listing/privacy/screenshots, final stable version code/metadata, final stable exact-head CI/API-35 verification, SHIP decision, tag, GitHub Release, and store publication remain pending until actually performed.
-- At RC-prep start, GitHub reported `main` as unprotected. The connected repository tool does not expose a branch-protection write action, so repository protection remains a documented admin-setting task rather than a fabricated completion claim.
-- If version code `1000` is accepted by a distribution track during RC testing, the final stable build must use a strictly higher version code.
+- TalkBack traversal, representative 200% font/device/window QA, high-contrast/reduced-motion device review, measured startup/frame/memory/ANR evidence, process-death scenarios, actual production/upload-key signing, signed-artifact certificate/install/distribution validation, final signed R8 smoke QA, current store requirements/listing/privacy/screenshots, final exact-head verification, SHIP decision, tag, GitHub Release, and store publication require evidence for the current release line.
+- At RC-prep start, GitHub reported `main` as unprotected. Repository protection remains a documented admin-setting task rather than a fabricated source-control completion claim.
 
-Current work remains tracked in issue #5 until stable-production/manual/admin requirements are genuinely complete.
+Issue #5 now tracks 2.0.12 production readiness while preserving this v1 history.
 
 ## [0.9.0] - 2026-08-18
 
@@ -229,7 +235,7 @@ v0.9 is the final source-hardening milestone before stable release validation. T
 - v0.9 implementation was merged only after both required workflows were green on the exact final head.
 
 #### Evidence boundary
-Manual TalkBack traversal, representative 200% font/device QA, high-contrast/reduced-motion device validation, measured startup/frame/memory/ANR traces, process-death scenarios, signed production artifact verification, and real store screenshot/listing review were **not** fabricated as v0.9 results. Those remaining stable-release tasks are tracked in issue #5 for v1.0.
+Manual TalkBack traversal, representative 200% font/device QA, high-contrast/reduced-motion device validation, measured startup/frame/memory/ANR traces, process-death scenarios, signed production artifact verification, and real store screenshot/listing review were **not** fabricated as v0.9 results. Those requirements remain evidence-driven for the current release line.
 
 ## [0.8.0] - 2026-08-18
 
