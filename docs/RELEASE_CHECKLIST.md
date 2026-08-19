@@ -11,6 +11,8 @@ For the detailed process use `RELEASING.md`. For device/manual evidence use `REL
 - [ ] `versionName` is correct.
 - [ ] Android `versionCode` is greater than all previously distributed builds.
 - [ ] Application ID/namespace are correct.
+- [ ] `minSdk` and `targetSdk` are correct for the intended release.
+- [ ] `python scripts/verify_release_contract.py` passes with Gradle, ordinary CI, and protected-release expectations synchronized.
 - [ ] `CHANGELOG.md` contains actual release changes.
 - [ ] Root `ROADMAP.md` reflects delivered/deferred scope.
 - [ ] `what_changed.md` records current implementation/evidence accurately.
@@ -49,6 +51,11 @@ For the detailed process use `RELEASING.md`. For device/manual evidence use `REL
 - [ ] Release APK builds with R8/minification/resource shrinking.
 - [ ] Release AAB builds.
 - [ ] R8 mapping output exists for the release build where expected.
+- [ ] Release verifier confirms APK/AAB structural integrity.
+- [ ] APK `output-metadata.json` matches the expected application ID and version.
+- [ ] `apkanalyzer` independently confirms the APK-embedded application ID, version code/name, `minSdk`, and `targetSdk`.
+- [ ] Release APK embedded manifest reports `debuggable=false`.
+- [ ] `apk-identity.txt` is retained with the relevant release evidence.
 - [ ] CI release output artifacts are retained/identified for verification where applicable.
 - [ ] Release APK is smoke-tested on an appropriate target before publication.
 - [ ] Final signed artifact is tested when production signing exists.
@@ -192,6 +199,11 @@ Do not mark device rows passed from documentation/CI alone.
 ## 16. Signing / Distribution
 
 - [ ] Production signing uses secure external secrets.
+- [ ] Protected production validation passes on the exact intended release ref.
+- [ ] APK signature passes `apksigner` verification with at least one verified v2-or-newer signature scheme.
+- [ ] APK signer certificate SHA-256 matches the trusted expected certificate record.
+- [ ] AAB signature passes `jarsigner` verification and signer certificate inspection.
+- [ ] AAB signer/upload certificate SHA-256 matches the trusted expected certificate record.
 - [ ] Final signed AAB is the artifact validated for store upload.
 - [ ] Final signed APK tested if distributed directly.
 - [ ] Checksums generated for public binary attachments where appropriate.
@@ -204,6 +216,8 @@ Do not mark device rows passed from documentation/CI alone.
 - [ ] Final PR/release head SHA recorded.
 - [ ] Android CI is green on that exact SHA.
 - [ ] API-35 connected instrumentation is green on that exact SHA.
+- [ ] Release-contract guard is green on that exact SHA.
+- [ ] Release-output verifier evidence belongs to that exact SHA.
 - [ ] No later commit invalidated those runs.
 - [ ] Known limitations are documented.
 - [ ] No critical/high release blocker remains unresolved.
