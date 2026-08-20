@@ -141,8 +141,9 @@ class TeachingStepFinder {
             for ((unitRef, unit) in allUnitsWithRefs()) {
                 val groupedPairs = unit
                     .filter { board.valueAt(it) == SudokuBoard.EMPTY && candidates[it].size == 2 }
-                    .groupBy { candidates[it].toSortedSet() }
-                    .toSortedMap(compareBy { it.joinToString(separator = "") })
+                    .groupBy { candidates[it].sorted() }
+                    .entries
+                    .sortedBy { (pair, _) -> pair.joinToString(separator = "") }
 
                 for ((pair, pairCells) in groupedPairs) {
                     if (pairCells.size != 2) continue
@@ -272,7 +273,7 @@ class TeachingStepFinder {
                 for (values in combinations((1..9).toList(), size)) {
                     val sourceSets = values.map { candidateCellsByValue.getValue(it) }
                     if (sourceSets.any { it.size !in 2..size }) continue
-                    val sourceCells = sourceSets.flatten().toSortedSet()
+                    val sourceCells = sourceSets.flatten().distinct().sorted()
                     if (sourceCells.size != size) continue
 
                     val allowed = values.toSet()
@@ -287,7 +288,7 @@ class TeachingStepFinder {
 
                     return TeachingStep(
                         technique = technique,
-                        sourceCells = sourceCells.toList(),
+                        sourceCells = sourceCells,
                         sourceUnit = unitRef,
                         targetCells = eliminations.map { it.cellIndex }.distinct().sorted(),
                         candidateEliminations = eliminations,
@@ -303,7 +304,7 @@ class TeachingStepFinder {
                     board.valueAt(index) == SudokuBoard.EMPTY && candidates[index].size in 2..3
                 }
                 for (cells in combinations(eligibleCells, 3)) {
-                    val union = cells.flatMap { candidates[it] }.toSortedSet()
+                    val union = cells.flatMap { candidates[it] }.distinct().sorted()
                     if (union.size != 3) continue
 
                     val sourceSet = cells.toSet()
