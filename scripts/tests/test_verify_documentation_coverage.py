@@ -16,6 +16,11 @@ class DocumentationCoverageVerifierTest(unittest.TestCase):
             "app/schemas/in.sanskar.sudokunova.data.SudokuDatabase/2.json": "Room schema history",
             "app/src/main/res/values/strings.xml": "Android localized, visual, and XML resources",
             "app/src/main/java/com/sanskar/sudokunova/MainActivity.kt": "Android application source and manifest",
+            "sharedUI/src/commonTest/kotlin/example/SharedStateTest.kt": "Shared multiplatform UI tests",
+            "sharedUI/src/commonMain/kotlin/example/SharedApp.kt": "Shared multiplatform UI implementation and resources",
+            "sharedUI/src/wasmJsMain/resources/index.html": "Shared multiplatform UI implementation and resources",
+            "sharedUI/build.gradle.kts": "Shared multiplatform UI module configuration",
+            "iosApp/ContentView.swift": "Apple SwiftUI host sources",
             "sudoku-engine/src/test/kotlin/example/SolverTest.kt": "Sudoku engine tests",
             "sudoku-engine/src/main/kotlin/example/Solver.kt": "Sudoku engine implementation",
             "macrobenchmark/src/main/java/example/StartupBenchmark.kt": "Macrobenchmark harness",
@@ -44,6 +49,24 @@ class DocumentationCoverageVerifierTest(unittest.TestCase):
         tracked = {
             *paths,
             "docs/DOCUMENTATION_STANDARDS.md",
+        }
+
+        results, errors = validate_coverage(paths, tracked)
+
+        self.assertEqual([], errors)
+        self.assertEqual(paths, [result.path for result in results])
+
+    def test_accepts_multiplatform_files_when_cross_platform_docs_are_tracked(self) -> None:
+        paths = [
+            "sharedUI/src/commonMain/kotlin/example/SharedApp.kt",
+            "iosApp/SudokuNovaApp.swift",
+        ]
+        tracked = {
+            *paths,
+            "docs/CROSS_PLATFORM.md",
+            "docs/ARCHITECTURE.md",
+            "docs/PROJECT_STRUCTURE.md",
+            "docs/BUILDING.md",
         }
 
         results, errors = validate_coverage(paths, tracked)
