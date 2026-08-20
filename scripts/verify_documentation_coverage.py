@@ -95,6 +95,26 @@ COVERAGE_RULES: tuple[CoverageRule, ...] = (
         documents=("docs/BUILDING.md", "docs/PROJECT_STRUCTURE.md", "docs/PRODUCTION_SIGNING.md"),
     ),
     CoverageRule(
+        name="Shared multiplatform UI tests",
+        prefixes=("sharedUI/src/commonTest/",),
+        documents=("docs/CROSS_PLATFORM.md", "docs/TESTING.md", "docs/PROJECT_STRUCTURE.md"),
+    ),
+    CoverageRule(
+        name="Shared multiplatform UI implementation and resources",
+        prefixes=("sharedUI/src/",),
+        documents=("docs/CROSS_PLATFORM.md", "docs/ARCHITECTURE.md", "docs/PROJECT_STRUCTURE.md"),
+    ),
+    CoverageRule(
+        name="Shared multiplatform UI module configuration",
+        prefixes=("sharedUI/",),
+        documents=("docs/CROSS_PLATFORM.md", "docs/BUILDING.md", "docs/PROJECT_STRUCTURE.md"),
+    ),
+    CoverageRule(
+        name="Apple SwiftUI host sources",
+        prefixes=("iosApp/",),
+        documents=("docs/CROSS_PLATFORM.md", "docs/BUILDING.md", "docs/PROJECT_STRUCTURE.md"),
+    ),
+    CoverageRule(
         name="Sudoku engine tests",
         prefixes=("sudoku-engine/src/test/",),
         documents=("docs/SUDOKU_ENGINE.md", "docs/TESTING.md", "docs/PUZZLE_GENERATION.md"),
