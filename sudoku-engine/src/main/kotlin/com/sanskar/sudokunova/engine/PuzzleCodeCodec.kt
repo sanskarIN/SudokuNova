@@ -1,9 +1,5 @@
 package com.sanskar.sudokunova.engine
 
-import java.nio.charset.StandardCharsets
-import java.util.Locale
-import java.util.zip.CRC32
-
 data class SharedPuzzleCode(
     val puzzle: SudokuBoard,
     val difficulty: Difficulty,
@@ -32,16 +28,31 @@ object PuzzleCodeCodec {
         require(encodedPuzzle.all { it in '0'..'9' })
 
         val body = "${difficulty.name}.$encodedPuzzle"
-        require(parts[3].uppercase(Locale.ROOT) == checksum(body))
+        require(parts[3].uppercase() == checksum(body))
 
         val puzzle = SudokuBoard.parse(encodedPuzzle)
         require(puzzle.isValid())
         SharedPuzzleCode(puzzle = puzzle, difficulty = difficulty)
     }.getOrNull()
 
-    private fun checksum(body: String): String {
-        val crc = CRC32()
-        crc.update(body.toByteArray(StandardCharsets.UTF_8))
-        return "%08X".format(Locale.ROOT, crc.value)
+    private fun checksum(body: String): String =
+        crc32(body.encodeToByteArray())
+            .toString(radix = 16)
+            .uppercase()
+            .padStart(length = 8, padChar = '0')
+
+    private fun crc32(bytes: ByteArray): UInt {
+        var crc = 0xFFFFFFFFu
+        for (byte in bytes) {
+            crc = crc xor byte.toUByte().toUInt()
+            repeat(8) {
+                crc = if ((crc and 1u) != 0u) {
+                    (crc shr 1) xor 0xEDB88320u
+                } else {
+                    crc shr 1
+                }
+            }
+        }
+        return crc xor 0xFFFFFFFFu
     }
 }
