@@ -1,0 +1,34 @@
+html,
+body,
+#webApp {
+    width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+    margin: 0;
+}
+
+html,
+body {
+    height: 100%;
+    background: #111318;
+    overscroll-behavior: none;
+}
+
+body {
+    overflow: auto;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#webApp {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+noscript {
+    display: block;
+    max-width: 42rem;
+    margin: 3rem auto;
+    padding: 1rem;
+    color: #ffffff;
+    text-align: center;
+}
