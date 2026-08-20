@@ -21,6 +21,14 @@ class PuzzleCodeCodecTest {
     }
 
     @Test
+    fun checksumRemainsCompatibleWithExistingSnp1Codes() {
+        assertEquals(
+            "SNP1.HARD.530070000600195000098000060800060003400803001700020006060000280000419005000080079.8B59A2D7",
+            PuzzleCodeCodec.encode(puzzle, Difficulty.HARD),
+        )
+    }
+
+    @Test
     fun tamperedChecksumIsRejected() {
         val encoded = PuzzleCodeCodec.encode(puzzle, Difficulty.MEDIUM)
         val tampered = encoded.dropLast(1) + if (encoded.last() == 'A') 'B' else 'A'

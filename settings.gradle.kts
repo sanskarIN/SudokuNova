@@ -7,7 +7,9 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // Kotlin/Wasm setup tasks attach their Node.js distribution repository at the project level.
+    // Prefer the centrally declared repositories while allowing that toolchain-managed repository.
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         mavenCentral()
@@ -17,4 +19,5 @@ dependencyResolutionManagement {
 rootProject.name = "SudokuNova"
 include(":app")
 include(":sudoku-engine")
+include(":sharedUI")
 include(":macrobenchmark")
