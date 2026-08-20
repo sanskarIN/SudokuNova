@@ -9,6 +9,7 @@ on:
       - 'sharedUI/**'
       - 'sudoku-engine/**'
       - 'app/**'
+      - 'iosApp/**'
       - 'gradle/**'
       - '*.gradle.kts'
       - '.github/workflows/cross-platform.yml'
