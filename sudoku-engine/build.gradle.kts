@@ -31,10 +31,10 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             kotlin.srcDir("src/main/kotlin")
         }
-        commonTest {
+        val commonTest by getting {
             kotlin.srcDir("src/test/kotlin")
             dependencies {
                 implementation(kotlin("test"))
