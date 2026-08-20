@@ -72,7 +72,7 @@ class DocumentationCoverageVerifierTest(unittest.TestCase):
         results, errors = validate_coverage(paths, tracked)
 
         self.assertEqual([], errors)
-        self.assertEqual(paths, [result.path for result in results])
+        self.assertEqual(sorted(paths), [result.path for result in results])
 
     def test_rejects_rule_whose_canonical_document_is_not_tracked(self) -> None:
         paths = ["README.md"]
