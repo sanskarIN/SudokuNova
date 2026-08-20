@@ -36,6 +36,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Test shared Sudoku engine
         run: ./gradlew :sudoku-engine:desktopTest --stacktrace
+      - name: Test shared gameplay state
+        run: ./gradlew :sharedUI:desktopTest --stacktrace
       - name: Compile shared desktop UI
         run: ./gradlew :sharedUI:compileKotlinDesktop --stacktrace
       - name: Compile shared web UI
