@@ -12,6 +12,12 @@
         android:theme="@style/Theme.SudokuNova.Splash">
 
         <activity
+            android:name=".CrossPlatformActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified"
+            android:theme="@style/Theme.SudokuNova" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="unspecified">
