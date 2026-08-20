@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/cross-platform-kmp
     paths:
       - 'sharedUI/**'
       - 'sudoku-engine/**'
@@ -21,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: cross-platform-${{ github.ref }}
+  group: cross-platform-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
