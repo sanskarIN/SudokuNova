@@ -9,7 +9,7 @@ This workflow is deliberately separate from ordinary pull-request CI. Untrusted 
 A successful run on an exact selected ref proves all of the following for the artifacts produced by that run:
 
 - repository secret guard passes;
-- release-verifier regression tests pass;
+- release-verifier regression tests pass, including CLI-boundary validation;
 - English/Hindi translation parity passes;
 - release APK and AAB build successfully with R8/resource shrinking;
 - exactly one signed release APK and one release AAB are selected;
@@ -17,16 +17,22 @@ A successful run on an exact selected ref proves all of the following for the ar
 - AAB archive structure is valid;
 - APK `output-metadata.json` has production `applicationId = in.sanskar.sudokunova`;
 - APK `output-metadata.json` has the requested `versionCode` and `versionName`;
+- the APK's embedded manifest independently reports the expected production application ID, version code, and version name;
+- the APK's embedded manifest independently reports the source-controlled `minSdk` and `targetSdk` values;
+- the APK's embedded manifest reports `debuggable=false`;
 - operator-supplied version metadata is validated before use;
+- source, ordinary CI, and protected-workflow application/version/SDK expectations remain synchronized by `scripts/verify_release_contract.py`;
 - R8 `mapping.txt` exists and is non-empty;
 - APK signature passes `apksigner verify --verbose --print-certs`;
+- APK signature verification reports at least one verified v2-or-newer APK signature scheme;
 - AAB signature passes `jarsigner -verify -certs`;
 - AAB signer certificate can be inspected with `keytool -printcert -jarfile`;
 - APK signer certificate SHA-256 matches the protected expected fingerprint;
 - AAB signer/upload certificate SHA-256 matches the protected expected fingerprint;
 - artifact SHA-256 hashes and byte sizes are written to evidence;
 - normalized signer certificate fingerprints are written to evidence;
-- repository/ref/commit/workflow-run/application/version context is written to evidence.
+- embedded APK identity/SDK/debuggable values are written to evidence;
+- repository/ref/commit/workflow-run/application/version/SDK context is written to evidence.
 
 A successful run does **not** prove device QA, Play Console acceptance, final store declarations, branch protection, rollout safety, or other manual evidence.
 
@@ -89,9 +95,26 @@ From GitHub Actions, choose **Production Release Validation**, select the exact 
 - `expected_version_name` — exact release-safe Android version name beginning with an alphanumeric character and then using only alphanumeric characters, `.`, `_`, `+`, or `-`;
 - `upload_signed_artifacts` — normally leave `false`; set `true` only when intentionally retaining the signed APK/AAB as short-lived workflow artifacts.
 
-The production application ID is intentionally not an operator input. The workflow pins it to `in.sanskar.sudokunova` so a manual dispatch cannot accidentally validate a different package as SudokuNova.
+The production application ID and SDK expectations are intentionally not operator inputs. The workflow pins the application ID to `in.sanskar.sudokunova`, `minSdk` to `26`, and `targetSdk` to `37` for the current source contract. `scripts/verify_release_contract.py` fails when those workflow expectations drift from `app/build.gradle.kts` or ordinary CI.
 
-For the current RC1 source metadata the version defaults are `1000` and `1.0.0-rc.1`. Stable publication must use the final values actually committed for the stable ref.
+For the current **2.0.12** source metadata, the workflow defaults are `versionCode 2012` and `versionName 2.0.12`. Publication must use the exact values committed on the release ref; any later store-accepted build must use a strictly higher version code.
+
+See `V2_0_12_RELEASE.md` for the current release-line evidence requirements. Older v1 release documents remain historical evidence only.
+
+## Embedded APK manifest verification
+
+`output-metadata.json` is useful build metadata, but production validation must also inspect the artifact that will actually be installed. The verifier therefore uses Android SDK `apkanalyzer` to read these values directly from the release APK:
+
+- application ID;
+- version code;
+- version name;
+- minimum SDK;
+- target SDK;
+- debuggable state.
+
+The verifier fails closed if `apkanalyzer` is unavailable when `--require-apk-manifest` is requested, if any inspected scalar value cannot be read, if an expected identity/SDK value differs, or if the release APK is marked debuggable.
+
+The expected SDK values must be positive, and an expected target SDK lower than the expected minimum SDK is rejected before artifact access. This keeps malformed release-verifier input from being mistaken for artifact failure.
 
 ## Evidence artifacts
 
@@ -99,14 +122,15 @@ Every successful run uploads `production-release-validation-evidence` for 30 day
 
 - `sha256.txt` — release APK/AAB/R8 mapping SHA-256 and byte-size evidence;
 - `signatures.txt` — normalized APK/AAB signer certificate SHA-256 evidence;
-- `verification.txt` — verifier summary including the validated application/version identity;
-- `workflow-context.txt` — repository, commit SHA, ref, run ID/attempt, expected application ID, and expected version metadata.
+- `apk-identity.txt` — application ID, version code/name, minimum SDK, target SDK, and debuggable state read from the APK itself;
+- `verification.txt` — verifier summary including the validated application/version/SDK identity;
+- `workflow-context.txt` — repository, commit SHA, ref, run ID/attempt, expected application ID, expected version metadata, and expected SDK contract.
 
 When `upload_signed_artifacts=true`, the workflow separately uploads `signed-production-release-artifacts` for 7 days containing the signed APK, AAB, and R8 mapping. This is opt-in to reduce unnecessary retention of production binaries.
 
-## Package and certificate identity rule
+## Package, SDK, and certificate identity rule
 
-A signature being cryptographically valid is insufficient. The release must also belong to the intended Android package and be signed by the intended certificate.
+A signature being cryptographically valid is insufficient. The release must also belong to the intended Android package, carry the intended application/version/SDK identity, be non-debuggable, and be signed by the intended certificate.
 
 `scripts/verify_release_outputs.py` supports:
 
@@ -119,6 +143,10 @@ python scripts/verify_release_outputs.py \
   --expected-version-code <final-code> \
   --expected-version-name <final-name> \
   --expected-application-id in.sanskar.sudokunova \
+  --require-apk-manifest \
+  --expected-min-sdk <source-min-sdk> \
+  --expected-target-sdk <source-target-sdk> \
+  --apk-identity-output path/to/apk-identity.txt \
   --require-signatures \
   --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
   --expected-aab-cert-sha256 <expected-aab-cert-sha256> \
@@ -126,18 +154,20 @@ python scripts/verify_release_outputs.py \
   --signature-output path/to/signatures.txt
 ```
 
-The verifier fails closed when the expected application ID is missing/different or when an expected fingerprint does not match any reported signer fingerprint.
+The verifier fails closed when the expected application ID is missing/different for manifest verification, when the embedded APK identity or SDK contract differs, when the APK is debuggable, when APK verification lacks a verified v2-or-newer signature scheme, or when an expected certificate fingerprint does not match any reported signer fingerprint.
 
 For Play App Signing, distinguish the local upload-key certificate from the app-signing certificate used by Google Play for distributed APKs. Record the correct certificate identity for each stage and validate the Play-distributed artifact separately where required.
 
-## Stable-release evidence boundary
+## Release evidence boundary
 
-After a real successful protected run, copy only non-secret evidence into `V1_RELEASE_EVIDENCE.md`:
+After a real successful protected run, copy only non-secret evidence into the current release ledger defined by `V2_0_12_RELEASE.md` and `what_changed.md`:
 
 - exact commit/ref;
 - workflow run ID/attempt;
 - application ID;
 - version code/name;
+- minimum and target SDK;
+- embedded debuggable state;
 - APK/AAB/R8 hashes and sizes;
 - non-secret certificate SHA-256 fingerprints;
 - signed artifact validation result.

@@ -33,7 +33,31 @@ Keep root files focused on repository-wide entry points/policies:
 
 ### `docs/`
 
-Put detailed guides/reference material under `docs/` and link them from `docs/README.md`.
+Put detailed guides/reference material under `docs/` and link **every tracked Markdown guide** from `docs/README.md`. A guide that exists in Git but is absent from the documentation hub is treated as incomplete documentation.
+
+## Tracked-File Documentation Ownership
+
+Every Git-tracked repository file must belong to a documented area. The authoritative coverage contract is [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md), enforced by:
+
+```bash
+python scripts/verify_documentation_coverage.py
+```
+
+The verifier obtains the current file set from `git ls-files -z`; it does not rely on a manually frozen repository tree. Every path must resolve to a coverage rule, and each rule must point to canonical documentation files that are themselves tracked.
+
+The same verifier also checks documentation discoverability: every tracked `docs/*.md` guide except `docs/README.md` itself must be linked from the documentation index.
+
+Use:
+
+```bash
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+to print the documentation owner for every tracked path during an audit. Use `--markdown` when a deterministic per-file ownership table is useful for review.
+
+When adding a new path family or top-level module, do not hide it under an unrelated broad rule simply to make CI pass. Add a precise ownership rule, regression coverage, and the corresponding documentation before merge. When adding a detailed guide, add it to `docs/README.md` in the same work.
+
+Coverage establishes **ownership and discoverability**, not factual correctness. A passing coverage check must therefore be combined with implementation review, local-link verification, tests/builds, privacy/security review, and exact release evidence where applicable.
 
 ## Audience Categories
 
@@ -63,7 +87,7 @@ CI_CD.md
 
 Do not create multiple nearly identical guides with unclear authority.
 
-Historical milestone-specific documents may remain when they preserve important implementation context, but current general guides should be the primary entry point.
+Historical milestone-specific documents may remain when they preserve important implementation context, but current general guides should be the primary entry point. Historical pages must be labeled clearly enough that they cannot be mistaken for current branch/release state.
 
 ## Source of Truth
 
@@ -125,6 +149,8 @@ It must not include fabricated green tests, device results, signed-release claim
 
 Keep historical sections unless there is a factual correction. Do not erase prior milestone history just to shorten the file.
 
+The top/current-state block must be synchronized with the actual current build/release line. Historical version facts belong in historical sections instead of remaining as a misleading “current” header.
+
 ## Changelog Rules
 
 `CHANGELOG.md` should emphasize user/developer-visible release changes, not every tiny commit.
@@ -171,7 +197,16 @@ For repository-internal docs, prefer relative links:
 
 Use absolute external URLs for project/contact links only when appropriate.
 
-After renaming/deleting docs, search for broken references.
+After renaming/deleting docs, search for broken references. A new tracked `docs/*.md` page must also be linked from `docs/README.md`.
+
+Run both documentation guards after structural documentation work:
+
+```bash
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+```
+
+The first catches missing local Markdown targets. The second catches tracked files with no documentation owner, canonical documentation rules that point at missing files, and detailed guides that are not discoverable from `docs/README.md`.
 
 ## Security-Sensitive Documentation
 
@@ -241,7 +276,11 @@ Before release/tagging, cross-check:
 - `PRIVACY.md`;
 - `SECURITY.md`;
 - `THIRD_PARTY_NOTICES.md`;
+- `REPOSITORY_FILE_REFERENCE.md` when repository structure changed;
+- `docs/README.md` for complete detailed-guide discoverability;
 - `what_changed.md`.
+
+Also run the documentation coverage and link guards against the exact release source so repository structure, detailed-guide indexing, and references are included in release readiness.
 
 ## New Documentation Checklist
 
@@ -255,6 +294,7 @@ Before adding a new page:
 6. Is it linked from `docs/README.md`?
 7. Does it create duplication that will drift?
 8. Does it expose security/private data?
+9. Does the repository coverage guard still pass?
 
 ## Documentation Review Checklist
 
@@ -266,6 +306,9 @@ For substantial releases, audit:
 - obsolete commands;
 - missing new screens/features;
 - broken file links;
+- tracked files without documentation ownership;
+- tracked detailed guides missing from `docs/README.md`;
+- historical milestone pages that read like current state;
 - incorrect package/module names;
 - build-stack mismatches;
 - data-format mismatches;

@@ -34,15 +34,32 @@ jobs:
       - name: Set up Gradle cache and validate wrapper
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Locate APK Analyzer
+        shell: bash
+        run: |
+          set -euo pipefail
+          apkanalyzer_path="$(command -v apkanalyzer || true)"
+          if [ -z "$apkanalyzer_path" ]; then
+            apkanalyzer_path="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name apkanalyzer -print 2>/dev/null | sort -V | tail -n 1 || true)"
+          fi
+          if [ -z "$apkanalyzer_path" ]; then
+            echo 'Unable to locate Android SDK apkanalyzer.' >&2
+            exit 1
+          fi
+          echo "$(dirname "$apkanalyzer_path")" >> "$GITHUB_PATH"
+
       - name: Verify repository security guard
         run: python scripts/verify_no_secrets.py
 
       - name: Verify release artifact verifier tests
-        run: python -m unittest scripts.tests.test_verify_release_outputs
+        run: |
+          python -m unittest scripts.tests.test_verify_release_outputs
+          python -m unittest scripts.tests.test_verify_release_cli_validation
 
       - name: Verify repository guard regression tests
         run: |
           python -m unittest scripts.tests.test_verify_documentation_links
+          python -m unittest scripts.tests.test_verify_documentation_coverage
           python -m unittest scripts.tests.test_verify_release_contract
 
       - name: Verify partial release signing fails closed
@@ -67,6 +84,7 @@ jobs:
       - name: Verify repository consistency guards
         run: |
           python scripts/verify_documentation_links.py
+          python scripts/verify_documentation_coverage.py
           python scripts/verify_release_contract.py
 
       - name: Verify English/Hindi translation parity
@@ -118,10 +136,14 @@ jobs:
             --aab app/build/outputs/bundle/release/app-release.aab \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code 1000 \
-            --expected-version-name 1.0.0-rc.1 \
+            --expected-version-code 2012 \
+            --expected-version-name 2.0.12 \
             --expected-application-id in.sanskar.sudokunova \
-            --output app/build/outputs/release-evidence/sha256.txt
+            --require-apk-manifest \
+            --expected-min-sdk 26 \
+            --expected-target-sdk 37 \
+            --output app/build/outputs/release-evidence/sha256.txt \
+            --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
 
       - name: Upload verification reports
         if: always()

@@ -1,6 +1,6 @@
 # SudokuNova Project Structure
 
-This document maps the repository so contributors can find the correct layer before making a change.
+This document maps the repository so contributors can find the correct layer before making a change. For the complete tracked-file ownership contract, including every current path family and its canonical documentation, use [`REPOSITORY_FILE_REFERENCE.md`](REPOSITORY_FILE_REFERENCE.md) and run `python scripts/verify_documentation_coverage.py --verbose`.
 
 ## Top-Level Layout
 
@@ -11,7 +11,7 @@ SudokuNova/
 ├── macrobenchmark/          # Release-like Android performance benchmark test module
 ├── docs/                    # Product, engineering, QA and release documentation
 ├── gradle/                  # Version catalog and Gradle wrapper metadata
-├── scripts/                 # Repository/release verification scripts
+├── scripts/                 # Repository/release verification scripts and their Python tests
 ├── sudoku-engine/           # Platform-independent Classic Sudoku domain module
 ├── build.gradle.kts         # Root Gradle plugin declarations
 ├── settings.gradle.kts      # Module and repository configuration
@@ -24,6 +24,8 @@ SudokuNova/
 ├── THIRD_PARTY_NOTICES.md   # Third-party licensing notices
 └── what_changed.md          # Evidence-oriented implementation history
 ```
+
+This human-readable tree is intentionally compact. Git is the authoritative complete file inventory; the documentation-coverage verifier fails if any tracked path falls outside the documented ownership taxonomy.
 
 ## `sudoku-engine/`
 
@@ -208,20 +210,23 @@ High-value references include:
 
 - user guide/features;
 - architecture/project structure;
+- repository file reference/documentation ownership;
 - engine/teaching/difficulty/generation;
 - data storage/formats/backup;
-- build/setup/testing/CI;
+- build/setup/testing/CI/repository guards;
 - performance benchmarking/evidence;
 - accessibility/localization/privacy/security;
 - production signing/release validation;
-- release QA/releasing/checklists;
+- release QA/releasing/checklists/evidence;
 - contribution/maintenance/documentation standards.
+
+`docs/REPOSITORY_FILE_REFERENCE.md` is the path-oriented companion to this architectural map. It defines which documentation owns each tracked repository area and explains how additions/moves/deletions remain covered.
 
 ## `.github/workflows/`
 
 Current quality/release workflows include:
 
-- `ci.yml` — repository security guard, release-verifier tests, signing fail-closed regression, translation parity, engine tests, Android JVM tests, Android instrumentation-test compilation, Macrobenchmark harness compilation, debug/release lint, debug APK, R8/resource-shrunk release APK, release AAB, package/version/artifact verification and report/evidence upload.
+- `ci.yml` — repository security guard; release-verifier tests; documentation-link, documentation-coverage and release-contract regression/direct guards; signing fail-closed regression; translation parity; engine tests; Android JVM tests; Android instrumentation-test compilation; Macrobenchmark harness compilation; debug/release lint; debug APK; R8/resource-shrunk release APK; release AAB; package/version/artifact verification; report/evidence upload.
 - `instrumentation.yml` — API-35 connected Compose/Room verification using an emulator with KVM when available.
 - `release-validation.yml` — manually dispatched, protected signed-release validation through the `production-release` GitHub Environment; verifies package/version/signature/certificate/hash evidence without making production publication automatic.
 
@@ -234,11 +239,29 @@ Do not expose production signing secrets to ordinary pull-request workflows. The
 Repository verification scripts include:
 
 - `verify_translations.py` — English/Hindi key/format parity verification.
-- `verify_no_secrets.py` — repository guard against committed signing/private-key material and obvious credential patterns.
+- `verify_no_secrets.py` / the underlying repository-security verifier — committed signing/private-key/obvious credential guard.
+- `verify_documentation_links.py` — repository-local Markdown target integrity and repository-boundary validation.
+- `verify_documentation_coverage.py` — fail-closed `git ls-files` ownership check requiring every tracked path to have canonical documentation.
+- `verify_release_contract.py` — source/ordinary-CI/protected-release workflow application/version identity synchronization.
 - `verify_release_outputs.py` — APK/AAB/R8 structure, package/version identity, checksums and optional signed/certificate-bound release verification.
-- `scripts/tests/test_verify_release_outputs.py` — deterministic regression coverage for release-output verification.
 
-Scripts used by CI should be deterministic, fast, fail closed for security/release identity checks, and produce actionable output.
+Regression tests under `scripts/tests/` cover the documentation-link, documentation-coverage, release-contract, and release-output verifiers. Guards that can block CI/releases should remain deterministic and have both acceptance and rejection coverage.
+
+Useful direct audit commands include:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_links
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python -m unittest scripts.tests.test_verify_release_contract
+python -m unittest scripts.tests.test_verify_release_outputs
+python scripts/verify_documentation_links.py
+python scripts/verify_documentation_coverage.py
+python scripts/verify_release_contract.py
+python scripts/verify_no_secrets.py
+python scripts/verify_translations.py
+```
+
+Scripts used by CI should be deterministic, fast, fail closed for security/release/documentation ownership checks, and produce actionable output.
 
 ## Root Documentation Files
 
@@ -252,7 +275,27 @@ Root files serve repository-wide purposes:
 - `CONTRIBUTING.md` — contributor entry point.
 - `THIRD_PARTY_NOTICES.md` — direct dependency/tooling notice summary.
 
+Other root policy/community files such as `AUTHORS.md`, `CODE_OF_CONDUCT.md`, `LICENSE`, and `SUPPORT.md` remain covered by the repository file-reference taxonomy even though this section highlights the most frequently edited documents.
+
 More specialized material belongs under `docs/` so the root remains navigable.
+
+## Complete Tracked-File Ownership Invariant
+
+A compact structure document inevitably groups related source files. That grouping must never be interpreted as permission to skip individual tracked paths during documentation review.
+
+Run:
+
+```bash
+python scripts/verify_documentation_coverage.py --verbose
+```
+
+The verifier resolves every current `git ls-files` path to a canonical documentation area. Any unmatched new file fails CI. For a per-file Markdown table, use:
+
+```bash
+python scripts/verify_documentation_coverage.py --markdown
+```
+
+See [`REPOSITORY_FILE_REFERENCE.md`](REPOSITORY_FILE_REFERENCE.md) for the complete ownership policy and [`REPOSITORY_GUARDS.md`](REPOSITORY_GUARDS.md) for enforcement details.
 
 ## Change Placement Rules
 
@@ -266,6 +309,7 @@ When adding or fixing behavior, prefer the narrowest correct layer:
 - Android share/document APIs → Android transfer/presentation layer.
 - Release-like startup/frame measurement → `macrobenchmark` plus the benchmark-only app variant.
 - Signing/package/certificate release verification → release workflow/scripts/docs, never committed secret material.
+- Repository consistency/documentation ownership → `scripts/` plus the corresponding `docs/` authorities.
 - Cross-cutting policy/process → root or `docs/`.
 
 ## New Feature Checklist
@@ -285,6 +329,14 @@ Before adding a new feature family, identify:
 11. backup compatibility implications;
 12. release/signing implications;
 13. documentation updates;
-14. changelog/roadmap impact.
+14. tracked-file documentation ownership for every new path;
+15. changelog/roadmap impact.
 
-This prevents a feature from landing as UI-only code without correctness, persistence, accessibility, localization, performance, security or release support.
+Run both documentation guards after adding/moving files:
+
+```bash
+python scripts/verify_documentation_coverage.py
+python scripts/verify_documentation_links.py
+```
+
+This prevents a feature from landing as UI-only code without correctness, persistence, accessibility, localization, performance, security, release support, or documentation ownership.

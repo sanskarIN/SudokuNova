@@ -3,8 +3,9 @@
 
 This guard intentionally treats app/build.gradle.kts as the authoritative Android source
 metadata for the current release candidate and verifies that ordinary CI plus the protected
-release-validation workflow use the same package/version defaults. It does not replace
-artifact metadata verification; it catches source/workflow drift before Gradle work begins.
+release-validation workflow use the same package/version/SDK expectations. It does not
+replace artifact metadata or embedded-manifest verification; it catches source/workflow drift
+before Gradle work begins.
 """
 
 from __future__ import annotations
@@ -15,6 +16,8 @@ import re
 import sys
 
 APPLICATION_ID_RE = re.compile(r'^\s*applicationId\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
+MIN_SDK_RE = re.compile(r"^\s*minSdk\s*=\s*(\d+)\s*$", re.MULTILINE)
+TARGET_SDK_RE = re.compile(r"^\s*targetSdk\s*=\s*(\d+)\s*$", re.MULTILINE)
 VERSION_CODE_RE = re.compile(r'^\s*versionCode\s*=\s*(\d+)\s*$', re.MULTILINE)
 VERSION_NAME_RE = re.compile(r'^\s*versionName\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
 RELEASE_SAFE_VERSION_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._+-]*$")
@@ -25,6 +28,8 @@ class ReleaseContract:
     application_id: str
     version_code: int
     version_name: str
+    min_sdk: int
+    target_sdk: int
 
 
 def _single_match(pattern: re.Pattern[str], text: str, label: str) -> str:
@@ -34,19 +39,31 @@ def _single_match(pattern: re.Pattern[str], text: str, label: str) -> str:
     return matches[0]
 
 
+def _positive_int(value: str, label: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise ValueError(f"{label} must be positive")
+    return parsed
+
+
 def parse_gradle_release_contract(text: str) -> ReleaseContract:
     application_id = _single_match(APPLICATION_ID_RE, text, "applicationId")
-    version_code = int(_single_match(VERSION_CODE_RE, text, "versionCode"))
+    min_sdk = _positive_int(_single_match(MIN_SDK_RE, text, "minSdk"), "minSdk")
+    target_sdk = _positive_int(_single_match(TARGET_SDK_RE, text, "targetSdk"), "targetSdk")
+    version_code = _positive_int(
+        _single_match(VERSION_CODE_RE, text, "versionCode"),
+        "versionCode",
+    )
     version_name = _single_match(VERSION_NAME_RE, text, "versionName")
 
-    if version_code <= 0:
-        raise ValueError("versionCode must be positive")
     if not RELEASE_SAFE_VERSION_RE.fullmatch(version_name):
         raise ValueError("versionName contains unsupported release characters")
     if application_id.endswith(".debug"):
         raise ValueError("Production applicationId must not use the debug suffix")
+    if target_sdk < min_sdk:
+        raise ValueError("targetSdk must be greater than or equal to minSdk")
 
-    return ReleaseContract(application_id, version_code, version_name)
+    return ReleaseContract(application_id, version_code, version_name, min_sdk, target_sdk)
 
 
 def parse_ci_expected_contract(text: str) -> ReleaseContract:
@@ -55,19 +72,36 @@ def parse_ci_expected_contract(text: str) -> ReleaseContract:
         text,
         "CI expected application ID",
     )
-    version_code = int(
+    version_code = _positive_int(
         _single_match(
             re.compile(r"--expected-version-code(?:=|\s+)(\d+)"),
             text,
             "CI expected version code",
-        )
+        ),
+        "CI expected version code",
     )
     version_name = _single_match(
         re.compile(r"--expected-version-name(?:=|\s+)([^\s\\]+)"),
         text,
         "CI expected version name",
     )
-    return ReleaseContract(application_id, version_code, version_name)
+    min_sdk = _positive_int(
+        _single_match(
+            re.compile(r"--expected-min-sdk(?:=|\s+)(\d+)"),
+            text,
+            "CI expected min SDK",
+        ),
+        "CI expected min SDK",
+    )
+    target_sdk = _positive_int(
+        _single_match(
+            re.compile(r"--expected-target-sdk(?:=|\s+)(\d+)"),
+            text,
+            "CI expected target SDK",
+        ),
+        "CI expected target SDK",
+    )
+    return ReleaseContract(application_id, version_code, version_name, min_sdk, target_sdk)
 
 
 def parse_protected_workflow_defaults(text: str) -> ReleaseContract:
@@ -76,7 +110,23 @@ def parse_protected_workflow_defaults(text: str) -> ReleaseContract:
         text,
         "protected-workflow expected application ID",
     )
-    version_code = int(
+    min_sdk = _positive_int(
+        _single_match(
+            re.compile(r"^\s*EXPECTED_MIN_SDK:\s*['\"]?(\d+)['\"]?\s*$", re.MULTILINE),
+            text,
+            "protected-workflow expected min SDK",
+        ),
+        "protected-workflow expected min SDK",
+    )
+    target_sdk = _positive_int(
+        _single_match(
+            re.compile(r"^\s*EXPECTED_TARGET_SDK:\s*['\"]?(\d+)['\"]?\s*$", re.MULTILINE),
+            text,
+            "protected-workflow expected target SDK",
+        ),
+        "protected-workflow expected target SDK",
+    )
+    version_code = _positive_int(
         _single_match(
             re.compile(
                 r"expected_version_code:\s*\n(?:\s+.*\n)*?\s+default:\s*['\"]?(\d+)['\"]?\s*$",
@@ -84,7 +134,8 @@ def parse_protected_workflow_defaults(text: str) -> ReleaseContract:
             ),
             text,
             "protected-workflow default version code",
-        )
+        ),
+        "protected-workflow default version code",
     )
     version_name = _single_match(
         re.compile(
@@ -94,7 +145,7 @@ def parse_protected_workflow_defaults(text: str) -> ReleaseContract:
         text,
         "protected-workflow default version name",
     )
-    return ReleaseContract(application_id, version_code, version_name)
+    return ReleaseContract(application_id, version_code, version_name, min_sdk, target_sdk)
 
 
 def compare_contracts(
@@ -119,6 +170,10 @@ def compare_contracts(
             errors.append(
                 f"{label} version name {value.version_name!r} != source {source.version_name!r}"
             )
+        if value.min_sdk != source.min_sdk:
+            errors.append(f"{label} min SDK {value.min_sdk} != source {source.min_sdk}")
+        if value.target_sdk != source.target_sdk:
+            errors.append(f"{label} target SDK {value.target_sdk} != source {source.target_sdk}")
     return errors
 
 
@@ -151,7 +206,8 @@ def main() -> int:
         "Release contract verified: "
         f"applicationId={source.application_id}, "
         f"versionCode={source.version_code}, "
-        f"versionName={source.version_name}."
+        f"versionName={source.version_name}, "
+        f"minSdk={source.min_sdk}, targetSdk={source.target_sdk}."
     )
     return 0
 

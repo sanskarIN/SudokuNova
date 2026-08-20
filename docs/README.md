@@ -24,13 +24,17 @@ Start with:
 
 1. [Development Setup](DEVELOPMENT_SETUP.md)
 2. [Project Structure](PROJECT_STRUCTURE.md)
-3. [Architecture](ARCHITECTURE.md)
-4. [Building](BUILDING.md)
-5. [Testing](TESTING.md)
-6. [CI/CD](CI_CD.md)
-7. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-8. [Contributing Guide](CONTRIBUTING_GUIDE.md)
-9. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+3. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+4. [Architecture](ARCHITECTURE.md)
+5. [Building](BUILDING.md)
+6. [Testing](TESTING.md)
+7. [Quality Gates](QUALITY_GATES.md)
+8. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+9. [CI/CD](CI_CD.md)
+10. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+11. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+12. [Contributing Guide](CONTRIBUTING_GUIDE.md)
+13. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 ### I am changing Sudoku logic
 
@@ -58,36 +62,37 @@ Read:
 7. [`../SECURITY.md`](../SECURITY.md)
 8. [Testing](TESTING.md)
 
-### I am preparing v1.0 or another release
+### I am preparing 2.0.12 or a later release
 
 Read in this order:
 
-1. [v1.0 RC Preparation](V1_RELEASE_PREP.md)
-2. [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
-3. [Building](BUILDING.md)
-4. [Production Signing](PRODUCTION_SIGNING.md)
-5. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
-6. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-7. [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
-8. [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
-9. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
-10. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
-11. [Releasing](RELEASING.md)
-12. [Release Checklist](RELEASE_CHECKLIST.md)
-13. [Release QA](RELEASE_QA.md)
-14. [QA Matrix](QA_MATRIX.md)
-15. [CI/CD](CI_CD.md)
-16. [Testing](TESTING.md)
-17. [Performance](PERFORMANCE.md)
-18. [Accessibility](ACCESSIBILITY.md)
-19. [Privacy](PRIVACY.md)
-20. [`../SECURITY.md`](../SECURITY.md)
-21. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-22. [`../CHANGELOG.md`](../CHANGELOG.md)
-23. [`../ROADMAP.md`](../ROADMAP.md)
-24. [`../what_changed.md`](../what_changed.md)
+1. [2.0.12 Release Line](V2_0_12_RELEASE.md)
+2. [Building](BUILDING.md)
+3. [Production Signing](PRODUCTION_SIGNING.md)
+4. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
+5. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+6. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+7. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+8. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+9. [Releasing](RELEASING.md)
+10. [Release Checklist](RELEASE_CHECKLIST.md)
+11. [Release QA](RELEASE_QA.md)
+12. [QA Matrix](QA_MATRIX.md)
+13. [Quality Gates](QUALITY_GATES.md)
+14. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+15. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+16. [CI/CD](CI_CD.md)
+17. [Testing](TESTING.md)
+18. [Performance](PERFORMANCE.md)
+19. [Accessibility](ACCESSIBILITY.md)
+20. [Privacy](PRIVACY.md)
+21. [`../SECURITY.md`](../SECURITY.md)
+22. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+23. [`../CHANGELOG.md`](../CHANGELOG.md)
+24. [`../ROADMAP.md`](../ROADMAP.md)
+25. [`../what_changed.md`](../what_changed.md)
 
-For historical source-hardening evidence, also read [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md).
+For historical release evidence, also read [v1.0 RC Preparation](V1_RELEASE_PREP.md), [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md), [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md), [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md), [v1.0 Release Notes Source](V1_RELEASE_NOTES.md), [v0.9 Hardening Audit](V09_HARDENING_AUDIT.md), and the completed [PR #28 Branch Freeze](BRANCH_FREEZE.md) record.
 
 ## Product and User Documentation
 
@@ -132,6 +137,10 @@ System-level boundaries between the Android app, engine, persistence, teaching p
 ### [Project Structure](PROJECT_STRUCTURE.md)
 
 Repository tree, three Gradle modules, packages, major source files, test locations, Room schemas, workflows and change-placement rules.
+
+### [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+
+Path-by-path ownership model for every Git-tracked file family, with canonical documentation, change rules, audit commands, and the fail-closed `git ls-files` coverage contract.
 
 ### [Sudoku Engine](SUDOKU_ENGINE.md)
 
@@ -217,11 +226,23 @@ Current JDK/Gradle/AGP/Kotlin/SDK requirements, debug/release APK, release AAB, 
 
 ### [Testing](TESTING.md)
 
-Complete engine/JVM/instrumentation/release-tooling/Macrobenchmark/lint/release/manual QA strategy. v1.0 RC adds artifact-verifier, package/certificate identity, signing fail-closed and benchmark-compilation checks on top of the verified v0.9 suites.
+Complete engine/JVM/instrumentation/release-tooling/Macrobenchmark/lint/release/manual QA strategy. The current 2.0.12 line retains the verified v1 hardening foundations and requires exact package/version/SDK/artifact validation for `versionCode 2012` / `versionName 2.0.12`.
+
+### [Quality Gates](QUALITY_GATES.md)
+
+Compact current quality-gate overview, including repository/documentation consistency, Android build/test gates, and evidence boundaries.
+
+### [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+
+Deterministic local/CI guards for documentation links, complete tracked-file documentation ownership/index completeness, release source/workflow identity, repository security, translation parity, and release-output validation.
 
 ### [CI/CD](CI_CD.md)
 
-GitHub Actions quality gates, exact-head verification, security/translation scripts, Macrobenchmark compilation, unsigned release evidence, and the separate protected signed-release validation path.
+GitHub Actions quality gates, exact-head verification, repository guards, Macrobenchmark compilation, unsigned release evidence, and the separate protected signed-release validation path.
+
+### [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+
+General rule that required workflow evidence applies only to the exact commit it tested, with verified earlier release pull requests retained as historical examples.
 
 ### [Performance](PERFORMANCE.md)
 
@@ -247,7 +268,11 @@ Recommended `main` protection/ruleset, required CI checks, protected release env
 
 ### [Documentation Standards](DOCUMENTATION_STANDARDS.md)
 
-Rules for implementation status, verification claims, persistent format docs, privacy/security accuracy, links, style and release documentation audits.
+Rules for implementation status, verification claims, tracked-file documentation ownership, persistent format docs, privacy/security accuracy, links, style and release documentation audits.
+
+### [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+
+Complete repository ownership map. The accompanying verifier obtains every current tracked path from Git, fails when a path has no documented area, and requires every detailed `docs/*.md` guide to remain discoverable from this index.
 
 ### [Changelog Guide](CHANGELOG_GUIDE.md)
 
@@ -262,6 +287,10 @@ Primary repository contribution policy.
 Community behavior standards.
 
 ## Quality Assurance
+
+### [Quality Gates](QUALITY_GATES.md)
+
+Compact map of deterministic pre-build guards, Android build/test gates, connected coverage, and real-world evidence boundaries.
 
 ### [Testing](TESTING.md)
 
@@ -281,15 +310,23 @@ Concrete source-audit findings and fixes for main-thread work, stale async resul
 
 ### [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
 
-Exact PR #28 head, Android CI/API-35 run IDs, artifact digests, Macrobenchmark compile-defect repair, repository-guard enforcement audit, merge SHA, and stable-release evidence boundary.
+Exact PR #28 head, Android CI/API-35 run IDs, artifact digests, Macrobenchmark compile-defect repair, repository-guard enforcement audit, merge SHA, and historical stable-release evidence boundary.
+
+### [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+
+Reusable merge-evidence rule for all future pull requests and release lines whose workflow results are used as final evidence.
+
+### [2.0.12 Release Line](V2_0_12_RELEASE.md)
+
+Current release authority for `versionCode 2012` / `versionName 2.0.12`, including repository gates, protected signing validation, physical-device/manual/store evidence requirements, and final SHIP/tag/publication boundaries.
 
 ### [v1.0 RC Evidence Worksheet](V1_RELEASE_CANDIDATE.md)
 
-Authoritative real-target worksheet for installation, gameplay, TalkBack, 200% font/adaptive layouts, contrast/motion, keyboard, process death, measured performance/ANR/memory, production signing, signed artifacts, store assets and final ship/no-ship decision.
+Historical real-target worksheet prepared for the v1.0 RC line. It remains useful as evidence/process history but is no longer the current version authority.
 
 ### [v1.0 Release Evidence Ledger](V1_RELEASE_EVIDENCE.md)
 
-Concise exact-evidence ledger separating verified RC1 repository evidence, post-RC validation/performance tooling, and still-pending signed, physical-device, administrative and store evidence.
+Historical exact-evidence ledger for verified v1 RC/post-RC work and the production evidence that remained pending at that checkpoint.
 
 ### [Accessibility](ACCESSIBILITY.md)
 
@@ -305,13 +342,21 @@ Authoritative source for representative physical-device startup/frame measuremen
 
 ## Release and Planning
 
+### [2.0.12 Release Line](V2_0_12_RELEASE.md)
+
+Current source/version/release authority for SudokuNova 2.0.12. Use it for the 2012/2.0.12 contract and current release evidence boundary.
+
 ### [v1.0 RC Preparation](V1_RELEASE_PREP.md)
 
-Verified repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
+Historical verified repository-side v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, manual evidence boundaries and stable-promotion rules.
 
 ### [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
 
-Verified exact-head repository evidence for PR #28 and its merge, with all production/manual/admin/store boundaries retained.
+Historical verified exact-head repository evidence for PR #28 and its merge, with production/manual/admin/store boundaries retained.
+
+### [v1.0 Release Notes Source](V1_RELEASE_NOTES.md)
+
+Historical canonical v1 stable-release notes source. It is preserved as release-line history and is not the 2.0.12 publication authority.
 
 ### [Production Signing](PRODUCTION_SIGNING.md)
 
@@ -329,9 +374,17 @@ Store identity/listing draft, asset checklist, project privacy/data facts, relea
 
 Repository-admin settings that cannot be guaranteed merely by committed source files.
 
+### [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+
+Current reusable exact-final-head policy for merge and release evidence.
+
+### [Historical PR #28 Branch Freeze](BRANCH_FREEZE.md)
+
+Historical record of the PR #28 freeze rule and the exact verified head/workflow pair that satisfied it before merge. It is retained as evidence, not as current branch status.
+
 ### [Releasing](RELEASING.md)
 
-End-to-end RC/stable process from scope freeze through package/version/artifact verification, production signing, certificate identity, physical/manual QA and performance evidence, exact-head verification, stable promotion, tag, GitHub Release, store submission and fix-forward handling.
+End-to-end release process from scope freeze through package/version/artifact verification, production signing, certificate identity, physical/manual QA and performance evidence, exact-head verification, tag, GitHub Release, store submission and fix-forward handling.
 
 ### [Release Checklist](RELEASE_CHECKLIST.md)
 
@@ -351,7 +404,7 @@ Authoritative current product milestone roadmap.
 
 ### [Changelog](../CHANGELOG.md)
 
-Release history and current unreleased RC work.
+Release history and current unreleased work.
 
 ### [What Changed](../what_changed.md)
 
@@ -370,18 +423,37 @@ Detailed implementation/verification/handoff history.
 - [Changelog](../CHANGELOG.md)
 - [Roadmap](../ROADMAP.md)
 - [Implementation Log](../what_changed.md)
+- [2.0.12 Release Line](V2_0_12_RELEASE.md)
+- [Repository File Reference](REPOSITORY_FILE_REFERENCE.md)
+- [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+- [Quality Gates](QUALITY_GATES.md)
+- [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
 - [Post-RC Validation Evidence](POST_RC_VALIDATION_EVIDENCE.md)
+- [Historical PR #28 Branch Freeze](BRANCH_FREEZE.md)
+- [v1.0 Release Notes Source](V1_RELEASE_NOTES.md)
 - [CODEOWNERS](../.github/CODEOWNERS)
 - [Funding metadata](../.github/FUNDING.yml)
 - [Generated release-note config](../.github/release.yml)
 
 ## Historical vs Current Documents
 
-Some files intentionally preserve milestone-specific detail, such as `TRANSFER_BACKUP_V07.md` and `V09_HARDENING_AUDIT.md`. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V1_RELEASE_PREP.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract, and milestone-specific pages when investigating historical decisions.
+The archived development ledger is preserved at [archive/what_changed_through_2026-08-19.md](archive/what_changed_through_2026-08-19.md). It is immutable historical context; current work continues in [`../what_changed.md`](../what_changed.md).
+
+`V2_0_12_RELEASE.md` is the current release-version authority. Files such as `V1_RELEASE_PREP.md`, `V1_RELEASE_CANDIDATE.md`, `V1_RELEASE_EVIDENCE.md`, `V1_RELEASE_NOTES.md`, `POST_RC_VALIDATION_EVIDENCE.md`, `TRANSFER_BACKUP_V07.md`, `V09_HARDENING_AUDIT.md`, and `BRANCH_FREEZE.md` intentionally preserve milestone-specific history. Use current general references (`FEATURES.md`, `USER_GUIDE.md`, `SUDOKU_ENGINE.md`, `DATA_FORMATS.md`, `BUILDING.md`, `TESTING.md`, `QUALITY_GATES.md`, `EXACT_HEAD_VERIFICATION.md`, `REPOSITORY_FILE_REFERENCE.md`, `REPOSITORY_GUARDS.md`, `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md`, `V2_0_12_RELEASE.md`, `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, `PLAY_STORE_RELEASE.md`, `RELEASING.md`) for the current contract.
 
 ## Documentation Maintenance Rule
 
 When code changes, update the narrowest relevant guide in the same work. See [Documentation Standards](DOCUMENTATION_STANDARDS.md).
+
+Every tracked file must retain documentation ownership, and every tracked `docs/*.md` guide must remain discoverable from this index. Run:
+
+```bash
+python -m unittest scripts.tests.test_verify_documentation_coverage
+python scripts/verify_documentation_coverage.py
+python scripts/verify_documentation_links.py
+```
+
+before merging structural documentation/repository changes. See [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md), [Repository Consistency Guards](REPOSITORY_GUARDS.md), and [Quality Gates](QUALITY_GATES.md).
 
 The root `README.md` should remain a concise landing page; this file is the detailed navigation hub.
 
