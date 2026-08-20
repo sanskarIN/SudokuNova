@@ -101,6 +101,7 @@ kotlin {
 
 dependencies {
     implementation(project(":sudoku-engine"))
+    implementation(project(":sharedUI"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
