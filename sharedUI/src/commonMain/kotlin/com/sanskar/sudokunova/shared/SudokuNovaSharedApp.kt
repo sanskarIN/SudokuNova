@@ -224,7 +224,7 @@ private fun SudokuCell(
                     .background(MaterialTheme.colorScheme.outline),
             )
         }
-        if (bottomBorder > 0.dp)) {
+        if (bottomBorder > 0.dp) {
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
