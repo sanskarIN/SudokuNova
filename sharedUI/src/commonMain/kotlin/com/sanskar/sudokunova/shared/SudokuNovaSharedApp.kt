@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sanskar.sudokunova.engine.Difficulty
+import com.sanskar.sudokunova.engine.HintTechnique
 import com.sanskar.sudokunova.engine.SudokuBoard
 import com.sanskar.sudokunova.shared.resources.Res
 import org.jetbrains.compose.resources.stringResource
@@ -59,7 +60,7 @@ fun SudokuNovaSharedApp(
                 NumberPad(state)
                 GameActions(state)
                 Text(
-                    text = state.statusMessage,
+                    text = statusLabel(state.status),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                 )
@@ -134,6 +135,56 @@ private fun difficultyLabel(difficulty: Difficulty): String = stringResource(
         Difficulty.EXPERT -> Res.string.difficulty_expert
         Difficulty.MASTER -> Res.string.difficulty_master
         Difficulty.EXTREME -> Res.string.difficulty_extreme
+    },
+)
+
+@Composable
+private fun statusLabel(status: SharedGameStatus): String = when (status) {
+    SharedGameStatus.SelectCell -> stringResource(Res.string.status_select_cell)
+    SharedGameStatus.FixedCellSelected -> stringResource(Res.string.status_fixed_cell_selected)
+    is SharedGameStatus.CellSelected -> stringResource(
+        Res.string.status_cell_selected,
+        status.row,
+        status.column,
+    )
+    is SharedGameStatus.NewPuzzle -> stringResource(
+        Res.string.status_new_puzzle,
+        difficultyLabel(status.difficulty),
+    )
+    SharedGameStatus.NotesEnabled -> stringResource(Res.string.status_notes_enabled)
+    SharedGameStatus.NotesDisabled -> stringResource(Res.string.status_notes_disabled)
+    SharedGameStatus.SelectEditableCell -> stringResource(Res.string.status_select_editable_cell)
+    SharedGameStatus.FixedClue -> stringResource(Res.string.status_fixed_clue)
+    SharedGameStatus.NotesUpdated -> stringResource(Res.string.status_notes_updated)
+    SharedGameStatus.Solved -> stringResource(Res.string.status_solved)
+    SharedGameStatus.Conflict -> stringResource(Res.string.status_conflict)
+    SharedGameStatus.Incorrect -> stringResource(Res.string.status_incorrect)
+    SharedGameStatus.GoodMove -> stringResource(Res.string.status_good_move)
+    SharedGameStatus.CellCleared -> stringResource(Res.string.status_cell_cleared)
+    SharedGameStatus.NothingToUndo -> stringResource(Res.string.status_nothing_to_undo)
+    SharedGameStatus.MoveUndone -> stringResource(Res.string.status_move_undone)
+    SharedGameStatus.AlreadySolved -> stringResource(Res.string.status_already_solved)
+    SharedGameStatus.NoSafeHint -> stringResource(Res.string.status_no_safe_hint)
+    is SharedGameStatus.Hint -> stringResource(
+        Res.string.status_hint,
+        hintTechniqueLabel(status.technique),
+    )
+    SharedGameStatus.Reset -> stringResource(Res.string.status_reset)
+}
+
+@Composable
+private fun hintTechniqueLabel(technique: HintTechnique): String = stringResource(
+    when (technique) {
+        HintTechnique.NAKED_SINGLE -> Res.string.technique_naked_single
+        HintTechnique.HIDDEN_SINGLE -> Res.string.technique_hidden_single
+        HintTechnique.NAKED_PAIR -> Res.string.technique_naked_pair
+        HintTechnique.POINTING_PAIR_OR_TRIPLE -> Res.string.technique_pointing_pair_or_triple
+        HintTechnique.BOX_LINE_REDUCTION -> Res.string.technique_box_line_reduction
+        HintTechnique.HIDDEN_PAIR -> Res.string.technique_hidden_pair
+        HintTechnique.NAKED_TRIPLE -> Res.string.technique_naked_triple
+        HintTechnique.HIDDEN_TRIPLE -> Res.string.technique_hidden_triple
+        HintTechnique.X_WING -> Res.string.technique_x_wing
+        HintTechnique.REVEAL -> Res.string.technique_reveal
     },
 )
 
