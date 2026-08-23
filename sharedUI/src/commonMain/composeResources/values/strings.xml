@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SudokuNova</string>
+    <string name="tagline">Think. Solve. Master the Grid.</string>
+    <string name="new_game">New game</string>
+    <string name="footer">Made by the Sanskar • Offline Sudoku core • Shared Kotlin/Compose UI</string>
+
+    <string name="difficulty_beginner">Beginner</string>
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_hard">Hard</string>
+    <string name="difficulty_expert">Expert</string>
+    <string name="difficulty_master">Master</string>
+    <string name="difficulty_extreme">Extreme</string>
+
+    <string name="action_notes">Notes</string>
+    <string name="action_erase">Erase</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_hint">Hint</string>
+    <string name="action_reset">Reset</string>
+
+    <string name="status_select_cell">Select a cell and enter a number.</string>
+    <string name="status_fixed_cell_selected">Clue cell selected. Choose an empty cell to edit.</string>
+    <string name="status_cell_selected">Row %1$d, column %2$d selected.</string>
+    <string name="status_new_puzzle">New %1$s puzzle ready.</string>
+    <string name="status_notes_enabled">Notes mode enabled.</string>
+    <string name="status_notes_disabled">Notes mode disabled.</string>
+    <string name="status_select_editable_cell">Select an editable cell first.</string>
+    <string name="status_fixed_clue">That cell is a fixed clue.</string>
+    <string name="status_notes_updated">Candidate notes updated.</string>
+    <string name="status_solved">Puzzle solved!</string>
+    <string name="status_conflict">That creates a conflict.</string>
+    <string name="status_incorrect">That number is not correct yet.</string>
+    <string name="status_good_move">Good move.</string>
+    <string name="status_cell_cleared">Cell cleared.</string>
+    <string name="status_nothing_to_undo">Nothing to undo.</string>
+    <string name="status_move_undone">Last move undone.</string>
+    <string name="status_already_solved">Puzzle already solved.</string>
+    <string name="status_no_safe_hint">No safe hint is available.</string>
+    <string name="status_hint">Hint: %1$s.</string>
+    <string name="status_reset">Puzzle reset to its starting clues.</string>
+
+    <string name="cell_empty">empty</string>
+    <string name="cell_fixed">fixed clue</string>
+    <string name="cell_editable">editable</string>
+    <string name="cell_selected">selected</string>
+    <string name="cell_conflict">conflict</string>
+    <string name="cell_notes">notes %1$s</string>
+    <string name="cell_description">Row %1$d, column %2$d, %3$s</string>
+</resources>
