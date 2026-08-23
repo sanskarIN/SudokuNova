@@ -21,6 +21,7 @@ class SharedGameStateTest {
         state.select(fixedIndex)
         state.enter(if (fixedValue == 9) 1 else fixedValue + 1)
         assertEquals(fixedValue, state.board.valueAt(fixedIndex))
+        assertEquals(SharedGameStatus.FixedClue, state.status)
 
         state.select(editableIndex)
         state.toggleNotesMode()
@@ -28,6 +29,7 @@ class SharedGameStateTest {
         state.enter(correctValue)
         assertEquals(SudokuBoard.EMPTY, state.board.valueAt(editableIndex))
         assertTrue(correctValue in state.notes.getValue(editableIndex))
+        assertEquals(SharedGameStatus.NotesUpdated, state.status)
 
         state.toggleNotesMode()
         assertFalse(state.notesMode)
@@ -38,10 +40,12 @@ class SharedGameStateTest {
         state.undo()
         assertEquals(SudokuBoard.EMPTY, state.board.valueAt(editableIndex))
         assertTrue(correctValue in state.notes.getValue(editableIndex))
+        assertEquals(SharedGameStatus.MoveUndone, state.status)
 
         state.reset()
         assertEquals(startingBoard, state.board)
         assertTrue(state.notes.isEmpty())
+        assertEquals(SharedGameStatus.Reset, state.status)
     }
 
     @Test
@@ -54,6 +58,7 @@ class SharedGameStateTest {
         assertNotEquals(before, state.board)
         assertTrue(state.board.isValid())
         assertTrue(state.selectedIndex != null)
+        assertTrue(state.status is SharedGameStatus.Hint)
     }
 
     @Test
@@ -75,6 +80,6 @@ class SharedGameStateTest {
         assertEquals(null, state.selectedIndex)
         assertFalse(state.notesMode)
         assertTrue(state.notes.isEmpty())
-        assertTrue(state.statusMessage.contains(nextDifficulty.displayName))
+        assertEquals(SharedGameStatus.NewPuzzle(nextDifficulty), state.status)
     }
 }
