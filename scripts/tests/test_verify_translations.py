@@ -2,7 +2,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.verify_translations import collect, parity_errors
+from scripts.verify_translations import (
+    collect,
+    collect_placeholders,
+    parity_errors,
+    placeholder_parity_errors,
+)
 
 
 class TranslationVerifierTest(unittest.TestCase):
@@ -58,6 +63,42 @@ class TranslationVerifierTest(unittest.TestCase):
         errors = parity_errors({}, {}, label="shared")
 
         self.assertEqual(["No localization keys were found in shared."], errors)
+
+    def test_collects_normalized_placeholder_signatures(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            (directory / "strings.xml").write_text(
+                """<resources>
+    <string name=\"cell\">Row %1$d, column %2$d, %3$s</string>
+    <string name=\"plain\">Ready</string>
+</resources>
+""",
+                encoding="utf-8",
+            )
+
+            signatures = collect_placeholders(directory)
+
+            self.assertEqual(("1:d", "2:d", "3:s"), signatures["cell"])
+            self.assertEqual((), signatures["plain"])
+
+    def test_placeholder_order_may_change_when_positions_match(self) -> None:
+        errors = placeholder_parity_errors(
+            {"cell": ("1:d", "2:d")},
+            {"cell": ("1:d", "2:d")},
+            label="shared",
+        )
+
+        self.assertEqual([], errors)
+
+    def test_reports_placeholder_mismatch(self) -> None:
+        errors = placeholder_parity_errors(
+            {"cell": ("1:d", "2:d")},
+            {"cell": ("1:d", "2:s")},
+            label="shared",
+        )
+
+        self.assertEqual(1, len(errors))
+        self.assertIn("Placeholder mismatch in shared for cell", errors[0])
 
 
 if __name__ == "__main__":
