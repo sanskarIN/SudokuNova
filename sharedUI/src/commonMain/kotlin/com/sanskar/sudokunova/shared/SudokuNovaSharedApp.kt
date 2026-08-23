@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.SudokuBoard
+import com.sanskar.sudokunova.shared.resources.Res
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SudokuNovaSharedApp(
@@ -62,7 +64,7 @@ fun SudokuNovaSharedApp(
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = "Made by the Sanskar • Offline Sudoku core • Shared Kotlin/Compose UI",
+                    text = stringResource(Res.string.footer),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -81,18 +83,18 @@ private fun Header(state: SharedGameState) {
     ) {
         Column {
             Text(
-                text = "SudokuNova",
+                text = stringResource(Res.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "Think. Solve. Master the Grid.",
+                text = stringResource(Res.string.tagline),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Button(onClick = { state.newGame() }) {
-            Text("New game")
+            Text(stringResource(Res.string.new_game))
         }
     }
 }
@@ -108,18 +110,32 @@ private fun DifficultyPicker(state: SharedGameState) {
     ) {
         Difficulty.entries.forEach { difficulty ->
             val selected = difficulty == state.difficulty
+            val label = difficultyLabel(difficulty)
             if (selected) {
                 Button(onClick = { state.setDifficulty(difficulty) }) {
-                    Text(difficulty.displayName)
+                    Text(label)
                 }
             } else {
                 OutlinedButton(onClick = { state.setDifficulty(difficulty) }) {
-                    Text(difficulty.displayName)
+                    Text(label)
                 }
             }
         }
     }
 }
+
+@Composable
+private fun difficultyLabel(difficulty: Difficulty): String = stringResource(
+    when (difficulty) {
+        Difficulty.BEGINNER -> Res.string.difficulty_beginner
+        Difficulty.EASY -> Res.string.difficulty_easy
+        Difficulty.MEDIUM -> Res.string.difficulty_medium
+        Difficulty.HARD -> Res.string.difficulty_hard
+        Difficulty.EXPERT -> Res.string.difficulty_expert
+        Difficulty.MASTER -> Res.string.difficulty_master
+        Difficulty.EXTREME -> Res.string.difficulty_extreme
+    },
+)
 
 @Composable
 private fun SudokuGrid(state: SharedGameState) {
@@ -208,7 +224,7 @@ private fun SudokuCell(
                     .background(MaterialTheme.colorScheme.outline),
             )
         }
-        if (bottomBorder > 0.dp) {
+        if (bottomBorder > 0.dp)) {
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
@@ -263,21 +279,22 @@ private fun GameActions(state: SharedGameState) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            val notesLabel = stringResource(Res.string.action_notes) + if (state.notesMode) " ✓" else ""
             ActionButton(
-                label = if (state.notesMode) "Notes on" else "Notes",
+                label = notesLabel,
                 onClick = state::toggleNotesMode,
                 modifier = Modifier.weight(1f),
             )
-            ActionButton("Erase", state::erase, Modifier.weight(1f))
-            ActionButton("Undo", state::undo, Modifier.weight(1f))
+            ActionButton(stringResource(Res.string.action_erase), state::erase, Modifier.weight(1f))
+            ActionButton(stringResource(Res.string.action_undo), state::undo, Modifier.weight(1f))
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            ActionButton("Hint", state::hint, Modifier.weight(1f))
-            ActionButton("Reset", state::reset, Modifier.weight(1f))
-            ActionButton("New", { state.newGame() }, Modifier.weight(1f))
+            ActionButton(stringResource(Res.string.action_hint), state::hint, Modifier.weight(1f))
+            ActionButton(stringResource(Res.string.action_reset), state::reset, Modifier.weight(1f))
+            ActionButton(stringResource(Res.string.new_game), { state.newGame() }, Modifier.weight(1f))
         }
     }
 }
