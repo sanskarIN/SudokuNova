@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SudokuNova</string>
+    <string name="tagline">सोचें। हल करें। ग्रिड में महारत हासिल करें।</string>
+    <string name="new_game">नया खेल</string>
+    <string name="footer">Made by the Sanskar • ऑफ़लाइन सुडोकू कोर • साझा Kotlin/Compose UI</string>
+
+    <string name="difficulty_beginner">शुरुआती</string>
+    <string name="difficulty_easy">आसान</string>
+    <string name="difficulty_medium">मध्यम</string>
+    <string name="difficulty_hard">कठिन</string>
+    <string name="difficulty_expert">विशेषज्ञ</string>
+    <string name="difficulty_master">मास्टर</string>
+    <string name="difficulty_extreme">अत्यंत कठिन</string>
+
+    <string name="action_notes">नोट्स</string>
+    <string name="action_erase">मिटाएँ</string>
+    <string name="action_undo">पूर्ववत करें</string>
+    <string name="action_hint">संकेत</string>
+    <string name="action_reset">रीसेट</string>
+
+    <string name="status_select_cell">एक सेल चुनें और कोई संख्या दर्ज करें।</string>
+    <string name="status_fixed_cell_selected">सुराग वाला सेल चुना गया है। संपादित करने के लिए कोई खाली सेल चुनें।</string>
+    <string name="status_cell_selected">पंक्ति %1$d, स्तंभ %2$d चुना गया है।</string>
+    <string name="status_new_puzzle">नया %1$s सुडोकू तैयार है।</string>
+    <string name="status_notes_enabled">नोट्स मोड चालू है।</string>
+    <string name="status_notes_disabled">नोट्स मोड बंद है।</string>
+    <string name="status_select_editable_cell">पहले कोई संपादन योग्य सेल चुनें।</string>
+    <string name="status_fixed_clue">यह सेल एक स्थिर सुराग है।</string>
+    <string name="status_notes_updated">उम्मीदवार नोट्स अपडेट किए गए।</string>
+    <string name="status_solved">सुडोकू हल हो गया!</string>
+    <string name="status_conflict">इससे टकराव बनता है।</string>
+    <string name="status_incorrect">यह संख्या अभी सही नहीं है।</string>
+    <string name="status_good_move">अच्छी चाल।</string>
+    <string name="status_cell_cleared">सेल साफ़ कर दिया गया।</string>
+    <string name="status_nothing_to_undo">पूर्ववत करने के लिए कुछ नहीं है।</string>
+    <string name="status_move_undone">पिछली चाल पूर्ववत कर दी गई।</string>
+    <string name="status_already_solved">सुडोकू पहले से हल है।</string>
+    <string name="status_no_safe_hint">कोई सुरक्षित संकेत उपलब्ध नहीं है।</string>
+    <string name="status_hint">संकेत: %1$s।</string>
+    <string name="status_reset">सुडोकू को शुरुआती सुरागों पर रीसेट कर दिया गया।</string>
+
+    <string name="cell_empty">खाली</string>
+    <string name="cell_fixed">स्थिर सुराग</string>
+    <string name="cell_editable">संपादन योग्य</string>
+    <string name="cell_selected">चयनित</string>
+    <string name="cell_conflict">टकराव</string>
+    <string name="cell_notes">नोट्स %1$s</string>
+    <string name="cell_description">पंक्ति %1$d, स्तंभ %2$d, %3$s</string>
+</resources>
