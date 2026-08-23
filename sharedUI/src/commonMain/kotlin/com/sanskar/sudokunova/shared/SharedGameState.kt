@@ -41,9 +41,6 @@ class SharedGameState(
     var status by mutableStateOf<SharedGameStatus>(SharedGameStatus.SelectCell)
         private set
 
-    val statusMessage: String
-        get() = status.toFallbackEnglish()
-
     private var history: List<GameSnapshot> = emptyList()
 
     val isComplete: Boolean
@@ -185,28 +182,4 @@ class SharedGameState(
     private companion object {
         const val MAX_UNDO_STEPS = 100
     }
-}
-
-private fun SharedGameStatus.toFallbackEnglish(): String = when (this) {
-    SharedGameStatus.SelectCell -> "Select a cell and enter a number."
-    SharedGameStatus.FixedCellSelected -> "Clue cell selected. Choose an empty cell to edit."
-    is SharedGameStatus.CellSelected -> "Row $row, column $column selected."
-    is SharedGameStatus.NewPuzzle -> "New ${difficulty.displayName} puzzle ready."
-    SharedGameStatus.NotesEnabled -> "Notes mode enabled."
-    SharedGameStatus.NotesDisabled -> "Notes mode disabled."
-    SharedGameStatus.SelectEditableCell -> "Select an editable cell first."
-    SharedGameStatus.FixedClue -> "That cell is a fixed clue."
-    SharedGameStatus.NotesUpdated -> "Candidate notes updated."
-    SharedGameStatus.Solved -> "Puzzle solved!"
-    SharedGameStatus.Conflict -> "That creates a conflict."
-    SharedGameStatus.Incorrect -> "That number is not correct yet."
-    SharedGameStatus.GoodMove -> "Good move."
-    SharedGameStatus.CellCleared -> "Cell cleared."
-    SharedGameStatus.NothingToUndo -> "Nothing to undo."
-    SharedGameStatus.MoveUndone -> "Last move undone."
-    SharedGameStatus.AlreadySolved -> "Puzzle already solved."
-    SharedGameStatus.NoSafeHint -> "No safe hint is available."
-    is SharedGameStatus.Hint ->
-        "Hint: ${technique.name.replace('_', ' ').lowercase().replaceFirstChar { it.uppercase() }}."
-    SharedGameStatus.Reset -> "Puzzle reset to its starting clues."
 }
