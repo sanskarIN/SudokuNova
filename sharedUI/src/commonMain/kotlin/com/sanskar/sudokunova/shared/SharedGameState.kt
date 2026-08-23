@@ -38,8 +38,11 @@ class SharedGameState(
     var notes by mutableStateOf<Map<Int, Set<Int>>>(emptyMap())
         private set
 
-    var statusMessage by mutableStateOf("Select a cell and enter a number.")
+    var status by mutableStateOf<SharedGameStatus>(SharedGameStatus.SelectCell)
         private set
+
+    val statusMessage: String
+        get() = status.toFallbackEnglish()
 
     private var history: List<GameSnapshot> = emptyList()
 
@@ -49,10 +52,13 @@ class SharedGameState(
     fun select(index: Int) {
         require(index in 0 until SudokuBoard.CELL_COUNT)
         selectedIndex = index
-        statusMessage = if (isFixed(index)) {
-            "Clue cell selected. Choose an empty cell to edit."
+        status = if (isFixed(index)) {
+            SharedGameStatus.FixedCellSelected
         } else {
-            "Row ${index / 9 + 1}, column ${index % 9 + 1} selected."
+            SharedGameStatus.CellSelected(
+                row = index / SudokuBoard.SIZE + 1,
+                column = index % SudokuBoard.SIZE + 1,
+            )
         }
     }
 
@@ -69,22 +75,22 @@ class SharedGameState(
         notes = emptyMap()
         notesMode = false
         history = emptyList()
-        statusMessage = "New ${value.displayName} puzzle ready."
+        status = SharedGameStatus.NewPuzzle(value)
     }
 
     fun toggleNotesMode() {
         notesMode = !notesMode
-        statusMessage = if (notesMode) "Notes mode enabled." else "Notes mode disabled."
+        status = if (notesMode) SharedGameStatus.NotesEnabled else SharedGameStatus.NotesDisabled
     }
 
     fun enter(value: Int) {
         require(value in 1..9)
         val index = selectedIndex ?: run {
-            statusMessage = "Select an editable cell first."
+            status = SharedGameStatus.SelectEditableCell
             return
         }
         if (isFixed(index)) {
-            statusMessage = "That cell is a fixed clue."
+            status = SharedGameStatus.FixedClue
             return
         }
 
@@ -93,18 +99,18 @@ class SharedGameState(
             val current = notes[index].orEmpty()
             val updated = if (value in current) current - value else current + value
             notes = if (updated.isEmpty()) notes - index else notes + (index to updated)
-            statusMessage = "Candidate notes updated."
+            status = SharedGameStatus.NotesUpdated
             return
         }
 
         board = board.withValue(index, value)
         notes = notes - index
         removePeerNote(index, value)
-        statusMessage = when {
-            board == generated.solution -> "Puzzle solved!"
-            board.hasConflict(index) -> "That creates a conflict."
-            value != generated.solution.valueAt(index) -> "That number is not correct yet."
-            else -> "Good move."
+        status = when {
+            board == generated.solution -> SharedGameStatus.Solved
+            board.hasConflict(index) -> SharedGameStatus.Conflict
+            value != generated.solution.valueAt(index) -> SharedGameStatus.Incorrect
+            else -> SharedGameStatus.GoodMove
         }
     }
 
@@ -115,23 +121,23 @@ class SharedGameState(
         pushHistory()
         board = board.withValue(index, SudokuBoard.EMPTY)
         notes = notes - index
-        statusMessage = "Cell cleared."
+        status = SharedGameStatus.CellCleared
     }
 
     fun undo() {
         val snapshot = history.lastOrNull() ?: run {
-            statusMessage = "Nothing to undo."
+            status = SharedGameStatus.NothingToUndo
             return
         }
         history = history.dropLast(1)
         board = snapshot.board
         notes = snapshot.notes
-        statusMessage = "Last move undone."
+        status = SharedGameStatus.MoveUndone
     }
 
     fun hint() {
         val hint = hintEngine.nextHint(board) ?: run {
-            statusMessage = if (isComplete) "Puzzle already solved." else "No safe hint is available."
+            status = if (isComplete) SharedGameStatus.AlreadySolved else SharedGameStatus.NoSafeHint
             return
         }
         val index = hint.cellIndex
@@ -141,7 +147,7 @@ class SharedGameState(
         board = board.withValue(index, hint.value)
         notes = notes - index
         removePeerNote(index, hint.value)
-        statusMessage = "Hint: ${hint.technique.name.replace('_', ' ').lowercase().replaceFirstChar { it.uppercase() }}."
+        status = SharedGameStatus.Hint(hint.technique)
     }
 
     fun reset() {
@@ -150,7 +156,7 @@ class SharedGameState(
         board = generated.puzzle
         notes = emptyMap()
         selectedIndex = null
-        statusMessage = "Puzzle reset to its starting clues."
+        status = SharedGameStatus.Reset
     }
 
     fun isFixed(index: Int): Boolean = generated.puzzle.valueAt(index) != SudokuBoard.EMPTY
@@ -179,4 +185,28 @@ class SharedGameState(
     private companion object {
         const val MAX_UNDO_STEPS = 100
     }
+}
+
+private fun SharedGameStatus.toFallbackEnglish(): String = when (this) {
+    SharedGameStatus.SelectCell -> "Select a cell and enter a number."
+    SharedGameStatus.FixedCellSelected -> "Clue cell selected. Choose an empty cell to edit."
+    is SharedGameStatus.CellSelected -> "Row $row, column $column selected."
+    is SharedGameStatus.NewPuzzle -> "New ${difficulty.displayName} puzzle ready."
+    SharedGameStatus.NotesEnabled -> "Notes mode enabled."
+    SharedGameStatus.NotesDisabled -> "Notes mode disabled."
+    SharedGameStatus.SelectEditableCell -> "Select an editable cell first."
+    SharedGameStatus.FixedClue -> "That cell is a fixed clue."
+    SharedGameStatus.NotesUpdated -> "Candidate notes updated."
+    SharedGameStatus.Solved -> "Puzzle solved!"
+    SharedGameStatus.Conflict -> "That creates a conflict."
+    SharedGameStatus.Incorrect -> "That number is not correct yet."
+    SharedGameStatus.GoodMove -> "Good move."
+    SharedGameStatus.CellCleared -> "Cell cleared."
+    SharedGameStatus.NothingToUndo -> "Nothing to undo."
+    SharedGameStatus.MoveUndone -> "Last move undone."
+    SharedGameStatus.AlreadySolved -> "Puzzle already solved."
+    SharedGameStatus.NoSafeHint -> "No safe hint is available."
+    is SharedGameStatus.Hint ->
+        "Hint: ${technique.name.replace('_', ' ').lowercase().replaceFirstChar { it.uppercase() }}."
+    SharedGameStatus.Reset -> "Puzzle reset to its starting clues."
 }
