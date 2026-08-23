@@ -49,14 +49,7 @@ class SharedGameState(
     fun select(index: Int) {
         require(index in 0 until SudokuBoard.CELL_COUNT)
         selectedIndex = index
-        status = if (isFixed(index)) {
-            SharedGameStatus.FixedCellSelected
-        } else {
-            SharedGameStatus.CellSelected(
-                row = index / SudokuBoard.SIZE + 1,
-                column = index % SudokuBoard.SIZE + 1,
-            )
-        }
+        status = statusForSelection(index)
     }
 
     fun setDifficulty(value: Difficulty) {
@@ -73,6 +66,42 @@ class SharedGameState(
         notesMode = false
         history = emptyList()
         status = SharedGameStatus.NewPuzzle(value)
+    }
+
+    fun snapshot(): SharedGameSnapshot = SharedGameSnapshot(
+        difficulty = difficulty,
+        seed = generated.seed,
+        board = board.toPuzzleString(),
+        notes = notes.mapValues { (_, values) -> values.toSet() },
+        selectedIndex = selectedIndex,
+        notesMode = notesMode,
+    )
+
+    fun restore(snapshot: SharedGameSnapshot): Boolean {
+        val restored = runCatching {
+            val regenerated = generate(snapshot.difficulty, snapshot.seed)
+            val restoredBoard = SudokuBoard.parse(snapshot.board)
+            requireMatchesStartingClues(regenerated.puzzle, restoredBoard)
+            requireValidNotes(regenerated.puzzle, restoredBoard, snapshot.notes)
+            require(snapshot.selectedIndex == null || snapshot.selectedIndex in 0 until SudokuBoard.CELL_COUNT) {
+                "Selected cell index is outside the Sudoku board."
+            }
+            RestoredGame(
+                generated = regenerated,
+                board = restoredBoard,
+                notes = snapshot.notes.mapValues { (_, values) -> values.toSet() },
+            )
+        }.getOrNull() ?: return false
+
+        difficultyState = snapshot.difficulty
+        generated = restored.generated
+        board = restored.board
+        notes = restored.notes
+        selectedIndex = snapshot.selectedIndex
+        notesMode = snapshot.notesMode
+        history = emptyList()
+        status = selectedIndex?.let(::statusForSelection) ?: SharedGameStatus.SelectCell
+        return true
     }
 
     fun toggleNotesMode() {
@@ -158,6 +187,37 @@ class SharedGameState(
 
     fun isFixed(index: Int): Boolean = generated.puzzle.valueAt(index) != SudokuBoard.EMPTY
 
+    private fun statusForSelection(index: Int): SharedGameStatus = if (isFixed(index)) {
+        SharedGameStatus.FixedCellSelected
+    } else {
+        SharedGameStatus.CellSelected(
+            row = index / SudokuBoard.SIZE + 1,
+            column = index % SudokuBoard.SIZE + 1,
+        )
+    }
+
+    private fun requireMatchesStartingClues(startingBoard: SudokuBoard, restoredBoard: SudokuBoard) {
+        for (index in 0 until SudokuBoard.CELL_COUNT) {
+            val clue = startingBoard.valueAt(index)
+            require(clue == SudokuBoard.EMPTY || restoredBoard.valueAt(index) == clue) {
+                "Restored board changes a fixed starting clue at index $index."
+            }
+        }
+    }
+
+    private fun requireValidNotes(
+        startingBoard: SudokuBoard,
+        restoredBoard: SudokuBoard,
+        restoredNotes: Map<Int, Set<Int>>,
+    ) {
+        for ((index, values) in restoredNotes) {
+            require(index in 0 until SudokuBoard.CELL_COUNT) { "Note cell index is outside the Sudoku board." }
+            require(startingBoard.valueAt(index) == SudokuBoard.EMPTY) { "Notes cannot target a fixed clue." }
+            require(restoredBoard.valueAt(index) == SudokuBoard.EMPTY) { "Notes cannot target a filled cell." }
+            require(values.isNotEmpty() && values.all { it in 1..9 }) { "Note values must be non-empty digits 1..9." }
+        }
+    }
+
     private fun pushHistory() {
         history = (history + GameSnapshot(board, notes)).takeLast(MAX_UNDO_STEPS)
     }
@@ -178,6 +238,14 @@ class SharedGameState(
     }
 
     private fun generate(value: Difficulty): GeneratedPuzzle = generator.generate(value)
+
+    private fun generate(value: Difficulty, seed: Long): GeneratedPuzzle = generator.generate(value, seed)
+
+    private data class RestoredGame(
+        val generated: GeneratedPuzzle,
+        val board: SudokuBoard,
+        val notes: Map<Int, Set<Int>>,
+    )
 
     private companion object {
         const val MAX_UNDO_STEPS = 100
