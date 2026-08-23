@@ -19,6 +19,17 @@
     <string name="action_hint">संकेत</string>
     <string name="action_reset">रीसेट</string>
 
+    <string name="technique_naked_single">एकल उम्मीदवार</string>
+    <string name="technique_hidden_single">छिपा एकल</string>
+    <string name="technique_naked_pair">खुली जोड़ी</string>
+    <string name="technique_pointing_pair_or_triple">इंगित जोड़ी या तिकड़ी</string>
+    <string name="technique_box_line_reduction">बॉक्स-लाइन न्यूनीकरण</string>
+    <string name="technique_hidden_pair">छिपी जोड़ी</string>
+    <string name="technique_naked_triple">खुली तिकड़ी</string>
+    <string name="technique_hidden_triple">छिपी तिकड़ी</string>
+    <string name="technique_x_wing">X-Wing</string>
+    <string name="technique_reveal">उत्तर प्रकट करना</string>
+
     <string name="status_select_cell">एक सेल चुनें और कोई संख्या दर्ज करें।</string>
     <string name="status_fixed_cell_selected">सुराग वाला सेल चुना गया है। संपादित करने के लिए कोई खाली सेल चुनें।</string>
     <string name="status_cell_selected">पंक्ति %1$d, स्तंभ %2$d चुना गया है।</string>

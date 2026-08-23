@@ -19,6 +19,17 @@
     <string name="action_hint">Hint</string>
     <string name="action_reset">Reset</string>
 
+    <string name="technique_naked_single">Naked single</string>
+    <string name="technique_hidden_single">Hidden single</string>
+    <string name="technique_naked_pair">Naked pair</string>
+    <string name="technique_pointing_pair_or_triple">Pointing pair or triple</string>
+    <string name="technique_box_line_reduction">Box-line reduction</string>
+    <string name="technique_hidden_pair">Hidden pair</string>
+    <string name="technique_naked_triple">Naked triple</string>
+    <string name="technique_hidden_triple">Hidden triple</string>
+    <string name="technique_x_wing">X-Wing</string>
+    <string name="technique_reveal">Reveal</string>
+
     <string name="status_select_cell">Select a cell and enter a number.</string>
     <string name="status_fixed_cell_selected">Clue cell selected. Choose an empty cell to edit.</string>
     <string name="status_cell_selected">Row %1$d, column %2$d selected.</string>
