@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.HintTechnique
 import com.sanskar.sudokunova.engine.SudokuBoard
-import com.sanskar.sudokunova.shared.resources.Res
+import com.sanskar.sudokunova.shared.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
