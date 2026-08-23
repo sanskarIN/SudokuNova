@@ -30,6 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -229,6 +232,24 @@ private fun SudokuCell(
     val selected = state.selectedIndex == index
     val fixed = state.isFixed(index)
     val conflict = value != SudokuBoard.EMPTY && state.board.hasConflict(index)
+    val notes = state.notes[index].orEmpty().sorted()
+    val cellValue = when {
+        value != SudokuBoard.EMPTY -> value.toString()
+        notes.isNotEmpty() -> stringResource(Res.string.cell_notes, notes.joinToString(", "))
+        else -> stringResource(Res.string.cell_empty)
+    }
+    val stateParts = buildList {
+        add(cellValue)
+        add(stringResource(if (fixed) Res.string.cell_fixed else Res.string.cell_editable))
+        if (selected) add(stringResource(Res.string.cell_selected))
+        if (conflict) add(stringResource(Res.string.cell_conflict))
+    }
+    val description = stringResource(
+        Res.string.cell_description,
+        row + 1,
+        column + 1,
+        stateParts.joinToString(", "),
+    )
     val background = when {
         conflict -> MaterialTheme.colorScheme.errorContainer
         selected -> MaterialTheme.colorScheme.primaryContainer
@@ -242,6 +263,10 @@ private fun SudokuCell(
         modifier = modifier
             .background(background)
             .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+            .semantics(mergeDescendants = true) {
+                contentDescription = description
+                this.selected = selected
+            }
             .clickable { state.select(index) },
         contentAlignment = Alignment.Center,
     ) {
@@ -252,20 +277,26 @@ private fun SudokuCell(
                 fontWeight = if (fixed) FontWeight.Bold else FontWeight.Medium,
                 color = if (conflict) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
             )
-        } else {
-            val notes = state.notes[index].orEmpty().sorted()
-            if (notes.isNotEmpty()) {
-                Text(
-                    text = notes.joinToString(" "),
-                    fontSize = 9.sp,
-                    lineHeight = 10.sp,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(2.dp),
-                )
-            }
+        } else if (notes.isNotEmpty()) {
+            Text(
+                text = notes.joinToString(" "),
+                fontSize = 9.sp,
+                lineHeight = 10.sp,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(2.dp),
+            )
         }
 
+        if (conflict) {
+            Text(
+                text = "!",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.align(Alignment.TopEnd).padding(2.dp),
+            )
+        }
         if (rightBorder > 0.dp) {
             Box(
                 Modifier
