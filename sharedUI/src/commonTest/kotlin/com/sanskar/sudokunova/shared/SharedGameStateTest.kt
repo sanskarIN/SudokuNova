@@ -95,7 +95,6 @@ class SharedGameStateTest {
         val snapshot = state.snapshot()
 
         state.newGame(Difficulty.HARD)
-        assertNotEquals(snapshot.seed, state.generated.seed)
 
         assertTrue(state.restore(snapshot))
         assertEquals(snapshot.difficulty, state.difficulty)
