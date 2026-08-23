@@ -44,9 +44,69 @@ The portable UI currently includes:
 - engine-backed hints;
 - reset;
 - new-game generation;
-- responsive layout for smaller and larger windows.
+- responsive layout for smaller and larger windows;
+- typed, locale-neutral gameplay status events;
+- English/Hindi Compose resources for the migrated shared surface;
+- explicit Sudoku-cell semantics for row, column, value/notes, fixed/editable, selected, and conflict state;
+- a non-color conflict marker in addition to semantic conflict state;
+- a portable active-game snapshot and storage contract with fail-closed restore validation.
 
 Android-only capabilities remain in the Android application until equivalent multiplatform service abstractions are implemented and tested. This is an explicit feature-parity boundary, not missing evidence hidden behind a generic “supported” label.
+
+## Feature-parity matrix
+
+This table is the source-controlled parity boundary between the mature Android product and the shared surface. “Shared” means the behavior lives in common Kotlin/Compose code; it does not imply that every target has completed runtime QA.
+
+| Capability | Mature Android app | Shared targets | Current boundary |
+| --- | --- | --- | --- |
+| Classic 9×9 generation/solving | Yes | Yes | Shared `sudoku-engine` |
+| Seven difficulty levels | Yes | Yes | Shared engine + localized picker |
+| Number entry, erase, reset | Yes | Yes | Shared gameplay state/UI |
+| Candidate notes + peer cleanup | Yes | Yes | Shared gameplay state/UI |
+| Undo | Yes | Yes | Shared bounded in-memory history |
+| Engine-backed hints | Yes | Yes | Shared hint engine + localized technique/status text |
+| Conflict feedback | Yes | Yes | Shared visual + semantic + non-color marker |
+| English/Hindi player-facing text | Yes | Yes for migrated shared surface | Shared Compose resources; parity guard covers keys/placeholders |
+| Active-game save model | Yes | Contract + validated snapshot | Platform persistence adapters are still required before save/resume parity is claimed |
+| Room/DataStore persistence | Yes | No | Must remain Android-only; common code uses `SharedGameStore` instead |
+| Challenges/custom puzzles UI | Yes | Not yet | Domain migration remains pending |
+| Learning/statistics UI | Yes | Not yet | Engine pieces may be shared; presentation/persistence parity remains pending |
+| Puzzle-code codec | Yes | Engine available | Common import/export service/UI integration remains pending |
+| Backup/restore transfer | Yes | Not yet | Requires platform file/share adapters and compatibility design |
+| Themes/settings breadth | Yes | Basic shared Material theme only | Portable settings persistence remains pending |
+| Accessibility source semantics | Mature Android coverage | Cell semantics added | Target assistive-technology QA remains external evidence |
+| Keyboard/focus navigation | Android-specific coverage | Pending | Add only through APIs that remain valid across supported Compose targets |
+| Macrobenchmark/performance evidence | Yes | No shared equivalent yet | Android evidence must not be generalized to other targets |
+| Production signing/store release | Android process documented | No | Per-platform external evidence is required |
+
+## Shared localization contract
+
+The shared Compose surface uses `sharedUI/src/commonMain/composeResources/` as the localization source of truth:
+
+- `values/strings.xml` is the default English catalog;
+- `values-hi/strings.xml` is the Hindi catalog;
+- generated resources use the stable package `com.sanskar.sudokunova.shared.resources`;
+- gameplay state emits `SharedGameStatus` values rather than player-facing strings;
+- difficulty and hint-technique labels are resolved in the UI from resources;
+- `scripts/verify_translations.py` validates English/Hindi key parity for the shared catalog and validates shared printf-style placeholder signatures as a CI guard.
+
+The default `values` catalog is the repository fallback locale. If a target locale has no matching localized resource, Compose resource resolution falls back to the default catalog. The shared parity guard intentionally requires Hindi keys for every currently tracked shared player-facing string, so fallback should not be needed for an accidentally missing Hindi key in a green repository head. Unsupported locales still use the default English catalog until an explicit locale is added.
+
+Locale-resource parity is source evidence only. Representative Hindi layout checks, font scaling, truncation, and runtime locale switching must still be exercised on real target hosts before claiming production localization parity.
+
+## Shared persistence contract
+
+`SharedGameSnapshot` captures the portable active-game state required for save/resume work: difficulty, deterministic generation seed, board contents, notes, selected cell, and notes mode. `SharedGameStore` is a suspendable common interface with `load`, `save`, and `clear` operations; it deliberately has no Room, DataStore, filesystem, browser-storage, or Apple-framework types.
+
+`SharedGameState.restore` fails closed before mutation. It regenerates the starting puzzle from the saved difficulty/seed, requires all fixed clues to remain unchanged, validates note indexes/values/targets, validates the selected-cell bound, copies restored note sets, clears undo history, and only then publishes restored state. This provides a tested common boundary while platform-specific adapters remain pending.
+
+A source-level store contract is not a claim that save/resume already works on iOS, Desktop, or Web. Each production host still needs an adapter, lifecycle ownership, migration/versioning policy, corruption handling, and runtime tests.
+
+## Shared accessibility boundary
+
+Portable Sudoku cells expose a localized content description containing row, column, value or candidate notes, fixed/editable state, selection state, and conflict state. Selection is also published through Compose semantics. Conflicts use an explicit `!` marker in addition to color and semantic state, and notes mode displays a visible check mark when enabled.
+
+These source semantics improve the common baseline but do not replace TalkBack, VoiceOver, desktop accessibility API, browser accessibility-tree, keyboard/focus, pointer/touch, large-font, or resize testing on real hosts. Those checks remain evidence-gated work in issue #34.
 
 ## Toolchain
 
@@ -98,6 +158,17 @@ Windows PowerShell:
 ```powershell
 .\gradlew.bat :sharedUI:desktopTest
 ```
+
+The shared-state suite includes typed-status transitions, notes/undo/reset behavior, hints, difficulty switching, active-game snapshot round trips, and fail-closed snapshot validation for changed fixed clues and invalid note targets.
+
+### Translation guards
+
+```bash
+python scripts/verify_translations.py
+python -m unittest scripts.tests.test_verify_translations
+```
+
+These commands validate the existing Android localization scope plus full English/Hindi key parity and placeholder parity for shared Compose resources.
 
 ### Compile shared Desktop and Web code
 
