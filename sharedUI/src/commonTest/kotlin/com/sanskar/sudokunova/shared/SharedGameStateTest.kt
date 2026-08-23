@@ -1,5 +1,6 @@
 package com.sanskar.sudokunova.shared
 
+import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.SudokuBoard
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,5 +54,27 @@ class SharedGameStateTest {
         assertNotEquals(before, state.board)
         assertTrue(state.board.isValid())
         assertTrue(state.selectedIndex != null)
+    }
+
+    @Test
+    fun changingDifficultyStartsFreshGameAndPublishesReadOnlySelection() {
+        val state = SharedGameState()
+        val originalDifficulty = state.difficulty
+        val nextDifficulty = Difficulty.entries.first { it != originalDifficulty }
+        val editableIndex = state.board.emptyIndices().first()
+
+        state.select(editableIndex)
+        state.toggleNotesMode()
+        state.enter(1)
+        assertTrue(state.notes.isNotEmpty())
+
+        state.setDifficulty(nextDifficulty)
+
+        assertEquals(nextDifficulty, state.difficulty)
+        assertEquals(state.generated.puzzle, state.board)
+        assertEquals(null, state.selectedIndex)
+        assertFalse(state.notesMode)
+        assertTrue(state.notes.isEmpty())
+        assertTrue(state.statusMessage.contains(nextDifficulty.displayName))
     }
 }
