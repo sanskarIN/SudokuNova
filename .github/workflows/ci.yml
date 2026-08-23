@@ -61,6 +61,7 @@ jobs:
           python -m unittest scripts.tests.test_verify_documentation_links
           python -m unittest scripts.tests.test_verify_documentation_coverage
           python -m unittest scripts.tests.test_verify_release_contract
+          python -m unittest scripts.tests.test_verify_translations
 
       - name: Verify partial release signing fails closed
         shell: bash
