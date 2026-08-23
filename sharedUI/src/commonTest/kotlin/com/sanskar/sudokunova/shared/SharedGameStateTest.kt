@@ -82,4 +82,51 @@ class SharedGameStateTest {
         assertTrue(state.notes.isEmpty())
         assertEquals(SharedGameStatus.NewPuzzle(nextDifficulty), state.status)
     }
+
+    @Test
+    fun activeGameSnapshotRoundTripsDeterministically() {
+        val state = SharedGameState()
+        val editableIndex = state.board.emptyIndices().first()
+        val candidate = state.board.candidates(editableIndex).first()
+
+        state.select(editableIndex)
+        state.toggleNotesMode()
+        state.enter(candidate)
+        val snapshot = state.snapshot()
+
+        state.newGame(Difficulty.HARD)
+        assertNotEquals(snapshot.seed, state.generated.seed)
+
+        assertTrue(state.restore(snapshot))
+        assertEquals(snapshot.difficulty, state.difficulty)
+        assertEquals(snapshot.seed, state.generated.seed)
+        assertEquals(snapshot.board, state.board.toPuzzleString())
+        assertEquals(snapshot.notes, state.notes)
+        assertEquals(snapshot.selectedIndex, state.selectedIndex)
+        assertEquals(snapshot.notesMode, state.notesMode)
+    }
+
+    @Test
+    fun restoreRejectsChangedStartingCluesWithoutMutatingCurrentGame() {
+        val state = SharedGameState()
+        val original = state.snapshot()
+        val fixedIndex = (0 until SudokuBoard.CELL_COUNT).first(state::isFixed)
+        val fixedValue = state.board.valueAt(fixedIndex)
+        val replacement = if (fixedValue == 9) '1' else ('0'.code + fixedValue + 1).toChar()
+        val corruptedBoard = original.board.toCharArray().also { it[fixedIndex] = replacement }.concatToString()
+
+        assertFalse(state.restore(original.copy(board = corruptedBoard)))
+        assertEquals(original, state.snapshot())
+    }
+
+    @Test
+    fun restoreRejectsNotesOnFixedClues() {
+        val state = SharedGameState()
+        val original = state.snapshot()
+        val fixedIndex = (0 until SudokuBoard.CELL_COUNT).first(state::isFixed)
+        val corrupted = original.copy(notes = mapOf(fixedIndex to setOf(1)))
+
+        assertFalse(state.restore(corrupted))
+        assertEquals(original, state.snapshot())
+    }
 }
