@@ -71,6 +71,10 @@ kotlin {
     }
 }
 
+compose.resources {
+    packageOfResClass = "com.sanskar.sudokunova.shared.resources"
+}
+
 compose.desktop {
     application {
         mainClass = "com.sanskar.sudokunova.shared.desktop.MainKt"
