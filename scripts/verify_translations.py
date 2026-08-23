@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Verify English/Hindi string-key parity for Android and shared multiplatform resources."""
+"""Verify English/Hindi key and format-placeholder parity for SudokuNova resources."""
 
 from pathlib import Path
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -11,6 +12,7 @@ ANDROID_VALUES_HI = ROOT / "app" / "src" / "main" / "res" / "values-hi"
 SHARED_VALUES = ROOT / "sharedUI" / "src" / "commonMain" / "composeResources" / "values"
 SHARED_VALUES_HI = ROOT / "sharedUI" / "src" / "commonMain" / "composeResources" / "values-hi"
 ANDROID_PREFIXES = ("v04_", "v05_", "v06_", "v07_", "difficulty_", "theme_")
+FORMAT_PLACEHOLDER_RE = re.compile(r"%(?:(\d+)\$)?([a-zA-Z])")
 
 
 def collect(directory: Path, prefixes: tuple[str, ...] | None = None) -> dict[str, Path]:
@@ -34,6 +36,30 @@ def collect(directory: Path, prefixes: tuple[str, ...] | None = None) -> dict[st
                 raise SystemExit(f"Duplicate localized string key {name!r} in {directory}")
             strings[name] = file
     return strings
+
+
+def collect_placeholders(
+    directory: Path,
+    prefixes: tuple[str, ...] | None = None,
+) -> dict[str, tuple[str, ...]]:
+    """Collect normalized printf-style placeholder signatures for localized strings."""
+
+    signatures: dict[str, tuple[str, ...]] = {}
+    for file in sorted(directory.glob("*.xml")):
+        root = ET.parse(file).getroot()
+        for element in root.findall("string"):
+            name = element.attrib.get("name")
+            if not name:
+                continue
+            if prefixes is not None and not name.startswith(prefixes):
+                continue
+            text = "".join(element.itertext())
+            placeholders = [
+                f"{position or '*'}:{conversion.lower()}"
+                for position, conversion in FORMAT_PLACEHOLDER_RE.findall(text)
+            ]
+            signatures[name] = tuple(sorted(placeholders))
+    return signatures
 
 
 def parity_errors(
@@ -60,6 +86,25 @@ def parity_errors(
     return errors
 
 
+def placeholder_parity_errors(
+    english: dict[str, tuple[str, ...]],
+    hindi: dict[str, tuple[str, ...]],
+    *,
+    label: str,
+) -> list[str]:
+    """Return errors when matching locale keys use different format placeholders."""
+
+    errors: list[str] = []
+    for key in sorted(set(english) & set(hindi)):
+        if english[key] == hindi[key]:
+            continue
+        errors.append(
+            f"Placeholder mismatch in {label} for {key}: "
+            f"English={english[key]!r}, Hindi={hindi[key]!r}"
+        )
+    return errors
+
+
 def main() -> int:
     catalogs = (
         (
@@ -78,13 +123,24 @@ def main() -> int:
     for label, english, hindi in catalogs:
         errors.extend(parity_errors(english, hindi, label=label))
 
+    errors.extend(
+        placeholder_parity_errors(
+            collect_placeholders(SHARED_VALUES),
+            collect_placeholders(SHARED_VALUES_HI),
+            label="shared multiplatform UI",
+        )
+    )
+
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
 
     total = sum(len(english) for _, english, _ in catalogs)
     details = ", ".join(f"{label}: {len(english)}" for label, english, _ in catalogs)
-    print(f"Translation parity verified for {total} localized string keys ({details}).")
+    print(
+        f"Translation parity verified for {total} localized string keys ({details}); "
+        "shared placeholder parity verified."
+    )
     return 0
 
 
