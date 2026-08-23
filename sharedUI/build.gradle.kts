@@ -56,6 +56,7 @@ kotlin {
                 implementation(libs.jetbrains.compose.foundation)
                 implementation(libs.jetbrains.compose.material3)
                 implementation(libs.jetbrains.compose.ui)
+                implementation(compose.components.resources)
             }
         }
         val commonTest by getting {
