@@ -61,7 +61,7 @@ class SudokuSolver {
             for (index in cells.indices) {
                 if (cells[index] != 0) continue
                 val mask = candidatesMask(index)
-                val count = Integer.bitCount(mask)
+                val count = mask.countOneBits()
                 if (count == 0) {
                     backtracks++
                     return
@@ -84,7 +84,7 @@ class SudokuSolver {
             var mask = bestMask
             while (mask != 0 && solutions < solutionLimit) {
                 val bit = mask and -mask
-                val value = Integer.numberOfTrailingZeros(bit)
+                val value = bit.countTrailingZeroBits()
                 cells[bestIndex] = value
                 search(depth + 1)
                 cells[bestIndex] = 0

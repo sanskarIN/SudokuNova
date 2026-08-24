@@ -61,6 +61,7 @@ jobs:
           python -m unittest scripts.tests.test_verify_documentation_links
           python -m unittest scripts.tests.test_verify_documentation_coverage
           python -m unittest scripts.tests.test_verify_release_contract
+          python -m unittest scripts.tests.test_verify_translations
 
       - name: Verify partial release signing fails closed
         shell: bash
@@ -90,8 +91,14 @@ jobs:
       - name: Verify English/Hindi translation parity
         run: python scripts/verify_translations.py
 
-      - name: Verify engine tests
-        run: ./gradlew :sudoku-engine:test --stacktrace
+      - name: Verify multiplatform engine tests
+        run: ./gradlew :sudoku-engine:desktopTest --stacktrace
+
+      - name: Verify shared gameplay-state tests
+        run: ./gradlew :sharedUI:desktopTest --stacktrace
+
+      - name: Compile shared desktop and Web/Wasm UI
+        run: ./gradlew :sharedUI:compileKotlinDesktop :sharedUI:compileKotlinWasmJs --stacktrace
 
       - name: Verify Android unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace

@@ -1,102 +1,147 @@
 # SudokuNova Testing Guide
 
-SudokuNova treats deterministic correctness and regression coverage as merge requirements. The testing strategy spans the platform-independent Sudoku engine, Android JVM logic, repository/documentation/release tooling, Compose/Room connected tests, static analysis, release builds, artifact verification, Macrobenchmark harness compilation, physical-device performance measurement, and real manual/production release QA.
+SudokuNova treats deterministic correctness and regression coverage as merge requirements. The test strategy now spans the Kotlin Multiplatform Sudoku engine, portable Compose gameplay state, the mature Android application, repository/release tooling, connected Android behavior, host-specific cross-platform builds, Macrobenchmark infrastructure, and explicit real-world release evidence.
 
-The current source/release target is **2.0.12** (`versionCode 2012` / `versionName 2.0.12`). Historical v1 exact-head results remain useful evidence for the foundations they tested, but they are not final 2.0.12 verification.
+The current Android source/release target is **2.0.12** (`versionCode 2012` / `versionName 2.0.12`). Historical green runs prove only the exact commits they tested.
+
+See [`CROSS_PLATFORM.md`](CROSS_PLATFORM.md) for platform-build commands and [`CI_CD.md`](CI_CD.md) for hosted workflow ownership.
 
 ## Testing Layers
 
 The project uses complementary layers:
 
-1. `sudoku-engine` JVM tests for Sudoku truth and deterministic domain behavior;
-2. Android app JVM tests for codecs/models/presentation-independent application logic;
-3. Python regression tests for release tooling and repository consistency guards;
-4. Android instrumentation tests for Compose, Room, lifecycle-adjacent and integrated flows;
-5. direct documentation-link, tracked-file documentation-coverage, release-contract, translation and security verification scripts;
-6. release-signing configuration fail-closed verification;
-7. Android debug/release lint;
-8. debug/release APK and release AAB builds;
-9. release APK/AAB/R8 structural/application/version/SDK/debuggable/checksum verification;
-10. Macrobenchmark harness compilation plus representative physical-device startup/frame measurement;
-11. real manual accessibility/device/performance/signing/store QA.
+1. KMP `sudoku-engine` common tests for Sudoku truth and deterministic domain behavior;
+2. `sharedUI` common gameplay-state tests executed through the Desktop target;
+3. shared Desktop and Web/Wasm compile gates;
+4. Android app JVM tests for codecs/models/presentation-independent application logic;
+5. Python regression tests for repository/release tooling;
+6. direct documentation, release-contract, translation, and security guards;
+7. Android instrumentation-test compilation;
+8. connected API-35 Compose/Room tests;
+9. Android debug/release lint and full APK/AAB builds;
+10. release APK/AAB/R8 identity/checksum verification;
+11. host-specific Web, iOS framework, and Desktop application-image builds;
+12. Macrobenchmark harness compilation plus representative physical-device measurement;
+13. real manual accessibility/device/signing/store/browser/distribution QA.
 
 No single layer replaces the others.
 
-## Engine Tests
+## Shared Sudoku Engine Tests
 
 Run:
 
 ```bash
-./gradlew :sudoku-engine:test --stacktrace
+./gradlew :sudoku-engine:desktopTest --stacktrace
 ```
 
-The engine suite covers categories such as:
+Windows PowerShell:
+
+```powershell
+.\gradlew.bat :sudoku-engine:desktopTest --stacktrace
+```
+
+The existing engine tests use `kotlin.test` and live under:
+
+```text
+sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/
+```
+
+The KMP build maps that tree into `commonTest`, allowing shared domain tests to protect the engine independently of Android.
 
 ### Board correctness
 
-- parse/serialize behavior;
-- row/column/box validation;
-- conflict detection;
-- candidate calculation;
-- immutable board updates;
-- invalid input handling.
+Coverage includes parsing/serialization, row/column/box validation, conflicts, candidates, immutable updates, and invalid input behavior.
 
 ### Solver correctness
 
-- known puzzle solving;
-- invalid-board rejection;
-- unsolvable behavior;
-- solution counting;
-- unique-solution checks;
-- search metrics.
+Coverage includes known puzzle solving, invalid/unsolvable behavior, solution counting, uniqueness checks, and search metrics.
 
 ### Generator correctness
 
-- deterministic seeded generation;
-- generated-board validity;
-- unique-solution preservation;
-- clue/difficulty target behavior;
-- deterministic generation corpora;
-- performance/complexity regression evidence where implemented.
+Coverage includes seeded determinism, generated-board validity, unique-solution preservation, clue/difficulty targets, deterministic corpora, and relevant complexity regressions.
 
-### Difficulty/logical analysis
+### Difficulty and logical analysis
 
-- logical technique accounting;
-- difficulty calibration;
-- corpus expectations;
-- deterministic logical results.
+Coverage includes logical technique accounting, calibration, corpus expectations, and deterministic logical results.
 
-### Teaching/hints
+### Teaching and hints
 
-Current teaching tests cover:
+Coverage includes deterministic teaching traces, singles, pairs/triples, pointing/box-line techniques, X-Wing, exact source/target/elimination evidence, solution-safe eliminations, hint technique identity, and explicit Reveal fallback separation.
 
-- deterministic teaching traces;
-- Naked Single;
-- Hidden Single;
-- Naked Pair;
-- Pointing Pair / Triple;
-- Box-Line Reduction;
-- Hidden Pair;
-- Naked Triple;
-- Hidden Triple;
-- X-Wing;
-- exact source/target/elimination evidence;
-- legal controlled candidate states;
-- generated-puzzle solution safety;
-- guarantee that candidate eliminations do not remove the unique solved value;
-- hint technique identity for multi-step chains;
-- explicit Reveal fallback separation.
+### Practice and puzzle codes
 
-### Practice catalog
+Tests protect deterministic practice lookup/answers/evidence and the versioned `SNP1` puzzle-code format.
 
-Practice tests verify:
+A failure in this suite is a shared correctness defect because Android, Desktop, iOS, and Web all depend on this engine.
 
-- every supported logical technique has practice coverage;
-- deterministic catalog lookup;
-- unique answer choices;
-- correct answer inclusion;
-- wrong-answer rejection;
-- structured evidence availability.
+## Shared Gameplay-State Tests
+
+Run:
+
+```bash
+./gradlew :sharedUI:desktopTest --stacktrace
+```
+
+Current common tests protect:
+
+- fixed clues cannot be edited;
+- notes can be toggled/entered;
+- correct number placement clears the cell's notes;
+- undo restores the previous board/notes snapshot;
+- reset restores the generated starting puzzle;
+- hints make valid progress and retain board validity.
+
+Add portable state tests here when behavior can be verified without Android/Apple/browser APIs.
+
+## Shared Compile Gates
+
+Run:
+
+```bash
+./gradlew :sharedUI:compileKotlinDesktop :sharedUI:compileKotlinWasmJs --stacktrace
+```
+
+These gates catch common Compose/source-set/API incompatibilities before host packaging. Compilation does not replace runtime/browser/accessibility QA.
+
+## Cross-Platform Hosted Build Tests
+
+`.github/workflows/cross-platform.yml` adds target-specific repository build evidence.
+
+### Android shared integration
+
+```bash
+./gradlew :app:assembleDebug --stacktrace
+```
+
+This proves the Android application can resolve and consume both KMP modules.
+
+### Web production distribution
+
+```bash
+./gradlew :sharedUI:wasmJsBrowserDistribution --stacktrace
+```
+
+The hosted workflow uploads the resulting production distribution. A successful build does not prove every intended browser/device combination.
+
+### iOS Simulator framework
+
+On macOS:
+
+```bash
+./gradlew :sharedUI:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+```
+
+This validates Kotlin/Native framework linking. It does not compile a complete signed Xcode app or prove physical-device/App Store behavior.
+
+### Desktop application images
+
+On Linux, Windows, and macOS:
+
+```bash
+./gradlew :sharedUI:createDistributable --stacktrace
+```
+
+Each hosted runner validates its own application image. Native package signing/notarization/reputation remains external evidence.
 
 ## Android JVM Tests
 
@@ -106,152 +151,99 @@ Run:
 ./gradlew :app:testDebugUnitTest --stacktrace
 ```
 
-The app-module JVM suite covers categories including:
+The app-module JVM suite covers areas such as:
 
-- `GameStateCodec` round trips and malformed-state rejection;
+- game-state codecs and malformed-state rejection;
 - settings/statistics calculations;
 - learning-progress invariants/mastery calculations;
 - backup codec/model behavior;
 - bounded backup file reading;
 - transfer/persistence helper behavior;
-- pure UI/presentation helpers where Android runtime is unnecessary.
+- pure presentation helpers where Android runtime is unnecessary.
 
-The Android app module is configured around JUnit4. Tests in this module should use the configured framework consistently unless the build is deliberately migrated.
+The Android app module remains JUnit4-based unless intentionally migrated.
 
 ## Backup Boundary Tests
 
-`BackupFileIoTest` includes direct regression coverage for bounded reads, including:
+`BackupFileIoTest` protects bounded reads, exact-limit content, empty input rejection, oversized input rejection, and positive maximum-size requirements. This protects the pre-parser memory boundary in addition to structural backup-codec validation.
 
-- UTF-8 content within the limit;
-- exact-limit content;
-- empty input rejection;
-- oversized input rejection;
-- positive maximum-size requirement.
+## Repository Guard Regression Tests
 
-This protects the pre-parser memory boundary in addition to `BackupCodec`'s structural validation.
-
-## Repository Consistency Guard Tests
-
-Repository guards that can block CI/releases have deterministic Python regression suites under `scripts/tests/`.
-
-Run the documentation-link suite:
+Run:
 
 ```bash
 python -m unittest scripts.tests.test_verify_documentation_links
-```
-
-It covers repository-local Markdown target handling, ignored/generated locations, repository-boundary rejection, and supported link forms.
-
-Run the complete tracked-file documentation-coverage suite:
-
-```bash
 python -m unittest scripts.tests.test_verify_documentation_coverage
-```
-
-It verifies:
-
-- representative path resolution for Android source/tests/resources/Room schemas/benchmark overlays;
-- Sudoku engine source/tests;
-- Macrobenchmark;
-- repository scripts/tests;
-- GitHub workflows/metadata;
-- Gradle/root/editor files;
-- root documents and the `docs/` library;
-- rejection of unknown/unowned tracked paths;
-- rejection when a coverage rule points to an untracked canonical document;
-- detailed-guide index completeness;
-- deterministic Markdown report rendering;
-- Windows path-separator normalization while preserving legitimate leading-dot paths such as `.github/`.
-
-Run the release source/workflow contract suite:
-
-```bash
 python -m unittest scripts.tests.test_verify_release_contract
+python -m unittest scripts.tests.test_verify_release_outputs
+python -m unittest scripts.tests.test_verify_release_cli_validation
 ```
 
-It protects application/version/minimum-SDK/target-SDK identity synchronization between `app/build.gradle.kts`, ordinary CI expected release metadata, and protected release-validation defaults.
+### Documentation-link suite
 
-After the regression suites, run the guards against the actual checked-out repository:
+Protects repository-local Markdown targets, ignored/generated locations, repository-boundary rejection, and supported link forms.
+
+### Documentation-coverage suite
+
+Protects path ownership for:
+
+- Android source/tests/resources/schemas;
+- `sudoku-engine` source/tests;
+- `sharedUI` common/platform source/tests/resources;
+- `iosApp` host sources;
+- Macrobenchmark;
+- scripts/tests;
+- workflows/GitHub metadata;
+- Gradle/root/editor files;
+- root documents and detailed docs.
+
+It also verifies rejection of unknown paths, missing canonical docs, hidden detailed guides, deterministic report rendering, and Windows separator normalization.
+
+### Release-contract suite
+
+Protects application ID/version/minSdk/targetSdk synchronization between `app/build.gradle.kts`, ordinary Android CI, and protected release validation.
+
+### Release-output suites
+
+Protect archive structure, metadata identity, embedded APK application/version/SDK/debuggable inspection, deterministic hashes/evidence, signature scheme parsing, signer certificate identities, and CLI argument boundaries.
+
+After regression tests, execute the guards against the checked-out repository:
 
 ```bash
 python scripts/verify_documentation_links.py
 python scripts/verify_documentation_coverage.py
 python scripts/verify_release_contract.py
+python scripts/verify_no_secrets.py
+python scripts/verify_translations.py
 ```
 
-The documentation-coverage command obtains the complete tracked-file set from `git ls-files -z`; it fails if even one tracked path is outside the maintained documentation ownership taxonomy. For a per-file audit, use:
+For a per-file documentation ownership audit:
 
 ```bash
 python scripts/verify_documentation_coverage.py --verbose
 ```
 
-A green ownership guard proves every tracked path has a canonical documentation area. It does not prove the prose is factually current, so it complements rather than replaces source review, link checks, builds/tests, and manual/release evidence.
+## Partial Release-Signing Fail-Closed Test
 
-See `REPOSITORY_GUARDS.md` and `REPOSITORY_FILE_REFERENCE.md`.
+Android production signing accepts either none or all four `SUDOKUNOVA_*` values. CI intentionally sets only a harmless fake alias and requires Gradle configuration to fail with the expected partial-signing error.
 
-## Release-Output Verifier Tests
-
-The current release line includes pure-Python regression coverage for `scripts/verify_release_outputs.py` and its CLI boundary handling.
-
-Run:
+A local Bash-compatible check is:
 
 ```bash
-python -m unittest scripts.tests.test_verify_release_outputs
-python -m unittest scripts.tests.test_verify_release_cli_validation
+SUDOKUNOVA_KEY_ALIAS=partial-test ./gradlew :app:tasks --quiet
 ```
 
-The tests verify:
+Do not use real secret values to test this guard.
 
-- minimum valid APK/AAB archive structures are accepted;
-- required archive entries are enforced;
-- APK release metadata requires exactly one element;
-- version code/name metadata is parsed correctly;
-- production `applicationId` metadata is parsed and missing/wrong identities are rejected when required;
-- checksum-manifest output is deterministic and includes hash, byte size and path;
-- APK embedded application/version/minSdk/targetSdk/debuggable inspection;
-- embedded SDK drift rejection;
-- debuggable release rejection;
-- deterministic APK identity evidence;
-- expected SDK positivity/order CLI validation;
-- certificate SHA-256 normalization accepts supported colon/no-colon forms and rejects malformed values;
-- `apksigner` signer-certificate digest parsing;
-- `apksigner` verified signature-scheme parsing;
-- mandatory signed-release rejection of v1-only APK signatures;
-- `keytool` signer-certificate fingerprint parsing;
-- missing signature-verifier tools fail mandatory signed verification;
-- unsigned AAB output is rejected;
-- expected APK signer-certificate mismatch is rejected;
-- expected AAB signer/upload-certificate mismatch is rejected;
-- normalized non-secret signature evidence is written deterministically.
-
-The verifier itself runs later in CI against the actual Gradle-generated release outputs.
-
-## Partial Release-Signing Fail-Closed Regression
-
-`app/build.gradle.kts` permits production signing only when all four required environment values are supplied:
-
-- `SUDOKUNOVA_KEYSTORE_PATH`;
-- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
-- `SUDOKUNOVA_KEY_ALIAS`;
-- `SUDOKUNOVA_KEY_PASSWORD`.
-
-A partial configuration is an error. Standard CI deliberately invokes Gradle with only a harmless test alias and requires configuration to fail with the expected partial-signing message.
-
-This verifies a critical release invariant: an apparently configured signing environment must not silently fall back to an unsigned artifact.
-
-Do not place real signing secrets in test commands.
-
-## Android Instrumentation Test Compilation
-
-Run:
+## Android Instrumentation-Test Compilation
 
 ```bash
 ./gradlew :app:assembleDebugAndroidTest --stacktrace
 ```
 
-This ensures Android test code and the test APK compile. It is a fast gate for API/test-source mistakes but does not prove runtime behavior.
+This proves the instrumentation test APK compiles, not that connected behavior passes.
 
-## Connected Compose/Room Tests
+## Connected Android Tests
 
 Run on a configured emulator/device:
 
@@ -259,120 +251,39 @@ Run on a configured emulator/device:
 ./gradlew :app:connectedDebugAndroidTest --stacktrace
 ```
 
-GitHub Actions runs the connected suite on an API-35 x86_64 emulator target.
+The hosted `instrumentation.yml` gate runs the committed suite on API 35.
 
-Connected coverage includes important flows such as:
+Connected coverage includes mature Android flows such as Compose navigation/semantics, Room-backed history/saved data, challenges, transfer/backup, and learning/practice integration.
 
-- Home entry points;
-- Challenges/archive navigation;
-- Custom Puzzle reachability and selected-state behavior;
-- History and Saved Puzzles;
-- Settings input controls;
-- Learn lesson/practice flow;
-- Room persistence/migration behavior;
-- transfer/backup integrated behavior;
-- selected Sudoku-cell accessibility semantics;
-- adaptive scroll reachability for hardened large-text layouts;
-- prior navigation/state regression paths preserved across milestones.
+When adding connected tests:
 
-The exact suite evolves with the codebase; source under `app/src/androidTest/` is authoritative.
-
-## Stable Compose Test Selectors
-
-Prefer user-visible semantics/text where it is unambiguous and actually composed.
-
-Use stable test tags when:
-
-- multiple controls share the same label;
-- a LazyColumn item is off-screen/not composed;
-- a specific logical technique must be targeted deterministically;
-- a board/editor cell needs stable coordinate identity.
-
-Current examples include Learn list/technique tags, Sudoku game-cell tags and Custom Puzzle editor-cell tags.
-
-Do not add test-only production APIs when normal semantics can provide a stable target.
-
-## Accessibility Semantics Tests
-
-Automated tests can reliably assert properties such as:
-
-- selected state;
-- content descriptions;
-- tagged element identity;
-- visible dialog/action state;
-- reachability after deliberate scrolling.
-
-They cannot replace real TalkBack focus/gesture experience, 200% font-layout judgment, high-contrast/reduced-motion device review, or physical keyboard testing.
-
-Use `ACCESSIBILITY.md` and `V2_0_12_RELEASE.md` for current release manual evidence.
-
-## Translation Verification
-
-Run:
-
-```bash
-python scripts/verify_translations.py
-```
-
-The script protects English/Hindi resource parity and formatting compatibility.
-
-A feature with new player-facing text is incomplete until both maintained locales are updated.
-
-## Repository Security Verification
-
-Run:
-
-```bash
-python scripts/verify_no_secrets.py
-```
-
-This catches committed signing/private-key material and obvious credential patterns covered by the repository guard.
-
-It is not a replacement for manual review, GitHub secret scanning/push protection, or secure key storage.
+- prefer stable semantics/test tags;
+- avoid timing-sensitive sleeps;
+- isolate persistent state;
+- preserve deterministic inputs;
+- assert user-observable behavior rather than implementation trivia where practical.
 
 ## Android Lint
-
-Debug and release lint:
 
 ```bash
 ./gradlew :app:lintDebug :app:lintRelease --stacktrace
 ```
 
-Release lint matters because release-only configuration/resource behavior can differ from debug.
+Both debug and release lint are required because release-only shrink/configuration/resource paths can expose different defects.
 
-## Build Verification
-
-### Debug APK
+## Android Build Gates
 
 ```bash
 ./gradlew :app:assembleDebug --stacktrace
-```
-
-### Release APK with R8/resource shrinking
-
-```bash
 ./gradlew :app:assembleRelease --stacktrace
-```
-
-### Release AAB
-
-```bash
 ./gradlew :app:bundleRelease --stacktrace
 ```
 
-### Macrobenchmark harness
+The release path must retain R8/resource shrinking and the exact 2.0.12 identity contract.
 
-```bash
-./gradlew :macrobenchmark:assembleBenchmark --stacktrace
-```
+## Release Artifact Verification
 
-Successful Macrobenchmark assembly proves the performance test module and release-like benchmark variant compile together. It does not produce representative timing evidence until the connected benchmark is run on an appropriate physical target.
-
-Successful release assembly verifies release compilation/shrinking but does not by itself prove artifact structure/application/version/SDK metadata, production signing, certificate identity or device QA.
-
-## 2.0.12 Release Artifact Verification
-
-After the unsigned release outputs exist, run:
+After unsigned release outputs are built:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -390,25 +301,77 @@ python scripts/verify_release_outputs.py \
   --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
 ```
 
-The verifier requires:
+This proves artifact integrity and embedded identity for the exact built files. It does not prove production certificate identity unless the mandatory signed verification path actually runs.
 
-- non-empty APK/AAB/mapping outputs;
-- ZIP-valid APK/AAB archives;
-- core expected archive entries;
-- exactly one APK release metadata element;
-- exact production application ID;
-- exact `versionCode 2012` / `versionName 2.0.12`;
-- exact embedded application/version/minimum-SDK/target-SDK identity;
-- embedded `debuggable=false`;
-- a non-empty R8 mapping;
-- SHA-256/byte-size evidence for APK, AAB and mapping;
-- deterministic APK identity evidence.
+## Macrobenchmark Harness Compilation
 
-CI uploads checksum/identity evidence with the short-lived release build outputs after success.
+```bash
+./gradlew :macrobenchmark:assembleBenchmark --stacktrace
+```
 
-This does **not** prove production signing or store acceptance.
+This proves the release-like benchmark target and test graph compile. It does not produce representative performance evidence.
 
-## Recommended Broad 2.0.12 Local Gate
+## Physical-Device Macrobenchmark Evidence
+
+Run on a representative connected physical device:
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
+```
+
+Record:
+
+- exact Git SHA;
+- device model;
+- Android version/API;
+- build variant;
+- command;
+- raw benchmark output/traces;
+- environmental notes relevant to interpretation.
+
+Do not substitute hosted-emulator timing for production performance evidence.
+
+## Accessibility and Manual QA
+
+Automated semantics checks are useful but do not replace real manual verification. Before making release-quality claims, collect actual evidence for the intended production surface, including where applicable:
+
+- screen reader navigation;
+- 200% font scaling/adaptive layout;
+- contrast and state distinguishability;
+- reduced-motion behavior;
+- hardware keyboard/focus behavior;
+- rotation/resizing/window behavior;
+- lifecycle/background/restore;
+- physical-device install/upgrade;
+- platform-specific input and window conventions.
+
+Do not mark these successful merely because source code appears to support them.
+
+## Browser QA
+
+Before a public Web claim, test the actual intended browser/version/device matrix. Record at least browser name/version, OS/device, exact Git SHA/build artifact, result, and any known limitations.
+
+## Apple QA
+
+Kotlin/Native framework compilation is only the first Apple gate. A production iOS/iPadOS claim additionally requires a real Xcode host, signing/provisioning, simulator and physical-device execution as applicable, accessibility/lifecycle testing, and store validation when publishing.
+
+## Desktop QA
+
+A successful application image proves host buildability. Distribution-quality claims may additionally require installer testing, signing/notarization/reputation, window/input/accessibility validation, supported OS-version checks, and clean-machine installation tests.
+
+## Exact-Head Rule
+
+For pull requests touching the cross-platform build graph, final merge evidence must be green on one exact final SHA for:
+
+- Android CI;
+- Android Instrumentation;
+- every Cross-Platform CI job.
+
+Any subsequent commit invalidates older runs as final branch evidence. Fix failures with focused commits, then require new runs on the new head.
+
+## Strong Local Non-Connected Baseline
+
+Linux/macOS:
 
 ```bash
 python scripts/verify_no_secrets.py
@@ -421,7 +384,11 @@ python scripts/verify_documentation_links.py
 python scripts/verify_documentation_coverage.py
 python scripts/verify_release_contract.py
 python scripts/verify_translations.py
-./gradlew :sudoku-engine:test \
+./gradlew \
+  :sudoku-engine:desktopTest \
+  :sharedUI:desktopTest \
+  :sharedUI:compileKotlinDesktop \
+  :sharedUI:compileKotlinWasmJs \
   :app:testDebugUnitTest \
   :app:assembleDebugAndroidTest \
   :macrobenchmark:assembleBenchmark \
@@ -431,171 +398,17 @@ python scripts/verify_translations.py
   :app:assembleRelease \
   :app:bundleRelease \
   --stacktrace
-python scripts/verify_release_outputs.py \
-  --apk app/build/outputs/apk/release/app-release-unsigned.apk \
-  --aab app/build/outputs/bundle/release/app-release.aab \
-  --mapping app/build/outputs/mapping/release/mapping.txt \
-  --metadata app/build/outputs/apk/release/output-metadata.json \
-  --expected-version-code 2012 \
-  --expected-version-name 2.0.12 \
-  --expected-application-id in.sanskar.sudokunova \
-  --require-apk-manifest \
-  --expected-min-sdk 26 \
-  --expected-target-sdk 37 \
-  --output app/build/outputs/release-evidence/sha256.txt \
-  --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
 ```
 
-Windows can use `gradlew.bat` with the same Gradle tasks and PowerShell line continuation for the verifier command.
+Host-specific iOS/Desktop/Web runtime/package checks and Android connected tests remain separate.
 
-Connected functional instrumentation and physical-device Macrobenchmarks should be run separately on appropriate targets.
+## Evidence Discipline
 
-## Determinism Rules
+A test/build claim should identify the exact command/workflow and exact source SHA. A release/platform claim should state what remains external. Never convert:
 
-Deterministic tests are strongly preferred for correctness-critical Sudoku logic and release/repository tooling.
-
-Use:
-
-- fixed seeds for generation;
-- fixed known puzzles for solver/teaching tests;
-- deterministic candidate-state fixtures for advanced technique evidence;
-- fixed timestamps/keys when testing challenge/history formats where practical;
-- stable artifact manifest ordering and explicit expected application/version/SDK metadata;
-- stable path fixtures for repository guard acceptance/rejection;
-- Git's tracked-file set rather than filesystem walking for documentation ownership.
-
-Avoid tests that depend on random global state, wall-clock timing, network availability, or iteration order that is not part of the contract.
-
-Performance measurement is inherently time-based, so it is handled as a dedicated benchmark/evidence workflow rather than a fragile shared-runner wall-clock unit-test threshold.
-
-## Performance Tests
-
-Prefer deterministic complexity metrics before fragile wall-clock assertions.
-
-Useful solver/generator evidence includes:
-
-- node counts;
-- guesses;
-- backtracks;
-- depth;
-- clue counts;
-- logical technique counts;
-- candidate elimination counts;
-- fixed-seed execution measurements when a stable benchmark environment exists.
-
-Android release-like startup/frame measurements use `:macrobenchmark`:
-
-```bash
-./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
-```
-
-The committed suite currently measures cold startup, warm startup and cold-start frame timing with a defined no-compilation starting state and ten iterations per benchmark. Record the physical device, OS, exact commit and raw benchmark output/traces.
-
-Do not introduce an arbitrary millisecond threshold on shared CI without a measured baseline and variance analysis. Do not use hosted-emulator timing as production evidence.
-
-2.0.12 requires real measured startup/frame/memory/ANR evidence on representative target(s) before production performance claims. The Macrobenchmark harness addresses startup/frame reproducibility but does not automatically measure memory or establish ANR absence.
-
-See `PERFORMANCE.md`, `PERFORMANCE_BENCHMARKING.md` and `V2_0_12_RELEASE.md`.
-
-## Database Migration Tests
-
-Room schema changes require migration coverage.
-
-A migration test should demonstrate that:
-
-- the old schema can be created/loaded;
-- migration runs successfully;
-- existing records survive as intended;
-- new indexes/constraints exist;
-- DAO behavior still works.
-
-Do not use destructive fallback as a substitute for a required migration.
-
-## Transfer/Parser Fuzz-Style Cases
-
-For external text formats, test malformed classes such as:
-
-- empty input;
-- oversized input;
-- unsupported version;
-- wrong field count;
-- invalid enum;
-- invalid number;
-- invalid timestamp/counter;
-- checksum mismatch;
-- invalid Sudoku board;
-- non-unique imported puzzle at the Android acceptance boundary;
-- duplicate restore records.
-
-Parsers should return failure/reject input rather than crash the app.
-
-## Regression Testing Rule
-
-For an important defect:
-
-1. reproduce it;
-2. identify root cause;
-3. add a failing regression test when practical;
-4. implement the smallest correct fix;
-5. run the narrow test first;
-6. run the broader affected module gate;
-7. run final required CI/connected gates before merge;
-8. document release-relevant defects in `CHANGELOG.md`/`what_changed.md`.
-
-For repository/documentation structure defects, also add or update the narrow coverage/link guard test that would prevent recurrence.
-
-## Exact-Head Rule
-
-A successful workflow run applies only to the commit it tested.
-
-If the PR head changes, old success is historical evidence only. Before merge/release, verify the final exact head.
-
-Historical examples:
-
-- PR #27 satisfied this rule before its v1 RC preparation merge;
-- PR #28 independently satisfied it before its post-RC hardening merge.
-
-The current PR #30 must independently satisfy the rule on its final 2.0.12 head. Earlier PR #30 runs become historical whenever a later commit changes the head.
-
-`what_changed.md` should record exact run IDs/head SHAs only after the runs complete.
-
-## Manual / Production QA
-
-Automated tests do not fully cover:
-
-- TalkBack traversal/focus order;
-- 200% font scaling/layout judgment;
-- high-contrast/reduced-motion real-device behavior;
-- physical hardware keyboard behavior;
-- device-specific dynamic color;
-- install/update behavior across representative devices;
-- process-death/lifecycle behavior on real targets;
-- measured startup/frame/memory/ANR behavior;
-- production signing certificate identity;
-- signed production artifact installation;
-- distribution-platform AAB validation;
-- Play Store listing/privacy/assets correctness;
-- GitHub repository/environment administration.
-
-Use `V2_0_12_RELEASE.md` as the authoritative current worksheet and `PLAY_STORE_RELEASE.md` for publication preparation. Do not mark any manual row passed until it was actually performed.
-
-## 2.0.12 Evidence Boundary
-
-The verified historical v1 RC/post-RC lines prove their exact repository sources and automation were green. They do not prove the current 2.0.12 head.
-
-2.0.12 promotion additionally requires:
-
-- fresh exact-final-head Android CI and API-35 instrumentation;
-- actual production signing and protected-validation evidence;
-- signed artifacts and trusted certificate verification;
-- release hashes and embedded APK identity evidence;
-- representative physical-device performance evidence;
-- real accessibility/device/lifecycle QA;
-- repository-admin/store validation where required;
-- a deliberate `SHIP` decision before `v2.0.12` tagging/publication.
-
-Documentation/repository guard success also does not substitute for these production requirements.
-
-## CI Reference
-
-See `CI_CD.md` for the complete GitHub Actions gate and artifact policy, `REPOSITORY_GUARDS.md` and `REPOSITORY_FILE_REFERENCE.md` for repository/documentation consistency enforcement, `PRODUCTION_SIGNING.md` and `PRODUCTION_RELEASE_VALIDATION.md` for signing/identity verification, `PERFORMANCE_BENCHMARKING.md` for physical performance evidence, `V2_0_12_RELEASE.md` for current release requirements, and `RELEASING.md` for the end-to-end release process.
+- configured → verified;
+- compiled → runtime-tested;
+- built → signed/published;
+- emulator-tested → physical-device-tested;
+- framework-linked → App Store-ready;
+- CI artifact → production distribution.
