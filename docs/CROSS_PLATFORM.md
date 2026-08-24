@@ -49,7 +49,10 @@ The portable UI currently includes:
 - English/Hindi Compose resources for the migrated shared surface;
 - explicit Sudoku-cell semantics for row, column, value/notes, fixed/editable, selected, and conflict state;
 - a non-color conflict marker in addition to semantic conflict state;
-- a portable active-game snapshot and storage contract with fail-closed restore validation.
+- a portable active-game snapshot and storage contract with fail-closed restore validation;
+- deterministic versioned `SNG1` active-game encoding;
+- native local active-game adapters for the staged Android shared host, Desktop JVM, Web/Wasm, and Apple hosts;
+- common restore/autosave ownership for Compose hosts.
 
 Android-only capabilities remain in the Android application until equivalent multiplatform service abstractions are implemented and tested. This is an explicit feature-parity boundary, not missing evidence hidden behind a generic “supported” label.
 
@@ -67,8 +70,8 @@ This table is the source-controlled parity boundary between the mature Android p
 | Engine-backed hints | Yes | Yes | Shared hint engine + localized technique/status text |
 | Conflict feedback | Yes | Yes | Shared visual + semantic + non-color marker |
 | English/Hindi player-facing text | Yes | Yes for migrated shared surface | Shared Compose resources; parity guard covers keys/placeholders |
-| Active-game save model | Yes | Contract + validated snapshot | Platform persistence adapters are still required before save/resume parity is claimed |
-| Room/DataStore persistence | Yes | No | Must remain Android-only; common code uses `SharedGameStore` instead |
+| Active-game save model | Yes | Shared model + native local adapters | `SNG1` codec and Android shared-host/Desktop/Web/Apple adapters are source-implemented; real host lifecycle/runtime QA remains required |
+| Room/DataStore persistence | Yes | No | Must remain Android-only; common code uses `SharedGameStore`/`SharedGameTextStore` instead |
 | Challenges/custom puzzles UI | Yes | Not yet | Domain migration remains pending |
 | Learning/statistics UI | Yes | Not yet | Engine pieces may be shared; presentation/persistence parity remains pending |
 | Puzzle-code codec | Yes | Engine available | Common import/export service/UI integration remains pending |
@@ -96,11 +99,24 @@ Locale-resource parity is source evidence only. Representative Hindi layout chec
 
 ## Shared persistence contract
 
-`SharedGameSnapshot` captures the portable active-game state required for save/resume work: difficulty, deterministic generation seed, board contents, notes, selected cell, and notes mode. `SharedGameStore` is a suspendable common interface with `load`, `save`, and `clear` operations; it deliberately has no Room, DataStore, filesystem, browser-storage, or Apple-framework types.
+`SharedGameSnapshot` captures the portable active-game state required for save/resume work: difficulty, deterministic generation seed, board contents, notes, selected cell, and notes mode. `SharedGameStore` is the snapshot-level suspendable interface; `SharedGameTextStore` is the minimal platform boundary for one encoded text value. Neither common interface imports Room, DataStore, filesystem, browser-storage, or Apple-framework types.
 
-`SharedGameState.restore` fails closed before mutation. It regenerates the starting puzzle from the saved difficulty/seed, requires all fixed clues to remain unchanged, validates note indexes/values/targets, validates the selected-cell bound, copies restored note sets, clears undo history, and only then publishes restored state. This provides a tested common boundary while platform-specific adapters remain pending.
+`SharedGameSnapshotCodec` owns the deterministic bounded `SNG1` transport. It validates version, difficulty, seed, exactly 81 board digits, selection bounds, notes-mode encoding, note cell/digit bounds, duplicate notes, and a maximum encoded size. `EncodedSharedGameStore` composes the codec with a platform text store so platform adapters do not duplicate serialization rules.
 
-A source-level store contract is not a claim that save/resume already works on iOS, Desktop, or Web. Each production host still needs an adapter, lifecycle ownership, migration/versioning policy, corruption handling, and runtime tests.
+`SharedGameState.restore` remains the Sudoku-aware authority and fails closed before mutation. It regenerates the starting puzzle from the saved difficulty/seed, requires all fixed clues to remain unchanged, validates note indexes/values/targets, validates the selected-cell bound, copies restored note sets, clears undo history, and only then publishes restored state.
+
+`rememberPersistedSharedGameState` performs one restore attempt before autosaving observable later snapshots. Storage read/write failures are isolated with a fresh in-memory game remaining usable; they do not weaken Sudoku validation.
+
+Current source adapters are intentionally local/offline:
+
+- staged Android shared host: private `SharedPreferences` adapter plus `CrossPlatformActivity` restore/save wiring;
+- Desktop JVM: `java.util.prefs.Preferences` adapter;
+- Web/Wasm: browser `localStorage` adapter;
+- iOS/iPadOS: `NSUserDefaults` adapter.
+
+See [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md) for the full `SNG1` format, compatibility policy, adapter boundaries, privacy/security notes, and tests.
+
+These source implementations do not by themselves prove process-death recovery, browser storage behavior across privacy modes, physical-device Apple lifecycle behavior, Desktop clean-machine behavior, or platform backup semantics. Those remain runtime evidence requirements.
 
 ## Shared accessibility boundary
 
@@ -159,7 +175,7 @@ Windows PowerShell:
 .\gradlew.bat :sharedUI:desktopTest
 ```
 
-The shared-state suite includes typed-status transitions, notes/undo/reset behavior, hints, difficulty switching, active-game snapshot round trips, and fail-closed snapshot validation for changed fixed clues and invalid note targets.
+The shared-state suite includes typed-status transitions, notes/undo/reset behavior, hints, difficulty switching, active-game snapshot round trips, fail-closed generated-puzzle restore validation, deterministic `SNG1` codec coverage, malformed/oversized payload rejection, encoded-store behavior, and game-state store wiring.
 
 ### Translation guards
 
@@ -290,9 +306,13 @@ The SwiftUI sources in `iosApp/` are host code. A production Apple application a
 
 - Android mature production launcher: `app/src/main/java/com/sanskar/sudokunova/MainActivity.kt`
 - Android shared UI host: `app/src/main/java/com/sanskar/sudokunova/CrossPlatformActivity.kt`
+- Android shared persistence adapter: `app/src/main/java/com/sanskar/sudokunova/CrossPlatformSharedPreferencesGameTextStore.kt`
 - Desktop: `sharedUI/src/desktopMain/kotlin/com/sanskar/sudokunova/shared/desktop/Main.kt`
+- Desktop persistence adapter: `sharedUI/src/desktopMain/kotlin/com/sanskar/sudokunova/shared/desktop/DesktopPreferencesGameTextStore.kt`
 - Web/Wasm: `sharedUI/src/wasmJsMain/kotlin/com/sanskar/sudokunova/shared/web/Main.kt`
+- Web persistence adapter: `sharedUI/src/wasmJsMain/kotlin/com/sanskar/sudokunova/shared/web/WebLocalStorageGameTextStore.kt`
 - iOS/iPadOS Compose bridge: `sharedUI/src/iosMain/kotlin/com/sanskar/sudokunova/shared/ios/MainViewController.kt`
+- Apple persistence adapter: `sharedUI/src/iosMain/kotlin/com/sanskar/sudokunova/shared/ios/AppleUserDefaultsGameTextStore.kt`
 - SwiftUI host sources: `iosApp/`
 
 ## CI contract
@@ -300,7 +320,7 @@ The SwiftUI sources in `iosApp/` are host code. A production Apple application a
 The dedicated cross-platform workflow is intended to validate the exact PR head across these repository-build gates:
 
 - shared engine Desktop tests;
-- shared gameplay-state Desktop tests;
+- shared gameplay-state/persistence Desktop tests;
 - shared Desktop compilation;
 - shared Web/Wasm compilation;
 - Android debug assembly;
@@ -319,7 +339,7 @@ Cross-platform source/build success does **not** by itself prove:
 - Windows code signing or installer reputation;
 - Linux distribution-repository compatibility;
 - browser/device compatibility across the intended web support matrix;
-- physical-device accessibility/performance/lifecycle behavior outside the tests actually run;
+- physical-device persistence/accessibility/performance/lifecycle behavior outside the tests actually run;
 - store/publication completion.
 
 Record those results only after they actually occur. This follows the same exact-evidence discipline as the Android 2.0.12 release line.
