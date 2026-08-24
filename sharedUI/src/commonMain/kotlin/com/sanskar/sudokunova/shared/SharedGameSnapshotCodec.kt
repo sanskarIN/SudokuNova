@@ -27,10 +27,10 @@ object SharedGameSnapshotCodec {
         validateNotes(snapshot.notes)
 
         val notes = snapshot.notes
-            .toSortedMap()
             .entries
+            .sortedBy { it.key }
             .joinToString(NOTES_SEPARATOR.toString()) { (index, values) ->
-                val digits = values.toSortedSet().joinToString(separator = "")
+                val digits = values.sorted().joinToString(separator = "")
                 "$index$NOTE_VALUE_SEPARATOR$digits"
             }
         val selected = snapshot.selectedIndex ?: NO_SELECTION
