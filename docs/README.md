@@ -21,18 +21,19 @@ SudokuNova 2.0.12 keeps Android as the mature primary production surface and now
 
 1. [Development Setup](DEVELOPMENT_SETUP.md)
 2. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
-3. [Project Structure](PROJECT_STRUCTURE.md)
-4. [Architecture](ARCHITECTURE.md)
-5. [Building](BUILDING.md)
-6. [Testing](TESTING.md)
-7. [Quality Gates](QUALITY_GATES.md)
-8. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
-9. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
-10. [CI/CD](CI_CD.md)
-11. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
-12. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-13. [Contributing Guide](CONTRIBUTING_GUIDE.md)
-14. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+3. [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
+4. [Project Structure](PROJECT_STRUCTURE.md)
+5. [Architecture](ARCHITECTURE.md)
+6. [Building](BUILDING.md)
+7. [Testing](TESTING.md)
+8. [Quality Gates](QUALITY_GATES.md)
+9. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+10. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+11. [CI/CD](CI_CD.md)
+12. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+13. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+14. [Contributing Guide](CONTRIBUTING_GUIDE.md)
+15. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 ### I am changing Sudoku logic
 
@@ -48,27 +49,29 @@ SudokuNova 2.0.12 keeps Android as the mature primary production surface and now
 ### I am changing cross-platform code
 
 1. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
-2. [Architecture](ARCHITECTURE.md)
-3. [Project Structure](PROJECT_STRUCTURE.md)
-4. [Building](BUILDING.md)
-5. [Testing](TESTING.md)
-6. [Quality Gates](QUALITY_GATES.md)
-7. [CI/CD](CI_CD.md)
-8. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
-9. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+2. [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
+3. [Architecture](ARCHITECTURE.md)
+4. [Project Structure](PROJECT_STRUCTURE.md)
+5. [Building](BUILDING.md)
+6. [Testing](TESTING.md)
+7. [Quality Gates](QUALITY_GATES.md)
+8. [CI/CD](CI_CD.md)
+9. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+10. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
 
 The portable code lives primarily in `sudoku-engine/`, `sharedUI/`, and `iosApp/`. Android's existing `app/` module remains the primary production application while shared parity is expanded incrementally.
 
 ### I am changing persistence/import/backup
 
-1. [Data Storage](DATA_STORAGE.md)
-2. [Data Formats](DATA_FORMATS.md)
-3. [Backup / Restore](BACKUP_RESTORE.md)
-4. [v0.7 Transfer/Backup Technical Record](TRANSFER_BACKUP_V07.md)
-5. [Privacy](PRIVACY.md)
-6. [Security](SECURITY.md)
-7. [`../SECURITY.md`](../SECURITY.md)
-8. [Testing](TESTING.md)
+1. [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
+2. [Data Storage](DATA_STORAGE.md)
+3. [Data Formats](DATA_FORMATS.md)
+4. [Backup / Restore](BACKUP_RESTORE.md)
+5. [v0.7 Transfer/Backup Technical Record](TRANSFER_BACKUP_V07.md)
+6. [Privacy](PRIVACY.md)
+7. [Security](SECURITY.md)
+8. [`../SECURITY.md`](../SECURITY.md)
+9. [Testing](TESTING.md)
 
 ### I am preparing 2.0.12 or a later release
 
@@ -137,6 +140,9 @@ System-level boundaries between Android, shared engine/UI, persistence, teaching
 ### [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
 Authoritative platform matrix, KMP/Compose boundaries, Android shared host, Desktop/Web/iOS entry points, build commands, CI targets, and evidence limits.
 
+### [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
+Versioned `SNG1` active-game snapshot encoding, fail-closed restore rules, common store interfaces, native Android/Desktop/Web/Apple adapters, Compose autosave behavior, compatibility policy, and runtime evidence boundaries.
+
 ### [Project Structure](PROJECT_STRUCTURE.md)
 Repository tree, modules, packages, source/test locations, workflows, and change-placement rules.
 
@@ -159,6 +165,9 @@ Structured teaching evidence, supported logical techniques, practice architectur
 Canonical Sudoku, engine, gameplay, persistence, platform, release, and repository terminology.
 
 ## Data, Persistence, Privacy, and Security
+
+### [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
+Portable active-game snapshot/storage contract and per-platform local adapter boundaries for the shared UI.
 
 ### [Data Storage](DATA_STORAGE.md)
 DataStore/Room responsibilities, reset behavior, migrations, and local-data integrity.
