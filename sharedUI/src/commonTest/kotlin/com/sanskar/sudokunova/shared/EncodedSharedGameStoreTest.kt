@@ -103,6 +103,7 @@ class EncodedSharedGameStoreTest {
                 }
             },
         )
-        return outcome?.getOrThrow() ?: error("Suspend block did not complete synchronously in this unit test.")
+        val completed = outcome ?: error("Suspend block did not complete synchronously in this unit test.")
+        return completed.getOrThrow()
     }
 }
