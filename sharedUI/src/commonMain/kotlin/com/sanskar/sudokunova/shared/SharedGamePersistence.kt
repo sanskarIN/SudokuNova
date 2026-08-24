@@ -2,6 +2,8 @@ package com.sanskar.sudokunova.shared
 
 import com.sanskar.sudokunova.engine.Difficulty
 
+const val SHARED_ACTIVE_GAME_STORAGE_KEY = "sudokunova.shared.active-game.v1"
+
 data class SharedGameSnapshot(
     val difficulty: Difficulty,
     val seed: Long,
