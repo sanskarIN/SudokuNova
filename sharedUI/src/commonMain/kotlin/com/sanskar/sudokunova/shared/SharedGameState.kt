@@ -52,6 +52,25 @@ class SharedGameState(
         status = statusForSelection(index)
     }
 
+    fun moveSelection(rowDelta: Int, columnDelta: Int) {
+        require(rowDelta in -1..1 && columnDelta in -1..1) {
+            "Selection movement must stay within one row and one column per step."
+        }
+        require(rowDelta != 0 || columnDelta != 0) {
+            "Selection movement requires a non-zero row or column delta."
+        }
+
+        val current = selectedIndex
+        if (current == null) {
+            select(0)
+            return
+        }
+
+        val row = (current / SudokuBoard.SIZE + rowDelta).coerceIn(0, SudokuBoard.SIZE - 1)
+        val column = (current % SudokuBoard.SIZE + columnDelta).coerceIn(0, SudokuBoard.SIZE - 1)
+        select(row * SudokuBoard.SIZE + column)
+    }
+
     fun setDifficulty(value: Difficulty) {
         if (difficulty == value) return
         newGame(value)
