@@ -83,7 +83,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "SudokuNova"
-            packageVersion = "2.0.12"
+            packageVersion = "2.0.13"
             description = "SudokuNova cross-platform Sudoku application"
             vendor = "Sanskar"
         }
