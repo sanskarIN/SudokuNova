@@ -2,7 +2,7 @@
 
 This directory is the maintained documentation hub for SudokuNova. Documentation follows an evidence-first rule: source-backed behavior may be described as implemented; future work must be labeled planned; automated, manual, signing, store, and device-verification claims are recorded only after the corresponding check actually happened.
 
-SudokuNova 2.0.12 keeps Android as the mature primary production surface and now adds a Kotlin/Compose Multiplatform layer. Start with [Cross-Platform Development and Builds](CROSS_PLATFORM.md) when working on Android shared UI, iOS/iPadOS, Windows, macOS, Linux, or Web.
+SudokuNova 2.0.13 keeps Android as the mature primary production surface while continuing the Kotlin/Compose Multiplatform layer. Start with [Cross-Platform Development and Builds](CROSS_PLATFORM.md) when working on Android shared UI, iOS/iPadOS, Windows, macOS, Linux, or Web.
 
 ## Choose Your Path
 
@@ -73,11 +73,11 @@ The portable code lives primarily in `sudoku-engine/`, `sharedUI/`, and `iosApp/
 8. [`../SECURITY.md`](../SECURITY.md)
 9. [Testing](TESTING.md)
 
-### I am preparing 2.0.12 or a later release
+### I am preparing 2.0.13 or a later release
 
 Read in this order:
 
-1. [2.0.12 Release Line](V2_0_12_RELEASE.md)
+1. [2.0.13 Release Line](V2_0_13_RELEASE.md)
 2. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
 3. [Building](BUILDING.md)
 4. [Production Signing](PRODUCTION_SIGNING.md)
@@ -104,7 +104,7 @@ Read in this order:
 25. [`../ROADMAP.md`](../ROADMAP.md)
 26. [`../what_changed.md`](../what_changed.md)
 
-Production signing, notarization, store publication, physical-device QA, browser compatibility, and other external evidence must not be inferred from source compilation. The release and cross-platform guides call out those boundaries explicitly.
+For historical 2.0.12 release decisions, use [2.0.12 Release Line](V2_0_12_RELEASE.md). Production signing, notarization, store publication, physical-device QA, browser compatibility, and other external evidence must not be inferred from source compilation.
 
 ## Product and User Documentation
 
@@ -150,7 +150,7 @@ Repository tree, modules, packages, source/test locations, workflows, and change
 Path ownership model for every tracked repository area and the fail-closed documentation-coverage contract.
 
 ### [Sudoku Engine](SUDOKU_ENGINE.md)
-Domain reference for board, solver, generator, difficulty, teaching traces, hints, practice, and puzzle codes.
+Domain reference for board, solver, generator, difficulty, teaching traces, hints, practice, puzzle codes, and validated puzzle exchange.
 
 ### [Puzzle Generation](PUZZLE_GENERATION.md)
 Generation, uniqueness, determinism, and calibration behavior.
@@ -293,8 +293,11 @@ Historical v1.0 RC handoff, candidate metadata, artifact/signing pipeline, autom
 
 ## Current Release and Planning
 
+### [2.0.13 Release Line](V2_0_13_RELEASE.md)
+Current source/version/release authority for `versionCode 2013` / `versionName 2.0.13` and its Android plus cross-platform evidence boundary.
+
 ### [2.0.12 Release Line](V2_0_12_RELEASE.md)
-Current Android source/version/release authority for `versionCode 2012` / `versionName 2.0.12` and its production evidence boundary.
+Historical source/version/release authority for `versionCode 2012` / `versionName 2.0.12`.
 
 ### [Production Signing](PRODUCTION_SIGNING.md)
 Four-variable secret-backed Android signing configuration, fail-closed rules, and certificate validation.
@@ -345,7 +348,7 @@ Immutable detailed history through 2026-08-19.
 
 ## Historical vs Current Authority
 
-`V2_0_12_RELEASE.md` remains the Android 2.0.12 release-version authority. `CROSS_PLATFORM.md` is the current authority for repository-supported non-Android build targets and shared-platform architecture. Historical milestone documents intentionally preserve the evidence and assumptions of their original release lines; do not reinterpret them as current verification.
+`V2_0_13_RELEASE.md` is the current release-version authority. `V2_0_12_RELEASE.md` remains historical 2.0.12 evidence. `CROSS_PLATFORM.md` is the current authority for repository-supported non-Android build targets and shared-platform architecture. Historical milestone documents intentionally preserve the evidence and assumptions of their original release lines; do not reinterpret them as current verification.
 
 ## Documentation Maintenance Rule
 
