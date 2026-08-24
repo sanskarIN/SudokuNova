@@ -4,6 +4,7 @@ import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.SudokuBoard
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -127,5 +128,32 @@ class SharedGameStateTest {
 
         assertFalse(state.restore(corrupted))
         assertEquals(original, state.snapshot())
+    }
+
+    @Test
+    fun gridNavigationStartsPredictablyAndClampsAtEdges() {
+        val state = SharedGameState()
+
+        state.moveSelection(rowDelta = 0, columnDelta = 1)
+        assertEquals(0, state.selectedIndex)
+
+        state.moveSelection(rowDelta = 0, columnDelta = 1)
+        assertEquals(1, state.selectedIndex)
+
+        state.moveSelection(rowDelta = 1, columnDelta = 0)
+        assertEquals(10, state.selectedIndex)
+
+        state.select(0)
+        state.moveSelection(rowDelta = -1, columnDelta = 0)
+        state.moveSelection(rowDelta = 0, columnDelta = -1)
+        assertEquals(0, state.selectedIndex)
+
+        state.select(SudokuBoard.CELL_COUNT - 1)
+        state.moveSelection(rowDelta = 1, columnDelta = 0)
+        state.moveSelection(rowDelta = 0, columnDelta = 1)
+        assertEquals(SudokuBoard.CELL_COUNT - 1, state.selectedIndex)
+
+        assertFailsWith<IllegalArgumentException> { state.moveSelection(0, 0) }
+        assertFailsWith<IllegalArgumentException> { state.moveSelection(2, 0) }
     }
 }
