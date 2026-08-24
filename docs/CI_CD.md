@@ -2,7 +2,7 @@
 
 SudokuNova uses GitHub Actions as a verification system. The repository automates source, shared-platform, Android, packaging, and release-artifact evidence, but it does **not** automatically prove production signing, physical-device quality, store acceptance, notarization, or public distribution.
 
-For cross-platform build commands and platform evidence boundaries, see [`CROSS_PLATFORM.md`](CROSS_PLATFORM.md). For the Android 2.0.12 release contract, see [`V2_0_12_RELEASE.md`](V2_0_12_RELEASE.md).
+For cross-platform commands/boundaries see [`CROSS_PLATFORM.md`](CROSS_PLATFORM.md). For the current release contract see [`V2_0_13_RELEASE.md`](V2_0_13_RELEASE.md).
 
 ## Workflow Overview
 
@@ -12,44 +12,37 @@ Current workflows live under `.github/workflows/`.
 
 The standard pull-request gate protects both the shared KMP layers and the mature Android release line.
 
-Current 2.0.12 stages are:
+Current 2.0.13 stages include:
 
-1. checkout;
-2. Java 17 setup;
-3. Gradle wrapper/cache setup and wrapper validation;
-4. Android SDK `apkanalyzer` discovery;
-5. repository secret/signing-material guard;
-6. release-output verifier unit and CLI-boundary tests;
-7. documentation-link, documentation-coverage, and release-contract regression tests;
-8. partial release-signing fail-closed regression;
-9. direct documentation-link, documentation-coverage, and release-contract guards;
-10. English/Hindi translation parity;
-11. `:sudoku-engine:desktopTest`;
-12. `:sharedUI:desktopTest`;
-13. `:sharedUI:compileKotlinDesktop` and `:sharedUI:compileKotlinWasmJs`;
-14. `:app:testDebugUnitTest`;
-15. `:app:assembleDebugAndroidTest`;
-16. `:macrobenchmark:assembleBenchmark`;
-17. debug and release Android lint;
-18. debug APK assembly;
-19. R8/resource-shrunk release APK assembly;
-20. release AAB assembly;
-21. release APK/AAB/mapping structural verification;
-22. exact `in.sanskar.sudokunova` / `2012` / `2.0.12` identity verification;
-23. embedded APK minSdk 26 / targetSdk 37 / `debuggable=false` verification;
-24. SHA-256, byte-size, and APK-identity evidence generation;
-25. short-lived report/test-result artifact upload;
-26. successful unsigned release-output evidence upload.
+1. checkout, Java 17, Gradle wrapper/cache validation;
+2. Android SDK `apkanalyzer` discovery;
+3. repository secret/signing-material guard;
+4. release-output verifier unit/CLI tests;
+5. documentation-link, documentation-coverage, release-contract, and translation regression tests;
+6. partial release-signing fail-closed regression;
+7. direct documentation, release-contract, and translation guards;
+8. `:sudoku-engine:desktopTest`;
+9. `:sharedUI:desktopTest`;
+10. `:sharedUI:compileKotlinDesktop` and `:sharedUI:compileKotlinWasmJs`;
+11. `:app:testDebugUnitTest`;
+12. `:app:assembleDebugAndroidTest`;
+13. `:macrobenchmark:assembleBenchmark`;
+14. debug/release lint;
+15. debug APK;
+16. R8/resource-shrunk release APK;
+17. release AAB;
+18. exact `in.sanskar.sudokunova` / `2013` / `2.0.13` identity verification;
+19. embedded APK minSdk 26 / targetSdk 37 / `debuggable=false` verification;
+20. SHA-256, byte-size, and APK-identity evidence;
+21. short-lived report and successful unsigned release-output uploads.
 
-The shared tests/compilation are intentionally ahead of the expensive Android release work. A portable source failure should be fixed at its source instead of surfacing separately in every platform job.
+Shared tests/compilation remain ahead of expensive Android release work so portable failures are fixed at their source.
 
 ### Cross-Platform CI — `cross-platform.yml`
 
-This workflow validates repository-supported shared/platform build targets on appropriate hosted operating systems.
+This workflow validates repository-supported targets on appropriate hosted operating systems.
 
 #### Shared code — Ubuntu
-
-Runs:
 
 ```bash
 ./gradlew :sudoku-engine:desktopTest
@@ -58,45 +51,31 @@ Runs:
 ./gradlew :sharedUI:compileKotlinWasmJs
 ```
 
-This protects portable engine correctness, portable gameplay-state behavior, Desktop compilation, and Web/Wasm compilation.
+The engine suite includes the established `SNP1` compatibility vector and common `PuzzleExchangeService` unique-solution acceptance. Shared gameplay tests include deterministic keyboard-style grid movement and active-game persistence/restore behavior.
 
 #### Android shared integration — Ubuntu
-
-Runs:
 
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
-This proves that the mature Android application can consume `:sudoku-engine` and `:sharedUI`. It does not replace Android CI's stricter lint/release/artifact gates.
+This proves the mature Android app can consume both shared modules. It does not replace Android CI's stricter release gates.
 
 #### Web/Wasm distribution — Ubuntu
-
-Runs:
 
 ```bash
 ./gradlew :sharedUI:wasmJsBrowserDistribution
 ```
 
-and uploads the generated production distribution from:
-
-```text
-sharedUI/build/dist/wasmJs/productionExecutable/
-```
-
-A successful build proves repository packaging for the exact head. Browser/device compatibility remains a separate runtime QA responsibility.
+A successful build proves repository packaging for that exact head, not browser/device compatibility.
 
 #### iOS Simulator framework — macOS
-
-Runs:
 
 ```bash
 ./gradlew :sharedUI:linkDebugFrameworkIosSimulatorArm64
 ```
 
-and uploads the generated `SudokuNovaSharedUI.framework`.
-
-This validates Kotlin/Native framework linking on macOS. It does not prove Xcode host completeness, Apple signing/provisioning, physical-device behavior, TestFlight/App Store validation, or publication.
+This proves Kotlin/Native framework linking, not Xcode production-host completeness, signing/provisioning, device behavior, TestFlight/App Store acceptance, or publication.
 
 #### Desktop application images — Linux, Windows, macOS
 
@@ -106,155 +85,107 @@ Each host runs:
 ./gradlew :sharedUI:createDistributable
 ```
 
-and uploads the host application image from `sharedUI/build/compose/binaries/main/app/`.
-
-The shared Desktop configuration also declares MSI, DMG, and DEB native package formats. Signing, notarization, installer reputation, and distribution-channel acceptance are external evidence.
+The shared Desktop package version is `2.0.13` and is now checked by the release-contract guard against Android `versionName`. Signing, notarization, installer reputation, and clean-machine distribution QA remain external evidence.
 
 ### Android Instrumentation — `instrumentation.yml`
 
-The connected Android gate runs Compose/Room tests on an API-35 emulator. It configures Java/Gradle, KVM where supported, disables animations, executes connected tests, and uploads reports.
+The connected gate runs Compose/Room tests on API 35. It protects real connected behavior such as navigation/semantics, Room flows/migrations, challenges, backup/transfer, Learn/practice, and automatically assertable accessibility behavior.
 
-This protects behavior such as:
-
-- Compose navigation and semantics;
-- Room behavior and migrations;
-- history/saved-puzzle flows;
-- challenge flows;
-- backup/transfer flows;
-- Learn/practice UI behavior;
-- accessibility semantics that can be asserted automatically.
-
-Compilation success in Android CI is not equivalent to this connected-test evidence.
+Instrumentation-test compilation in Android CI is not equivalent to this connected-test evidence.
 
 ### Production Release Validation — `release-validation.yml`
 
 This manually dispatched workflow is reserved for trusted Android production-signing validation through the `production-release` GitHub Environment.
 
-It can, when the external environment is actually configured:
+Current source defaults bind:
 
-- validate operator-supplied version values;
-- reconstruct the keystore temporarily outside the repository;
-- build signed R8 APK/AAB outputs;
-- require application ID `in.sanskar.sudokunova`;
-- bind versionCode `2012`, versionName `2.0.12`, minSdk 26, and targetSdk 37 to source/workflow expectations;
-- inspect embedded APK identity and require `debuggable=false`;
-- verify APK/AAB signatures;
-- require an APK v2-or-newer verified signature scheme;
-- bind APK/AAB signer certificates to protected expected SHA-256 fingerprints;
-- record non-secret hashes, sizes, identity, signature fingerprints, and workflow context;
-- remove the temporary keystore during cleanup.
+- application ID `in.sanskar.sudokunova`;
+- versionCode `2013`;
+- versionName `2.0.13`;
+- minSdk 26;
+- targetSdk 37.
 
-Committed workflow source is not proof that the protected environment, reviewers, allowed refs, secrets, or production key are configured. A successful protected workflow is still not Play Console, physical-device, accessibility, or publication evidence.
+When the external environment is actually configured, it can reconstruct a temporary keystore outside the repository, build signed R8 APK/AAB outputs, verify embedded identity, require verified APK v2-or-newer signing, verify AAB signing, bind signer certificates to protected SHA-256 fingerprints, retain non-secret evidence, and remove temporary signing material.
+
+Committed workflow source is not proof that reviewers, allowed refs, secrets, keys, or a successful protected run exist.
 
 ## Exact-Head Pull-Request Policy
 
-A pull request is not verified until every required workflow is green on the **same exact final head SHA**.
+A pull request is not verified until every required workflow family is green on the **same exact final head SHA**.
 
-For cross-platform changes, the expected PR evidence set is:
+For current cross-platform/release changes:
 
 - Android CI — green on final head;
 - Android Instrumentation — green on final head;
 - Cross-Platform CI — every matrix job green on final head.
 
-If any commit is added after those runs, the older runs become historical evidence and the new head must run again. This includes documentation commits when the pull-request workflow path rules cause a new run.
+Any later source or documentation commit invalidates older runs as final evidence. Never combine a green Android run from one SHA with green Apple/Desktop/Web jobs from another SHA.
 
-Never combine a green Android run from one SHA with a green iOS/Desktop/Web run from another SHA and call the later branch verified.
-
-Historical green v1 and 2.0.12-pre-cross-platform runs remain valid only for the exact commits they tested.
+Historical 2.0.12/v1 evidence remains valid only for its exact historical commits.
 
 ## Concurrency and Cancellation
 
-PR workflows use concurrency groups and cancel superseded in-progress work where configured. Cancellation caused by a newer commit is expected; the replacement head is the only one that matters for merge evidence.
-
-A cancelled old run must not be interpreted as a project failure when a newer head intentionally superseded it.
+PR workflows cancel superseded in-progress work where configured. A cancelled old run is expected when a new commit replaces its head. Only the replacement exact head matters for merge evidence.
 
 ## Repository Security Guard
-
-Standard CI executes:
 
 ```bash
 python scripts/verify_no_secrets.py
 ```
 
-The guard rejects committed signing/private-key and obvious credential material. It is defense in depth, not a substitute for GitHub secret scanning or careful review.
-
-Production signing material must remain outside version control.
+The guard rejects committed signing/private-key and obvious credential material. Production signing material remains outside Git.
 
 ## Documentation and Repository-Contract Gates
 
-### Documentation link integrity
+### Documentation links
 
 ```bash
 python -m unittest scripts.tests.test_verify_documentation_links
 python scripts/verify_documentation_links.py
 ```
 
-This rejects missing repository-local Markdown targets and repository-escaping links.
-
-### Complete tracked-file documentation coverage
+### Tracked-file documentation ownership
 
 ```bash
 python -m unittest scripts.tests.test_verify_documentation_coverage
 python scripts/verify_documentation_coverage.py
 ```
 
-The direct guard obtains the authoritative tracked-file set with `git ls-files -z` and fails when:
+The direct guard uses `git ls-files -z` and fails when a tracked path has no ownership rule, a canonical guide is missing, or a detailed `docs/*.md` file is absent from `docs/README.md`.
 
-- a tracked path has no ownership rule;
-- a rule points to missing canonical documentation;
-- a detailed `docs/*.md` guide is not discoverable from `docs/README.md`.
-
-The taxonomy includes Android, `sudoku-engine/`, `sharedUI/`, `iosApp/`, Macrobenchmark, workflows, scripts, Gradle configuration, root policy files, and the detailed docs library.
-
-Audit every tracked path with:
-
-```bash
-python scripts/verify_documentation_coverage.py --verbose
-```
-
-### Release source/workflow identity
+### Release identity synchronization
 
 ```bash
 python -m unittest scripts.tests.test_verify_release_contract
 python scripts/verify_release_contract.py
 ```
 
-The guard treats `app/build.gradle.kts` as the Android source release contract and requires ordinary CI plus protected production validation to agree on:
+The current guard synchronizes:
 
-- application ID;
-- version code;
-- version name;
-- minimum SDK;
-- target SDK.
+- Android `app/build.gradle.kts` application/version/SDK identity;
+- Desktop `sharedUI/build.gradle.kts` `packageVersion` with Android `versionName`;
+- ordinary Android CI expected application/version/SDK values;
+- protected production-validation defaults and immutable application/SDK expectations.
 
-It also rejects invalid numeric values, invalid SDK ordering, unsafe version names, duplicate/missing values, and a production application ID ending in `.debug`.
+It rejects duplicate/missing contract values, unsafe release names, invalid SDK ordering, production IDs ending in `.debug`, and Android/Desktop version drift.
 
-Cross-platform source extraction must not silently alter this Android release identity.
-
-## Release-Verifier Unit Gate
-
-CI runs:
+### Release-verifier tests
 
 ```bash
 python -m unittest scripts.tests.test_verify_release_outputs
 python -m unittest scripts.tests.test_verify_release_cli_validation
 ```
 
-Coverage includes archive structure, release metadata parsing, embedded APK identity, SDK/debuggable checks, deterministic checksum evidence, certificate fingerprint normalization/parsing, verified signature-scheme parsing, v1-only signature rejection when mandatory signed validation is requested, and CLI argument boundaries.
+Coverage includes archive structure, release metadata, embedded APK identity, SDK/debuggable checks, deterministic checksum evidence, signature-scheme parsing, certificate fingerprints, and CLI boundaries.
 
-## Partial-Signing Fail-Closed Gate
-
-`app/build.gradle.kts` accepts either zero or all four release-signing environment values. CI intentionally sets only one fake alias and requires Gradle configuration to fail with the expected partial-signing message.
-
-This proves a half-configured environment cannot silently produce a supposedly production-ready unsigned artifact.
-
-## Translation Parity Gate
+### Translation parity
 
 ```bash
+python -m unittest scripts.tests.test_verify_translations
 python scripts/verify_translations.py
 ```
 
-Android player-facing English/Hindi resources must preserve key and formatting-placeholder parity. Shared UI currently uses a limited portable surface; localization parity must be extended deliberately as more mature Android UI is moved into common code.
+The guard covers the established Android localization scope plus full shared English/Hindi key and placeholder parity.
 
 ## Shared Engine Gate
 
@@ -262,108 +193,81 @@ Android player-facing English/Hindi resources must preserve key and formatting-p
 ./gradlew :sudoku-engine:desktopTest --stacktrace
 ```
 
-The engine tests use `kotlin.test` and protect board, solver, generator, difficulty, logical analysis, teaching evidence, hints, practice, and puzzle-code behavior in a platform-neutral test source set.
+This is shared correctness evidence for board/solver/generator/difficulty/teaching/hints/practice, `SNP1`, and validated puzzle exchange.
 
-Because the engine is shared by Android, Desktop, iOS, and Web, a failure here is a shared correctness failure rather than an Android-only defect.
-
-## Shared Gameplay-State Gate
+## Shared Gameplay Gate
 
 ```bash
 ./gradlew :sharedUI:desktopTest --stacktrace
 ```
 
-This protects portable gameplay-state behavior including fixed clues, notes, number entry, undo/reset consistency, and hint progression.
+This protects fixed clues, notes, number entry, undo/reset/hints, typed statuses, deterministic grid movement, snapshots, `SNG1`, store adapters/interfaces, and restore/autosave state wiring.
 
-## Shared Compile Gates
+## Shared Compile Gate
 
 ```bash
 ./gradlew :sharedUI:compileKotlinDesktop :sharedUI:compileKotlinWasmJs --stacktrace
 ```
 
-These checks catch common Compose/source-set/API issues before host packaging.
+The shared keyboard/focus/resource/semantics APIs must compile rather than being disabled for a failing target.
 
-## Android JVM Gate
+## Android JVM / Instrumentation Compilation / Macrobenchmark Gates
 
 ```bash
 ./gradlew :app:testDebugUnitTest --stacktrace
-```
-
-This covers Android-module behavior that does not require an emulator, including state codecs, persistence/transfer models, learning/statistics behavior, and pure presentation helpers.
-
-## Android Instrumentation Compilation Gate
-
-```bash
 ./gradlew :app:assembleDebugAndroidTest --stacktrace
-```
-
-This proves connected-test sources compile; it does not prove they pass on an emulator/device.
-
-## Macrobenchmark Compilation Gate
-
-```bash
 ./gradlew :macrobenchmark:assembleBenchmark --stacktrace
 ```
 
-This proves the release-like benchmark variant and test APK remain buildable together. Hosted compilation is not representative physical-device performance evidence.
-
-Physical measurement uses:
-
-```bash
-./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
-```
-
-Record the exact source SHA, device/OS, command, raw output, and traces when using results as release evidence.
+Connected instrumentation and representative physical-device Macrobenchmark evidence remain separate from compilation.
 
 ## Android Lint and Release Build Gates
 
-Android CI runs both:
-
 ```bash
-./gradlew :app:lintDebug :app:lintRelease
+./gradlew :app:lintDebug :app:lintRelease --stacktrace
+./gradlew :app:assembleDebug :app:assembleRelease :app:bundleRelease --stacktrace
 ```
 
-and the full debug/release build path. The release path includes R8/resource shrinking and AAB generation so cross-platform work cannot regress the mature Android distribution graph unnoticed.
+The release path retains R8/resource shrinking so shared work cannot silently weaken the mature Android distribution graph.
 
 ## Artifact Evidence
 
-Ordinary Android CI verifies the unsigned release APK/AAB/mapping and writes deterministic hash/identity evidence. Cross-Platform CI uploads short-lived Web, iOS Simulator framework, and Desktop application-image artifacts when the corresponding hosted builds succeed.
+Ordinary Android CI verifies the unsigned release APK/AAB/mapping and writes deterministic hash/identity evidence. Cross-Platform CI uploads short-lived Web, iOS Simulator framework, and Desktop application-image artifacts after successful host builds.
 
-Artifact retention is for build/review evidence. A CI artifact is not automatically a production-distribution artifact.
+A CI artifact is not automatically a production-distribution artifact.
 
 ## Required External Evidence
 
 Source and hosted CI cannot by themselves establish:
 
-- Android production signing/certificate identity unless the protected signing workflow actually succeeds;
-- physical-device Android installation/lifecycle/accessibility/performance quality;
-- Apple bundle signing/provisioning, physical-device execution, TestFlight/App Store acceptance;
-- macOS signing/notarization;
-- Windows code signing/reputation;
-- Linux distribution-channel compatibility;
-- broad Web browser/device compatibility;
-- Play Store/App Store listing/privacy/rollout approval;
-- repository ruleset/environment administration unless verified separately.
+- Android production signing/certificate identity unless protected validation succeeds;
+- physical-device Android lifecycle/accessibility/performance quality;
+- Apple production host/signing/provisioning/device/App Store evidence;
+- macOS notarization/Gatekeeper evidence;
+- Windows signing/reputation/clean-machine evidence;
+- Linux clean install/upgrade/remove/distribution evidence;
+- intended Web browser/device/accessibility/persistence compatibility;
+- store listing/privacy/rollout acceptance;
+- repository ruleset/environment administration unless checked separately.
 
-Keep these states explicit in release documentation and `what_changed.md`.
+Keep these states explicit in release docs and `what_changed.md`.
 
 ## Failure Triage Order
 
 When a workflow fails:
 
 1. identify the exact failing head SHA;
-2. read the first failed job/step, not only the final Gradle stack trace;
-3. if Gradle configuration fails, fix the shared build graph before platform-specific jobs;
-4. if `sudoku-engine` fails, treat it as a domain/shared correctness issue;
-5. if `sharedUI` compile/tests fail, isolate common vs Desktop/Wasm/iOS source-set behavior;
-6. if only one host packaging job fails, investigate that host/toolchain rather than weakening other jobs;
-7. if Android release guards fail, preserve the 2.0.12 identity/signing/evidence contract and fix source drift;
-8. if documentation guards fail, document/index the new area rather than adding a broad bypass;
-9. push the focused fix and discard older-run evidence because the head changed;
-10. require a new green exact-head set before merge.
+2. read the first failed job/step;
+3. if Gradle/KMP configuration fails, fix the shared build graph before platform jobs;
+4. if `sudoku-engine` fails, treat it as shared correctness/import-exchange failure;
+5. if `sharedUI` tests/compile fail, isolate common state/resource/input APIs instead of dropping a target;
+6. if only one host packaging job fails, investigate that host/toolchain;
+7. if Android release guards fail, preserve the 2013/2.0.13 identity/signing/evidence contract and fix drift;
+8. if release-contract guard fails, check Android source, Desktop package version, ordinary CI, and protected defaults together;
+9. if documentation guards fail, document/index the new area instead of broad bypasses;
+10. push the focused fix, discard older-run evidence, and require a new exact-head set.
 
 ## Local Pre-Push Verification
-
-A strong non-connected baseline is:
 
 ```bash
 python scripts/verify_no_secrets.py
@@ -372,6 +276,7 @@ python -m unittest scripts.tests.test_verify_documentation_coverage
 python -m unittest scripts.tests.test_verify_release_contract
 python -m unittest scripts.tests.test_verify_release_outputs
 python -m unittest scripts.tests.test_verify_release_cli_validation
+python -m unittest scripts.tests.test_verify_translations
 python scripts/verify_documentation_links.py
 python scripts/verify_documentation_coverage.py
 python scripts/verify_release_contract.py
@@ -392,17 +297,10 @@ python scripts/verify_translations.py
   --stacktrace
 ```
 
-Then run platform-specific connected/package checks on the required host OSes.
+Then run connected/platform-native/runtime checks on the required hosts.
 
 ## Evidence Recording Rule
 
-For every meaningful validation record:
-
-- exact commit SHA;
-- workflow name and run ID, or exact local command;
-- host OS/runner or physical device/OS;
-- result;
-- artifact/hash/identity details when relevant;
-- known evidence boundary.
+For every meaningful validation record capture the exact commit SHA, workflow/run ID or local command, host/device, result, artifact/hash identity when relevant, and evidence boundary.
 
 Never rewrite “configured” as “verified,” “built” as “published,” or “CI green” as “production-ready on every target.”
