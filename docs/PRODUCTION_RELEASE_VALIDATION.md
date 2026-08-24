@@ -1,138 +1,151 @@
 # Production Release Validation Workflow
 
-SudokuNova includes a manual, protected GitHub Actions workflow at `.github/workflows/release-validation.yml` for validating a release build that is signed with the intended production/upload key.
+SudokuNova includes a manual, protected GitHub Actions workflow at `.github/workflows/release-validation.yml` for validating a release build signed with the intended production/upload key.
 
 This workflow is deliberately separate from ordinary pull-request CI. Untrusted pull-request code must never receive production signing material.
 
-## What the workflow verifies
+## What a successful run verifies
 
-A successful run on an exact selected ref proves all of the following for the artifacts produced by that run:
+A successful run on an exact selected ref proves for artifacts produced by that run that:
 
 - repository secret guard passes;
-- release-verifier regression tests pass, including CLI-boundary validation;
+- release-contract and release-verifier regression tests pass;
 - English/Hindi translation parity passes;
-- release APK and AAB build successfully with R8/resource shrinking;
-- exactly one signed release APK and one release AAB are selected;
-- APK archive structure is valid;
-- AAB archive structure is valid;
-- APK `output-metadata.json` has production `applicationId = in.sanskar.sudokunova`;
-- APK `output-metadata.json` has the requested `versionCode` and `versionName`;
-- the APK's embedded manifest independently reports the expected production application ID, version code, and version name;
-- the APK's embedded manifest independently reports the source-controlled `minSdk` and `targetSdk` values;
-- the APK's embedded manifest reports `debuggable=false`;
-- operator-supplied version metadata is validated before use;
-- source, ordinary CI, and protected-workflow application/version/SDK expectations remain synchronized by `scripts/verify_release_contract.py`;
+- source, ordinary CI, protected defaults, and Desktop package version remain synchronized where applicable;
+- release APK/AAB build with R8/resource shrinking;
+- exactly one signed release APK and AAB are selected;
+- APK/AAB archive structures are valid;
+- APK output metadata and embedded manifest report the expected application/version identity;
+- embedded minSdk/targetSdk match source expectations;
+- release APK reports `debuggable=false`;
 - R8 `mapping.txt` exists and is non-empty;
-- APK signature passes `apksigner verify --verbose --print-certs`;
-- APK signature verification reports at least one verified v2-or-newer APK signature scheme;
-- AAB signature passes `jarsigner -verify -certs`;
-- AAB signer certificate can be inspected with `keytool -printcert -jarfile`;
-- APK signer certificate SHA-256 matches the protected expected fingerprint;
-- AAB signer/upload certificate SHA-256 matches the protected expected fingerprint;
-- artifact SHA-256 hashes and byte sizes are written to evidence;
-- normalized signer certificate fingerprints are written to evidence;
-- embedded APK identity/SDK/debuggable values are written to evidence;
-- repository/ref/commit/workflow-run/application/version/SDK context is written to evidence.
+- APK passes `apksigner verify --verbose --print-certs`;
+- APK reports at least one verified v2-or-newer signature scheme;
+- AAB passes `jarsigner -verify -certs`;
+- APK/AAB signer certificate SHA-256 values match protected expected fingerprints;
+- artifact hashes/sizes, signer fingerprints, embedded APK identity, and immutable workflow context are recorded as non-secret evidence.
 
-A successful run does **not** prove device QA, Play Console acceptance, final store declarations, branch protection, rollout safety, or other manual evidence.
+A successful protected run does **not** prove device QA, accessibility/performance quality, Play Console acceptance, final store declarations, repository branch protection, rollout safety, or publication.
+
+## Current 2.0.13 Contract
+
+Current source/default identity:
+
+```text
+applicationId          = in.sanskar.sudokunova
+versionCode            = 2013
+versionName            = 2.0.13
+Desktop packageVersion = 2.0.13
+minSdk                 = 26
+targetSdk              = 37
+```
+
+The protected workflow defaults to `2013` / `2.0.13`. `scripts/verify_release_contract.py` additionally requires Desktop `packageVersion` to match Android `versionName`, ordinary CI to match Android source identity, and protected defaults to match that same Android contract.
+
+See [`V2_0_13_RELEASE.md`](V2_0_13_RELEASE.md) for current release-line evidence requirements. [`V2_0_12_RELEASE.md`](V2_0_12_RELEASE.md) and v1 documents remain historical.
 
 ## Required GitHub Environment
 
-Create a GitHub Environment named:
+Create/configure a GitHub Environment named:
 
-`production-release`
+```text
+production-release
+```
 
 Recommended controls:
 
-- restrict who can approve/use the environment;
-- add required reviewers where the repository/account plan supports them;
-- restrict deployment branches/tags to intended release refs;
-- keep all production signing values as environment secrets, not repository variables;
+- restrict who can approve/use it;
+- add required reviewers where supported;
+- restrict deployment branches/tags to intended trusted release refs;
+- keep production signing values as environment secrets, not repository variables;
 - review environment access before every stable release.
 
 The workflow intentionally fails when any required secret is missing.
 
-Environment ref restrictions are important because the workflow checks out the selected ref before running repository scripts/build logic. Only trusted release refs should be allowed to receive production signing secrets.
+Ref restrictions are critical because repository-controlled Gradle logic runs while signing credentials are available. Only trusted release refs should be allowed to receive them.
 
-## Required protected secrets
+## Required Protected Secrets
 
-Configure these secrets in the `production-release` environment:
+Configure:
 
-- `SUDOKUNOVA_KEYSTORE_BASE64` — base64 representation of the release/upload keystore bytes;
-- `SUDOKUNOVA_KEYSTORE_PASSWORD` — keystore password;
-- `SUDOKUNOVA_KEY_ALIAS` — key alias;
-- `SUDOKUNOVA_KEY_PASSWORD` — key password;
-- `SUDOKUNOVA_APK_CERT_SHA256` — expected APK signer certificate SHA-256 fingerprint;
-- `SUDOKUNOVA_AAB_CERT_SHA256` — expected AAB signer/upload certificate SHA-256 fingerprint.
+- `SUDOKUNOVA_KEYSTORE_BASE64` — base64 release/upload keystore bytes;
+- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
+- `SUDOKUNOVA_KEY_ALIAS`;
+- `SUDOKUNOVA_KEY_PASSWORD`;
+- `SUDOKUNOVA_APK_CERT_SHA256` — expected APK signer certificate SHA-256;
+- `SUDOKUNOVA_AAB_CERT_SHA256` — expected AAB signer/upload certificate SHA-256.
 
-Certificate fingerprints may use hexadecimal with or without colon separators. The workflow checks their format before the signed build, and the verifier normalizes them before comparison.
+Fingerprints may use hexadecimal with or without colons. The workflow validates shape before build and normalizes them before comparison.
 
-Do not commit these values. Do not place keystore bytes, passwords, tokens, or private keys in issues, pull requests, documentation, screenshots, workflow inputs, or ordinary CI configuration.
+Never commit these values or place them in issues, PRs, documentation, screenshots, workflow inputs, or ordinary CI.
 
-### Least-privilege secret exposure
+## Least-Privilege Secret Exposure
 
-The protected workflow deliberately does **not** place production secrets in job-wide environment variables. Secrets are scoped to the minimum steps that require them:
+The workflow does not place production secrets in job-wide environment variables:
 
-- the preflight secret/format check receives all required protected values only to confirm presence and certificate-fingerprint shape;
-- the keystore-materialization step receives only the base64 keystore value;
-- the Gradle signed-build step receives only the keystore password, key alias, and key password, while the temporary keystore path comes from `$GITHUB_ENV`;
-- the artifact-verification step receives only the expected certificate SHA-256 values;
-- repository security tests, release-verifier unit tests, translation checks, artifact discovery, evidence recording, and artifact-upload steps do not receive signing passwords or keystore bytes.
+- preflight receives required protected values only to check presence/fingerprint shape;
+- keystore materialization receives only the base64 keystore;
+- signed Gradle build receives only password/alias/password plus a temporary keystore path;
+- artifact verification receives only expected non-secret certificate fingerprints;
+- repository guards, verifier tests, translation checks, evidence recording, and artifact upload do not receive keystore bytes/passwords.
 
-This reduces accidental exposure surface but does not make an untrusted ref safe. The signed build necessarily runs repository-controlled Gradle logic while signing credentials are available, so GitHub Environment ref restrictions and reviewer/access controls remain mandatory.
+This reduces exposure but does not make an untrusted ref safe.
 
-## Preparing the keystore secret
+## Keystore Materialization
 
-Prepare the base64 value in a trusted local environment. Keep the output private and store it directly as the environment secret. The workflow decodes it into `$RUNNER_TEMP`, applies restrictive file permissions through `umask 077`, exports only the temporary path to Gradle, and removes the file in an `always()` cleanup step.
+The workflow decodes the keystore under `$RUNNER_TEMP`, uses restrictive permissions via `umask 077`, exports only the temporary path to Gradle, and removes the file in an `always()` cleanup step.
 
 The repository itself never requires a committed keystore.
 
-## Running the workflow
+## Running the Workflow
 
-From GitHub Actions, choose **Production Release Validation**, select the exact branch/tag/ref intended for validation, then provide:
+From GitHub Actions choose **Production Release Validation**, select the exact trusted ref, and provide:
 
-- `expected_version_code` — exact positive decimal Android version code for that ref;
-- `expected_version_name` — exact release-safe Android version name beginning with an alphanumeric character and then using only alphanumeric characters, `.`, `_`, `+`, or `-`;
-- `upload_signed_artifacts` — normally leave `false`; set `true` only when intentionally retaining the signed APK/AAB as short-lived workflow artifacts.
+- `expected_version_code` — exact positive decimal Android code;
+- `expected_version_name` — exact release-safe version name;
+- `upload_signed_artifacts` — normally `false`, set `true` only when intentionally retaining short-lived signed outputs.
 
-The production application ID and SDK expectations are intentionally not operator inputs. The workflow pins the application ID to `in.sanskar.sudokunova`, `minSdk` to `26`, and `targetSdk` to `37` for the current source contract. `scripts/verify_release_contract.py` fails when those workflow expectations drift from `app/build.gradle.kts` or ordinary CI.
+For the current 2.0.13 source the defaults are:
 
-For the current **2.0.12** source metadata, the workflow defaults are `versionCode 2012` and `versionName 2.0.12`. Publication must use the exact values committed on the release ref; any later store-accepted build must use a strictly higher version code.
+```text
+expected_version_code = 2013
+expected_version_name = 2.0.13
+```
 
-See `V2_0_12_RELEASE.md` for the current release-line evidence requirements. Older v1 release documents remain historical evidence only.
+The application ID and SDK values are intentionally not operator-controlled inputs; they are pinned by workflow/source contract.
 
-## Embedded APK manifest verification
+Any later store-accepted Android build must use a version code strictly greater than a previously accepted one.
 
-`output-metadata.json` is useful build metadata, but production validation must also inspect the artifact that will actually be installed. The verifier therefore uses Android SDK `apkanalyzer` to read these values directly from the release APK:
+## Embedded APK Manifest Verification
+
+`output-metadata.json` is useful build metadata, but production validation also inspects the installable APK with Android SDK `apkanalyzer` for:
 
 - application ID;
 - version code;
 - version name;
-- minimum SDK;
-- target SDK;
+- minSdk;
+- targetSdk;
 - debuggable state.
 
-The verifier fails closed if `apkanalyzer` is unavailable when `--require-apk-manifest` is requested, if any inspected scalar value cannot be read, if an expected identity/SDK value differs, or if the release APK is marked debuggable.
+The verifier fails closed if required tooling is unavailable, a scalar cannot be read, an expected identity/SDK differs, or release APK is debuggable.
 
-The expected SDK values must be positive, and an expected target SDK lower than the expected minimum SDK is rejected before artifact access. This keeps malformed release-verifier input from being mistaken for artifact failure.
+## Evidence Artifacts
 
-## Evidence artifacts
+Every successful run uploads `production-release-validation-evidence` for the configured retention period. Evidence includes:
 
-Every successful run uploads `production-release-validation-evidence` for 30 days. It contains:
+- `sha256.txt` — APK/AAB/R8 hashes and byte sizes;
+- `signatures.txt` — normalized signer certificate fingerprints;
+- `apk-identity.txt` — application/version/SDK/debuggable state read from APK;
+- `verification.txt` — verifier result summary;
+- `workflow-context.txt` — repository/ref/commit/run/application/version/SDK context.
 
-- `sha256.txt` — release APK/AAB/R8 mapping SHA-256 and byte-size evidence;
-- `signatures.txt` — normalized APK/AAB signer certificate SHA-256 evidence;
-- `apk-identity.txt` — application ID, version code/name, minimum SDK, target SDK, and debuggable state read from the APK itself;
-- `verification.txt` — verifier summary including the validated application/version/SDK identity;
-- `workflow-context.txt` — repository, commit SHA, ref, run ID/attempt, expected application ID, expected version metadata, and expected SDK contract.
+When `upload_signed_artifacts=true`, signed APK/AAB/mapping are uploaded separately for short-lived retention.
 
-When `upload_signed_artifacts=true`, the workflow separately uploads `signed-production-release-artifacts` for 7 days containing the signed APK, AAB, and R8 mapping. This is opt-in to reduce unnecessary retention of production binaries.
+## Package, SDK, and Certificate Identity Rule
 
-## Package, SDK, and certificate identity rule
+A cryptographically valid signature is insufficient. The build must also belong to the intended package, carry the intended version/SDK identity, be non-debuggable, and match expected certificate identity.
 
-A signature being cryptographically valid is insufficient. The release must also belong to the intended Android package, carry the intended application/version/SDK identity, be non-debuggable, and be signed by the intended certificate.
-
-`scripts/verify_release_outputs.py` supports:
+Representative verifier form:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -140,12 +153,12 @@ python scripts/verify_release_outputs.py \
   --aab path/to/signed-release.aab \
   --mapping path/to/mapping.txt \
   --metadata path/to/output-metadata.json \
-  --expected-version-code <final-code> \
-  --expected-version-name <final-name> \
+  --expected-version-code 2013 \
+  --expected-version-name 2.0.13 \
   --expected-application-id in.sanskar.sudokunova \
   --require-apk-manifest \
-  --expected-min-sdk <source-min-sdk> \
-  --expected-target-sdk <source-target-sdk> \
+  --expected-min-sdk 26 \
+  --expected-target-sdk 37 \
   --apk-identity-output path/to/apk-identity.txt \
   --require-signatures \
   --expected-apk-cert-sha256 <expected-apk-cert-sha256> \
@@ -154,22 +167,17 @@ python scripts/verify_release_outputs.py \
   --signature-output path/to/signatures.txt
 ```
 
-The verifier fails closed when the expected application ID is missing/different for manifest verification, when the embedded APK identity or SDK contract differs, when the APK is debuggable, when APK verification lacks a verified v2-or-newer signature scheme, or when an expected certificate fingerprint does not match any reported signer fingerprint.
+For Play App Signing, distinguish the local upload-key certificate from the app-signing certificate used for distributed APKs. Validate the correct identity at each stage.
 
-For Play App Signing, distinguish the local upload-key certificate from the app-signing certificate used by Google Play for distributed APKs. Record the correct certificate identity for each stage and validate the Play-distributed artifact separately where required.
+## Release Evidence Boundary
 
-## Release evidence boundary
+After a real successful protected run, record only non-secret evidence under `V2_0_13_RELEASE.md` / `what_changed.md`:
 
-After a real successful protected run, copy only non-secret evidence into the current release ledger defined by `V2_0_12_RELEASE.md` and `what_changed.md`:
-
-- exact commit/ref;
-- workflow run ID/attempt;
-- application ID;
-- version code/name;
-- minimum and target SDK;
+- exact commit/ref and run ID/attempt;
+- application/version/SDK identity;
 - embedded debuggable state;
 - APK/AAB/R8 hashes and sizes;
 - non-secret certificate SHA-256 fingerprints;
-- signed artifact validation result.
+- signed-artifact validation result.
 
-Do not mark manual device/accessibility/performance/store/admin rows complete unless those checks were actually performed and recorded.
+Do **not** mark manual device/accessibility/performance/store/admin rows complete unless those checks were actually performed and recorded.
