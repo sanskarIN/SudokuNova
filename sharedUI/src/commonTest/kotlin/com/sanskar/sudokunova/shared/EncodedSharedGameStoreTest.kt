@@ -7,6 +7,7 @@ import kotlin.coroutines.startCoroutine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class EncodedSharedGameStoreTest {
     @Test
@@ -41,6 +42,28 @@ class EncodedSharedGameStoreTest {
         assertEquals("not-a-valid-snapshot", textStore.value)
     }
 
+    @Test
+    fun gameStateCanSaveRestoreAndClearThroughStoreContract() {
+        val state = SharedGameState()
+        val editableIndex = state.board.emptyIndices().first()
+        val candidate = state.board.candidates(editableIndex).first()
+        state.select(editableIndex)
+        state.toggleNotesMode()
+        state.enter(candidate)
+        val expected = state.snapshot()
+        val store = FakeSnapshotStore()
+
+        runSuspend { state.saveTo(store) }
+        assertEquals(expected, store.snapshot)
+
+        state.newGame(Difficulty.HARD)
+        assertTrue(runSuspend { state.restoreFrom(store) })
+        assertEquals(expected, state.snapshot())
+
+        runSuspend { state.clearStoredGame(store) }
+        assertNull(store.snapshot)
+    }
+
     private class FakeTextStore(
         var value: String? = null,
     ) : SharedGameTextStore {
@@ -52,6 +75,20 @@ class EncodedSharedGameStoreTest {
 
         override suspend fun clear() {
             value = null
+        }
+    }
+
+    private class FakeSnapshotStore(
+        var snapshot: SharedGameSnapshot? = null,
+    ) : SharedGameStore {
+        override suspend fun load(): SharedGameSnapshot? = snapshot
+
+        override suspend fun save(snapshot: SharedGameSnapshot) {
+            this.snapshot = snapshot
+        }
+
+        override suspend fun clear() {
+            snapshot = null
         }
     }
 
