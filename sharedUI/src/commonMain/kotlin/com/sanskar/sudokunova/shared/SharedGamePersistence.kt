@@ -18,3 +18,33 @@ interface SharedGameStore {
 
     suspend fun clear()
 }
+
+/**
+ * Minimal platform boundary for storing one encoded active-game payload.
+ *
+ * Desktop, Web, and Apple hosts can implement this interface with their native
+ * local-storage mechanism while common code retains one versioned encoding and
+ * validation contract.
+ */
+interface SharedGameTextStore {
+    suspend fun read(): String?
+
+    suspend fun write(value: String)
+
+    suspend fun clear()
+}
+
+class EncodedSharedGameStore(
+    private val textStore: SharedGameTextStore,
+) : SharedGameStore {
+    override suspend fun load(): SharedGameSnapshot? =
+        textStore.read()?.let(SharedGameSnapshotCodec::decode)
+
+    override suspend fun save(snapshot: SharedGameSnapshot) {
+        textStore.write(SharedGameSnapshotCodec.encode(snapshot))
+    }
+
+    override suspend fun clear() {
+        textStore.clear()
+    }
+}
