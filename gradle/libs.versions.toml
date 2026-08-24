@@ -2,7 +2,7 @@
 agp = "9.3.1"
 kotlin = "2.4.10"
 ksp = "2.3.10"
-room = "2.8.3"
+room = "2.8.4"
 composeBom = "2026.08.00"
 composeMultiplatform = "1.11.1"
 composeMultiplatformMaterial3 = "1.11.0-alpha07"
