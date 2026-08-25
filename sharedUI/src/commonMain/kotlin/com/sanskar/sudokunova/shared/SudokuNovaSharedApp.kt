@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,8 +56,18 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun SudokuNovaSharedApp(
     state: SharedGameState = remember { SharedGameState() },
+    settingsState: SharedSettingsState = remember { SharedSettingsState() },
 ) {
-    MaterialTheme {
+    val settings = settingsState.settings
+    val darkTheme = when (settings.theme) {
+        SharedTheme.SYSTEM -> isSystemInDarkTheme()
+        SharedTheme.LIGHT -> false
+        SharedTheme.DARK -> true
+    }
+
+    MaterialTheme(
+        colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme(),
+    ) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
@@ -66,6 +79,7 @@ fun SudokuNovaSharedApp(
             ) {
                 Header(state)
                 DifficultyPicker(state)
+                ThemePicker(settingsState)
                 SudokuGrid(state)
                 NumberPad(state)
                 GameActions(state)
@@ -134,6 +148,54 @@ private fun DifficultyPicker(state: SharedGameState) {
         }
     }
 }
+
+@Composable
+private fun ThemePicker(settingsState: SharedSettingsState) {
+    Column(
+        modifier = Modifier.fillMaxWidth().sizeIn(maxWidth = 720.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = stringResource(Res.string.settings_theme),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SharedTheme.entries.forEach { theme ->
+                val selected = settingsState.settings.theme == theme
+                val label = themeLabel(theme)
+                if (selected) {
+                    Button(
+                        onClick = {},
+                        modifier = Modifier.semantics { this.selected = true },
+                    ) {
+                        Text(label)
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {
+                            settingsState.update { it.copy(theme = theme) }
+                        },
+                        modifier = Modifier.semantics { this.selected = false },
+                    ) {
+                        Text(label)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun themeLabel(theme: SharedTheme): String = stringResource(
+    when (theme) {
+        SharedTheme.SYSTEM -> Res.string.theme_system
+        SharedTheme.LIGHT -> Res.string.theme_light
+        SharedTheme.DARK -> Res.string.theme_dark
+    },
+)
 
 @Composable
 private fun difficultyLabel(difficulty: Difficulty): String = stringResource(
@@ -247,6 +309,50 @@ private fun handleGridKeyEvent(event: KeyEvent, state: SharedGameState): Boolean
         }
         Key.DirectionRight -> {
             state.moveSelection(rowDelta = 0, columnDelta = 1)
+            true
+        }
+        Key.One -> {
+            state.enter(1)
+            true
+        }
+        Key.Two -> {
+            state.enter(2)
+            true
+        }
+        Key.Three -> {
+            state.enter(3)
+            true
+        }
+        Key.Four -> {
+            state.enter(4)
+            true
+        }
+        Key.Five -> {
+            state.enter(5)
+            true
+        }
+        Key.Six -> {
+            state.enter(6)
+            true
+        }
+        Key.Seven -> {
+            state.enter(7)
+            true
+        }
+        Key.Eight -> {
+            state.enter(8)
+            true
+        }
+        Key.Nine -> {
+            state.enter(9)
+            true
+        }
+        Key.N -> {
+            state.toggleNotesMode()
+            true
+        }
+        Key.H -> {
+            state.hint()
             true
         }
         Key.Backspace, Key.Delete -> {
