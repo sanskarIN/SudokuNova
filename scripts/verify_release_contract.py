@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Verify that source and CI release identity expectations stay synchronized.
 
-This guard intentionally treats app/build.gradle.kts as the authoritative Android source
-metadata for the current release candidate and verifies that ordinary CI plus the protected
-release-validation workflow use the same package/version/SDK expectations. It does not
-replace artifact metadata or embedded-manifest verification; it catches source/workflow drift
-before Gradle work begins.
+The Android app metadata is authoritative for the current release identity. This guard
+verifies that ordinary CI, protected release-validation defaults, and the shared Desktop
+package version stay aligned with it. It does not replace artifact or embedded-manifest
+verification; it catches source/workflow/package drift before expensive build work begins.
 """
 
 from __future__ import annotations
@@ -20,6 +19,10 @@ MIN_SDK_RE = re.compile(r"^\s*minSdk\s*=\s*(\d+)\s*$", re.MULTILINE)
 TARGET_SDK_RE = re.compile(r"^\s*targetSdk\s*=\s*(\d+)\s*$", re.MULTILINE)
 VERSION_CODE_RE = re.compile(r'^\s*versionCode\s*=\s*(\d+)\s*$', re.MULTILINE)
 VERSION_NAME_RE = re.compile(r'^\s*versionName\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
+DESKTOP_PACKAGE_VERSION_RE = re.compile(
+    r'^\s*packageVersion\s*=\s*"([^"]+)"\s*$',
+    re.MULTILINE,
+)
 RELEASE_SAFE_VERSION_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._+-]*$")
 
 
@@ -46,6 +49,12 @@ def _positive_int(value: str, label: str) -> int:
     return parsed
 
 
+def _validate_release_version(value: str, label: str) -> str:
+    if not RELEASE_SAFE_VERSION_RE.fullmatch(value):
+        raise ValueError(f"{label} contains unsupported release characters")
+    return value
+
+
 def parse_gradle_release_contract(text: str) -> ReleaseContract:
     application_id = _single_match(APPLICATION_ID_RE, text, "applicationId")
     min_sdk = _positive_int(_single_match(MIN_SDK_RE, text, "minSdk"), "minSdk")
@@ -54,16 +63,24 @@ def parse_gradle_release_contract(text: str) -> ReleaseContract:
         _single_match(VERSION_CODE_RE, text, "versionCode"),
         "versionCode",
     )
-    version_name = _single_match(VERSION_NAME_RE, text, "versionName")
+    version_name = _validate_release_version(
+        _single_match(VERSION_NAME_RE, text, "versionName"),
+        "versionName",
+    )
 
-    if not RELEASE_SAFE_VERSION_RE.fullmatch(version_name):
-        raise ValueError("versionName contains unsupported release characters")
     if application_id.endswith(".debug"):
         raise ValueError("Production applicationId must not use the debug suffix")
     if target_sdk < min_sdk:
         raise ValueError("targetSdk must be greater than or equal to minSdk")
 
     return ReleaseContract(application_id, version_code, version_name, min_sdk, target_sdk)
+
+
+def parse_desktop_package_version(text: str) -> str:
+    return _validate_release_version(
+        _single_match(DESKTOP_PACKAGE_VERSION_RE, text, "Desktop packageVersion"),
+        "Desktop packageVersion",
+    )
 
 
 def parse_ci_expected_contract(text: str) -> ReleaseContract:
@@ -152,6 +169,7 @@ def compare_contracts(
     source: ReleaseContract,
     ordinary_ci: ReleaseContract,
     protected_defaults: ReleaseContract,
+    desktop_package_version: str | None = None,
 ) -> list[str]:
     errors: list[str] = []
     for label, value in (
@@ -174,6 +192,11 @@ def compare_contracts(
             errors.append(f"{label} min SDK {value.min_sdk} != source {source.min_sdk}")
         if value.target_sdk != source.target_sdk:
             errors.append(f"{label} target SDK {value.target_sdk} != source {source.target_sdk}")
+
+    if desktop_package_version is not None and desktop_package_version != source.version_name:
+        errors.append(
+            f"Desktop package version {desktop_package_version!r} != source version name {source.version_name!r}"
+        )
     return errors
 
 
@@ -182,6 +205,9 @@ def main() -> int:
     try:
         source = parse_gradle_release_contract(
             (root / "app" / "build.gradle.kts").read_text(encoding="utf-8")
+        )
+        desktop_package_version = parse_desktop_package_version(
+            (root / "sharedUI" / "build.gradle.kts").read_text(encoding="utf-8")
         )
         ordinary_ci = parse_ci_expected_contract(
             (root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
@@ -195,7 +221,12 @@ def main() -> int:
         print(f"Release contract verification failed: {exc}", file=sys.stderr)
         return 1
 
-    errors = compare_contracts(source, ordinary_ci, protected_defaults)
+    errors = compare_contracts(
+        source,
+        ordinary_ci,
+        protected_defaults,
+        desktop_package_version=desktop_package_version,
+    )
     if errors:
         print("Release contract drift detected:", file=sys.stderr)
         for error in errors:
@@ -207,6 +238,7 @@ def main() -> int:
         f"applicationId={source.application_id}, "
         f"versionCode={source.version_code}, "
         f"versionName={source.version_name}, "
+        f"desktopPackageVersion={desktop_package_version}, "
         f"minSdk={source.min_sdk}, targetSdk={source.target_sdk}."
     )
     return 0

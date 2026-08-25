@@ -1,181 +1,184 @@
 # Cross-Platform Development and Builds
 
-SudokuNova 2.0.12 keeps the mature Android application as its primary production surface while adding a shared Kotlin Multiplatform (KMP) engine and Compose Multiplatform gameplay surface for Android, iOS/iPadOS, Windows, macOS, Linux, and Web.
+SudokuNova 2.0.13 keeps the mature Android application as its primary production surface while continuing a shared Kotlin Multiplatform (KMP) engine and Compose Multiplatform gameplay surface for Android, iOS/iPadOS, Windows, macOS, Linux, and Web.
 
-This document distinguishes **repository build support** from **production release evidence**. A target is considered repository-supported when its source, build configuration, and CI compilation/package path exist. Production signing, notarization, store submission, physical-device QA, browser compatibility QA, and distribution approval still require real external evidence and are never inferred from source control.
+This document distinguishes **repository build support** from **production release evidence**. A target is repository-supported when its source, build configuration, and CI compilation/package path exist. Production signing, notarization, store submission, physical-device QA, browser compatibility QA, and distribution approval still require real external evidence and are never inferred from source control.
 
 ## Current platform matrix
 
 | Platform | Repository target | Main build entry point | Repository status |
 | --- | --- | --- | --- |
-| Android | Android API 26+ | `:app` plus `:sharedUI` Android KMP library | Primary production app preserved; shared UI host available |
-| ChromeOS | Android compatibility | Android APK/AAB | Uses Android application compatibility path |
+| Android | Android API 26+ | `:app` plus `:sharedUI` Android KMP library | Mature primary app preserved; shared UI host available |
+| ChromeOS | Android compatibility | Android APK/AAB | Uses Android compatibility path |
 | iOS | Kotlin/Native arm64 | `SudokuNovaSharedUI.framework` | Shared framework + SwiftUI host sources |
-| iPadOS | Kotlin/Native arm64 | same iOS framework | Shared framework + SwiftUI host sources |
+| iPadOS | Kotlin/Native arm64 | same Apple target family | Shared framework + SwiftUI host sources |
 | Windows | Desktop JVM | `:sharedUI` desktop target | Desktop application image/package path |
 | macOS | Desktop JVM | `:sharedUI` desktop target | Desktop application image/package path |
 | Linux | Desktop JVM | `:sharedUI` desktop target | Desktop application image/package path |
-| Web | Kotlin/Wasm | `:sharedUI` Wasm browser target | Browser distribution path; upstream Compose Web remains Beta |
+| Web | Kotlin/Wasm | `:sharedUI` Wasm browser target | Browser distribution path; runtime browser QA remains separate |
 
 ## Architecture
 
 The cross-platform design deliberately separates portable domain/UI code from mature Android-only capabilities:
 
-1. `sudoku-engine` is Kotlin Multiplatform. Existing engine implementation and tests are mapped into common source sets so generation, solving, difficulty logic, hints, learning logic, and puzzle-code behavior are not duplicated by platform.
-2. `sharedUI` contains the portable Compose Multiplatform gameplay state and responsive Sudoku surface.
-3. `app` remains the Android production application. It consumes both `sudoku-engine` and `sharedUI`, while retaining Android-specific Room, DataStore, navigation, accessibility work, backup/transfer, Macrobenchmark, release verification, and Play Store tooling.
-4. `iosApp` contains the minimal SwiftUI host sources that bridge to the generated `SudokuNovaSharedUI.framework`.
+1. `sudoku-engine` is Kotlin Multiplatform and owns Classic Sudoku correctness, generation, solving, difficulty logic, teaching/hints, puzzle-code transport, and validated puzzle exchange.
+2. `sharedUI` contains portable Compose Multiplatform gameplay state/UI, localization, semantics, keyboard-grid handling, and active-game persistence contracts.
+3. `app` remains the Android production application. It consumes both shared modules while retaining Android Room/DataStore, full navigation, challenges, learning/statistics, backup/transfer, mature accessibility integration, Macrobenchmark, and release tooling.
+4. `iosApp` contains SwiftUI host sources that bridge to the generated `SudokuNovaSharedUI.framework`.
 
-`MainActivity` remains Android's launcher. `CrossPlatformActivity` is intentionally non-exported and provides an Android host for the same shared UI used by the other platforms. This staged migration avoids removing mature Android functionality merely to claim cross-platform parity.
+`MainActivity` remains Android's launcher. `CrossPlatformActivity` is intentionally non-exported and hosts the same shared UI used by other targets. This staged migration avoids deleting mature Android capabilities merely to claim superficial parity.
 
 ## Shared gameplay capabilities
 
-The portable UI currently includes:
+The portable UI/state currently includes:
 
-- generated Sudoku puzzles;
+- generated Classic 9×9 puzzles;
 - Beginner, Easy, Medium, Hard, Expert, Master, and Extreme difficulties;
-- fixed and editable cells;
-- number entry;
-- candidate notes;
-- automatic peer-note cleanup after a placement;
-- conflict indication;
-- erase;
-- bounded undo history;
-- engine-backed hints;
-- reset;
-- new-game generation;
-- responsive layout for smaller and larger windows;
-- typed, locale-neutral gameplay status events;
-- English/Hindi Compose resources for the migrated shared surface;
-- explicit Sudoku-cell semantics for row, column, value/notes, fixed/editable, selected, and conflict state;
-- a non-color conflict marker in addition to semantic conflict state;
-- a portable active-game snapshot and storage contract with fail-closed restore validation;
-- deterministic versioned `SNG1` active-game encoding;
-- native local active-game adapters for the staged Android shared host, Desktop JVM, Web/Wasm, and Apple hosts;
-- common restore/autosave ownership for Compose hosts.
+- fixed/editable cells and number-pad input;
+- candidate notes and automatic peer-note cleanup;
+- conflict feedback with visual, semantic, and non-color `!` indication;
+- erase, bounded undo, engine-backed hints, reset, and new game;
+- responsive board sizing;
+- typed locale-neutral gameplay status events;
+- English/Hindi Compose resources and deterministic key/placeholder parity checks;
+- cell semantics for row, column, value/notes, fixed/editable, selected, and conflict state;
+- selected-state semantics for Notes mode;
+- deterministic shared grid selection movement;
+- a focusable shared grid with arrow navigation and Backspace/Delete erase handling;
+- versioned `SNG1` active-game encoding and fail-closed restore validation;
+- native local active-game adapters for staged Android shared host, Desktop JVM, Web/Wasm, and Apple hosts;
+- common restore/autosave ownership for Compose hosts;
+- common `PuzzleExchangeService` around `SNP1`, including unique-solution import acceptance.
 
-Android-only capabilities remain in the Android application until equivalent multiplatform service abstractions are implemented and tested. This is an explicit feature-parity boundary, not missing evidence hidden behind a generic “supported” label.
+Android-only capabilities remain in the Android application until equivalent shared domain/service/presentation work is implemented and tested. This is an explicit parity boundary.
 
 ## Feature-parity matrix
 
-This table is the source-controlled parity boundary between the mature Android product and the shared surface. “Shared” means the behavior lives in common Kotlin/Compose code; it does not imply that every target has completed runtime QA.
+“Shared” means the behavior lives in common Kotlin/Compose code; it does not imply every target has completed runtime QA.
 
 | Capability | Mature Android app | Shared targets | Current boundary |
 | --- | --- | --- | --- |
 | Classic 9×9 generation/solving | Yes | Yes | Shared `sudoku-engine` |
 | Seven difficulty levels | Yes | Yes | Shared engine + localized picker |
-| Number entry, erase, reset | Yes | Yes | Shared gameplay state/UI |
+| Number-pad entry, erase, reset | Yes | Yes | Shared gameplay state/UI |
 | Candidate notes + peer cleanup | Yes | Yes | Shared gameplay state/UI |
 | Undo | Yes | Yes | Shared bounded in-memory history |
 | Engine-backed hints | Yes | Yes | Shared hint engine + localized technique/status text |
 | Conflict feedback | Yes | Yes | Shared visual + semantic + non-color marker |
-| English/Hindi player-facing text | Yes | Yes for migrated shared surface | Shared Compose resources; parity guard covers keys/placeholders |
-| Active-game save model | Yes | Shared model + native local adapters | `SNG1` codec and Android shared-host/Desktop/Web/Apple adapters are source-implemented; real host lifecycle/runtime QA remains required |
-| Room/DataStore persistence | Yes | No | Must remain Android-only; common code uses `SharedGameStore`/`SharedGameTextStore` instead |
-| Challenges/custom puzzles UI | Yes | Not yet | Domain migration remains pending |
-| Learning/statistics UI | Yes | Not yet | Engine pieces may be shared; presentation/persistence parity remains pending |
-| Puzzle-code codec | Yes | Engine available | Common import/export service/UI integration remains pending |
+| English/Hindi migrated text | Yes | Yes | Shared Compose resources; key/placeholder parity guard |
+| Active-game save model | Yes | Yes at source level | `SNG1` + Android shared/Desktop/Web/Apple adapters; real lifecycle QA still required |
+| Room/DataStore persistence | Yes | No | Android-only; common code uses `SharedGameStore`/`SharedGameTextStore` |
+| Puzzle-code format | Yes | Yes | Shared `PuzzleCodeCodec` retains `SNP1` compatibility |
+| Puzzle-code acceptance boundary | Android flow | Yes | `PuzzleExchangeService` rejects malformed, unsolvable, or non-unique imported puzzles |
+| Imported/custom puzzle gameplay session | Yes | Not yet | `SNG1` is generated-seed based; custom/import provenance needs an explicit shared model before persistence/UI parity |
+| Clipboard/share/file-picker adapters | Yes | Not yet | Platform interaction adapters remain pending |
+| Challenges/custom puzzle UI | Yes | Not yet | Shared domain/presentation migration remains pending |
+| Learning/statistics UI | Yes | Not yet | Engine pieces may be shared; presentation/persistence remains pending |
 | Backup/restore transfer | Yes | Not yet | Requires platform file/share adapters and compatibility design |
-| Themes/settings breadth | Yes | Basic shared Material theme only | Portable settings persistence remains pending |
-| Accessibility source semantics | Mature Android coverage | Cell semantics added | Target assistive-technology QA remains external evidence |
-| Keyboard/focus navigation | Android-specific coverage | Pending | Add only through APIs that remain valid across supported Compose targets |
-| Macrobenchmark/performance evidence | Yes | No shared equivalent yet | Android evidence must not be generalized to other targets |
-| Production signing/store release | Android process documented | No | Per-platform external evidence is required |
+| Themes/settings breadth | Yes | Basic shared Material theme | Shared settings persistence remains pending |
+| Accessibility source semantics | Mature Android coverage | Shared baseline implemented | Real assistive-technology QA remains external evidence |
+| Keyboard/focus navigation | Mature Android coverage | Arrow + Backspace/Delete shared baseline | Digit/Notes/Hint key parity and real target focus QA remain pending |
+| Macrobenchmark/performance evidence | Yes | No shared equivalent | Android measurements must not be generalized |
+| Production signing/store release | Android process documented | No | Per-platform external evidence required |
+
+## Shared puzzle exchange contract
+
+`PuzzleCodeCodec` remains the platform-independent `SNP1` transport codec and preserves the established checksum/vector compatibility contract.
+
+`PuzzleExchangeService` is the common 2.0.13 acceptance boundary:
+
+1. decode and validate `SNP1` version, bounds, payload, checksum, difficulty, and board validity;
+2. analyze the board with `SudokuSolver` up to two solutions;
+3. reject anything that does not have exactly one solution;
+4. return the puzzle, uniquely proven solution, and encoded difficulty when accepted.
+
+This prevents each UI host from inventing a separate uniqueness rule. It does **not** yet create a shared custom-puzzle gameplay/persistence session: active `SNG1` persistence regenerates games from a difficulty/seed, so imported provenance must be represented explicitly before shared save/resume can claim custom-puzzle support.
 
 ## Shared localization contract
 
-The shared Compose surface uses `sharedUI/src/commonMain/composeResources/` as the localization source of truth:
+The shared Compose localization source of truth is `sharedUI/src/commonMain/composeResources/`:
 
-- `values/strings.xml` is the default English catalog;
-- `values-hi/strings.xml` is the Hindi catalog;
-- generated resources use the stable package `com.sanskar.sudokunova.shared.resources`;
-- gameplay state emits `SharedGameStatus` values rather than player-facing strings;
-- difficulty and hint-technique labels are resolved in the UI from resources;
-- `scripts/verify_translations.py` validates English/Hindi key parity for the shared catalog and validates shared printf-style placeholder signatures as a CI guard.
+- `values/strings.xml` is default English;
+- `values-hi/strings.xml` is Hindi;
+- generated resources use package `com.sanskar.sudokunova.shared.resources`;
+- gameplay state emits `SharedGameStatus` rather than translated strings;
+- difficulty and hint-technique labels are resolved in UI resources;
+- `scripts/verify_translations.py` checks shared English/Hindi key and printf-placeholder parity.
 
-The default `values` catalog is the repository fallback locale. If a target locale has no matching localized resource, Compose resource resolution falls back to the default catalog. The shared parity guard intentionally requires Hindi keys for every currently tracked shared player-facing string, so fallback should not be needed for an accidentally missing Hindi key in a green repository head. Unsupported locales still use the default English catalog until an explicit locale is added.
+Default `values` is the fallback locale. Unsupported locales use English until explicitly added. A green repository head should not rely on fallback for a missing Hindi key because the parity guard rejects that drift.
 
-Locale-resource parity is source evidence only. Representative Hindi layout checks, font scaling, truncation, and runtime locale switching must still be exercised on real target hosts before claiming production localization parity.
+Representative Hindi layout, font-scale, truncation, and runtime locale-switch QA are still real-host evidence requirements.
 
 ## Shared persistence contract
 
-`SharedGameSnapshot` captures the portable active-game state required for save/resume work: difficulty, deterministic generation seed, board contents, notes, selected cell, and notes mode. `SharedGameStore` is the snapshot-level suspendable interface; `SharedGameTextStore` is the minimal platform boundary for one encoded text value. Neither common interface imports Room, DataStore, filesystem, browser-storage, or Apple-framework types.
+`SharedGameSnapshot` captures difficulty, deterministic generation seed, board contents, notes, selected cell, and Notes mode. `SharedGameStore` is the snapshot-level suspendable interface; `SharedGameTextStore` is the minimal native boundary for one encoded text value. Common interfaces import no Room, DataStore, filesystem, browser-storage, or Apple-framework type.
 
-`SharedGameSnapshotCodec` owns the deterministic bounded `SNG1` transport. It validates version, difficulty, seed, exactly 81 board digits, selection bounds, notes-mode encoding, note cell/digit bounds, duplicate notes, and a maximum encoded size. `EncodedSharedGameStore` composes the codec with a platform text store so platform adapters do not duplicate serialization rules.
+`SharedGameSnapshotCodec` owns bounded deterministic `SNG1` serialization. It validates version, difficulty, seed, exactly 81 board digits, selection bounds, Notes-mode encoding, note cell/digit bounds, duplicates, and maximum payload size.
 
-`SharedGameState.restore` remains the Sudoku-aware authority and fails closed before mutation. It regenerates the starting puzzle from the saved difficulty/seed, requires all fixed clues to remain unchanged, validates note indexes/values/targets, validates the selected-cell bound, copies restored note sets, clears undo history, and only then publishes restored state.
+`SharedGameState.restore` remains Sudoku-aware and fails closed before mutation: it regenerates the starting puzzle from difficulty/seed, requires fixed clues to match, validates note targets/values and selection bounds, clears undo history, and only then publishes restored state.
 
-`rememberPersistedSharedGameState` performs one restore attempt before autosaving observable later snapshots. Storage read/write failures are isolated with a fresh in-memory game remaining usable; they do not weaken Sudoku validation.
+`rememberPersistedSharedGameState` attempts restoration once and autosaves later observable snapshots. Storage failures do not weaken Sudoku validation or make a fresh in-memory game unusable.
 
-Current source adapters are intentionally local/offline:
+Current local/offline adapters:
 
-- staged Android shared host: private `SharedPreferences` adapter plus `CrossPlatformActivity` restore/save wiring;
-- Desktop JVM: `java.util.prefs.Preferences` adapter;
-- Web/Wasm: browser `localStorage` adapter;
-- iOS/iPadOS: `NSUserDefaults` adapter.
+- staged Android shared host: private `SharedPreferences` adapter;
+- Desktop JVM: `java.util.prefs.Preferences`;
+- Web/Wasm: browser `localStorage`;
+- iOS/iPadOS: `NSUserDefaults`.
 
-See [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md) for the full `SNG1` format, compatibility policy, adapter boundaries, privacy/security notes, and tests.
+See [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md).
 
-These source implementations do not by themselves prove process-death recovery, browser storage behavior across privacy modes, physical-device Apple lifecycle behavior, Desktop clean-machine behavior, or platform backup semantics. Those remain runtime evidence requirements.
+Source adapters do not prove process-death recovery, browser privacy-mode behavior, Apple physical-device lifecycle behavior, Desktop clean-machine behavior, or platform backup semantics.
 
-## Shared accessibility boundary
+## Shared accessibility and input boundary
 
-Portable Sudoku cells expose a localized content description containing row, column, value or candidate notes, fixed/editable state, selection state, and conflict state. Selection is also published through Compose semantics. Conflicts use an explicit `!` marker in addition to color and semantic state, and notes mode displays a visible check mark when enabled.
+Portable Sudoku cells expose localized row/column/value-or-notes/fixed-or-editable/selected/conflict descriptions. Selection is published through Compose semantics. Conflicts use an explicit `!` marker in addition to color and semantics. Notes mode uses visible and semantic selected state.
 
-These source semantics improve the common baseline but do not replace TalkBack, VoiceOver, desktop accessibility API, browser accessibility-tree, keyboard/focus, pointer/touch, large-font, or resize testing on real hosts. Those checks remain evidence-gated work in issue #34.
+For 2.0.13, the shared board is focusable and handles key-down events for:
+
+- arrow keys → deterministic one-cell row/column navigation;
+- Backspace/Delete → the same clue-protected erase state action used by visible controls.
+
+When no cell is selected, the first navigation action deterministically selects index `0`; edge movement clamps inside `0..80`.
+
+Direct digit keys, a Notes shortcut, and a Hint shortcut are not yet claimed as shared parity. Visible actions remain available. Real TalkBack, VoiceOver, desktop accessibility API, browser accessibility-tree, keyboard/focus, pointer/touch, large-font, and resize testing remain evidence-gated work.
+
+See [Hardware Keyboard Reference](KEYBOARD_SHORTCUTS.md).
 
 ## Toolchain
 
-The repository currently uses:
+Current repository toolchain:
 
 - JDK 17;
 - Kotlin 2.4.10;
 - Android Gradle Plugin 9.3.1;
-- compile/target SDK 37 for the Android production app;
+- compile/target SDK 37;
 - minimum Android SDK 26;
-- Compose Multiplatform 1.11.1 for shared UI foundations;
-- the repository Gradle wrapper.
+- Compose Multiplatform 1.11.1;
+- Room 2.8.4 for the mature Android persistence layer;
+- repository Gradle wrapper.
 
-Additional host requirements:
-
-- Android: Android Studio/Android SDK 37;
-- iOS/iPadOS: macOS and Xcode for the native host, signing, simulator/device execution, and distribution;
-- Desktop: a JDK containing `jpackage` for native application packaging;
-- Web: a modern WebAssembly-capable browser.
+Host requirements include Android SDK 37 for Android, macOS/Xcode for Apple framework/host work, a JDK with `jpackage` for Desktop packaging, and a modern Wasm-capable browser for Web runtime validation.
 
 ## Common build and test commands
 
-Run commands from the repository root.
+Run from repository root.
 
 ### Shared engine tests
 
-Linux/macOS:
-
 ```bash
-./gradlew :sudoku-engine:desktopTest
+./gradlew :sudoku-engine:desktopTest --stacktrace
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat :sudoku-engine:desktopTest
-```
+This includes the `SNP1` compatibility vector and `PuzzleExchangeService` unique-solution acceptance tests.
 
 ### Shared gameplay-state tests
 
-Linux/macOS:
-
 ```bash
-./gradlew :sharedUI:desktopTest
+./gradlew :sharedUI:desktopTest --stacktrace
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat :sharedUI:desktopTest
-```
-
-The shared-state suite includes typed-status transitions, notes/undo/reset behavior, hints, difficulty switching, active-game snapshot round trips, fail-closed generated-puzzle restore validation, deterministic `SNG1` codec coverage, malformed/oversized payload rejection, encoded-store behavior, and game-state store wiring.
+Coverage includes gameplay state, typed statuses, notes/undo/reset, hints, difficulty switching, deterministic grid navigation, active-game snapshots, `SNG1`, encoded stores, and restore/save wiring.
 
 ### Translation guards
 
@@ -184,86 +187,52 @@ python scripts/verify_translations.py
 python -m unittest scripts.tests.test_verify_translations
 ```
 
-These commands validate the existing Android localization scope plus full English/Hindi key parity and placeholder parity for shared Compose resources.
-
-### Compile shared Desktop and Web code
+### Compile shared Desktop and Web UI
 
 ```bash
-./gradlew :sharedUI:compileKotlinDesktop :sharedUI:compileKotlinWasmJs
+./gradlew :sharedUI:compileKotlinDesktop :sharedUI:compileKotlinWasmJs --stacktrace
 ```
 
 ### Android debug APK
 
-Linux/macOS:
+```bash
+./gradlew :app:assembleDebug --stacktrace
+```
+
+### Android 2.0.13 release outputs
 
 ```bash
-./gradlew :app:assembleDebug
+./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat :app:assembleDebug
-```
-
-Output is under `app/build/outputs/apk/debug/`.
-
-### Android 2.0.12 release outputs
-
-```bash
-./gradlew :app:assembleRelease :app:bundleRelease
-```
-
-The source-controlled release contract remains:
+Source-controlled contract:
 
 - application ID `in.sanskar.sudokunova`;
-- version code `2012`;
-- version name `2.0.12`;
+- version code `2013`;
+- version name `2.0.13`;
 - minSdk `26`;
 - targetSdk `37`.
 
-Production signing and certificate-bound verification remain governed by `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, and `V2_0_12_RELEASE.md`.
+Production signing/certificate-bound verification are governed by `PRODUCTION_SIGNING.md`, `PRODUCTION_RELEASE_VALIDATION.md`, and `V2_0_13_RELEASE.md`.
 
 ### Run Desktop during development
-
-Linux/macOS:
 
 ```bash
 ./gradlew :sharedUI:run
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat :sharedUI:run
-```
-
-### Create a Desktop application image
+### Create Desktop application image
 
 ```bash
 ./gradlew :sharedUI:createDistributable
 ```
 
-The host operating system determines the generated application image. Native package configuration declares:
-
-- Windows: MSI;
-- macOS: DMG;
-- Linux: DEB.
-
-Build platform-native packages on the corresponding host OS.
+Native distribution configuration declares MSI on Windows, DMG on macOS, and DEB on Linux. Build platform-native packages on the corresponding host.
 
 ### Build Web/Wasm production distribution
 
-Linux/macOS:
-
 ```bash
 ./gradlew :sharedUI:wasmJsBrowserDistribution
-```
-
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat :sharedUI:wasmJsBrowserDistribution
 ```
 
 Generated files are under `sharedUI/build/dist/wasmJs/productionExecutable/`.
@@ -274,7 +243,7 @@ Generated files are under `sharedUI/build/dist/wasmJs/productionExecutable/`.
 ./gradlew :sharedUI:wasmJsBrowserDevelopmentRun
 ```
 
-Use the URL printed by the Gradle development server. Browser QA should cover the actual browsers/versions intended for distribution before a public web release is claimed.
+Browser compatibility, accessibility, persistence, focus, touch, and reload behavior must be verified against the actual intended browser matrix before public Web release claims.
 
 ### Build iOS Simulator framework
 
@@ -300,16 +269,16 @@ Expected output:
 
 `sharedUI/build/bin/iosArm64/releaseFramework/SudokuNovaSharedUI.framework`
 
-The SwiftUI sources in `iosApp/` are host code. A production Apple application additionally requires a real Xcode application project/configuration, bundle identity, signing/provisioning, assets, device QA, and App Store validation. Those external release steps are not fabricated by repository compilation.
+The SwiftUI sources in `iosApp/` are host code. A production Apple application additionally requires a real Xcode application target/project or reproducible generated-host workflow, bundle identity, deployment target, assets, signing/provisioning, device QA, and App Store validation.
 
 ## Platform entry points
 
-- Android mature production launcher: `app/src/main/java/com/sanskar/sudokunova/MainActivity.kt`
-- Android shared UI host: `app/src/main/java/com/sanskar/sudokunova/CrossPlatformActivity.kt`
+- Android mature launcher: `app/src/main/java/com/sanskar/sudokunova/MainActivity.kt`
+- Android shared host: `app/src/main/java/com/sanskar/sudokunova/CrossPlatformActivity.kt`
 - Android shared persistence adapter: `app/src/main/java/com/sanskar/sudokunova/CrossPlatformSharedPreferencesGameTextStore.kt`
-- Desktop: `sharedUI/src/desktopMain/kotlin/com/sanskar/sudokunova/shared/desktop/Main.kt`
+- Desktop entry point: `sharedUI/src/desktopMain/kotlin/com/sanskar/sudokunova/shared/desktop/Main.kt`
 - Desktop persistence adapter: `sharedUI/src/desktopMain/kotlin/com/sanskar/sudokunova/shared/desktop/DesktopPreferencesGameTextStore.kt`
-- Web/Wasm: `sharedUI/src/wasmJsMain/kotlin/com/sanskar/sudokunova/shared/web/Main.kt`
+- Web entry point: `sharedUI/src/wasmJsMain/kotlin/com/sanskar/sudokunova/shared/web/Main.kt`
 - Web persistence adapter: `sharedUI/src/wasmJsMain/kotlin/com/sanskar/sudokunova/shared/web/WebLocalStorageGameTextStore.kt`
 - iOS/iPadOS Compose bridge: `sharedUI/src/iosMain/kotlin/com/sanskar/sudokunova/shared/ios/MainViewController.kt`
 - Apple persistence adapter: `sharedUI/src/iosMain/kotlin/com/sanskar/sudokunova/shared/ios/AppleUserDefaultsGameTextStore.kt`
@@ -317,29 +286,30 @@ The SwiftUI sources in `iosApp/` are host code. A production Apple application a
 
 ## CI contract
 
-The dedicated cross-platform workflow is intended to validate the exact PR head across these repository-build gates:
+The final 2.0.13 pull-request head must be validated by the same exact SHA across:
 
-- shared engine Desktop tests;
-- shared gameplay-state/persistence Desktop tests;
-- shared Desktop compilation;
-- shared Web/Wasm compilation;
-- Android debug assembly;
+- shared engine tests;
+- shared gameplay-state/persistence tests;
+- shared Desktop and Web/Wasm compilation;
+- Android shared integration;
 - Web production distribution;
-- iOS Simulator framework linking on macOS;
-- Desktop application-image generation on Linux, Windows, and macOS.
+- iOS Simulator framework linking;
+- Desktop application-image generation on Linux, Windows, and macOS;
+- ordinary Android repository/release gates;
+- API-35 Android instrumentation.
 
-The existing Android CI remains authoritative for the stricter 2.0.12 Android release contract, repository guards, Android unit/instrumentation compilation, lint, R8 release APK, AAB, embedded application/version/SDK/debuggable verification, and artifact evidence. The API-35 instrumentation workflow remains a separate exact-head gate.
+Android CI is authoritative for Android 2.0.13 release identity, repository guards, Android tests/lint/R8/APK/AAB, embedded identity, and unsigned artifact evidence. Cross-Platform CI proves repository target build/package paths. Android Instrumentation remains a separate exact-head connected-test gate.
 
 ## Evidence boundary
 
 Cross-platform source/build success does **not** by itself prove:
 
-- Apple production signing/provisioning or App Store acceptance;
-- macOS signing/notarization;
-- Windows code signing or installer reputation;
-- Linux distribution-repository compatibility;
-- browser/device compatibility across the intended web support matrix;
-- physical-device persistence/accessibility/performance/lifecycle behavior outside the tests actually run;
-- store/publication completion.
+- Apple production signing/provisioning, physical-device quality, or App Store acceptance;
+- macOS signing/notarization/Gatekeeper behavior;
+- Windows code signing, installer reputation, or clean-machine behavior;
+- Linux distribution-repository compatibility or clean install/upgrade/remove behavior;
+- intended browser/device compatibility or privacy-mode behavior;
+- real assistive-technology, keyboard/focus, touch/pointer, large-font, resize, performance, or lifecycle quality on each target;
+- store/public publication completion.
 
-Record those results only after they actually occur. This follows the same exact-evidence discipline as the Android 2.0.12 release line.
+Record those results only after they actually occur. See `V2_0_13_RELEASE.md` and issue #34 for current evidence-gated work.

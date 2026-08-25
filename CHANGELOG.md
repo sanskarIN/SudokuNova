@@ -2,98 +2,161 @@
 
 All notable SudokuNova changes are documented here. The project follows Semantic Versioning where practical and separates **source/repository milestones** from **actual public release evidence**.
 
-## [Unreleased]
+## [Unreleased] — 2.0.13 Preparation
 
-### Cross-Platform Foundation on the Verified 2.0.12 Baseline
+SudokuNova 2.0.13 is being prepared on PR #41 from the verified post-persistence/Room `main` checkpoint. Source metadata is now `versionCode 2013` / `versionName 2.0.13`, but public release, signing, device QA, store approval, tagging, and distribution are not inferred from source changes.
 
-The current development line extends SudokuNova beyond the mature Android application without weakening or replacing the verified Android 2.0.12 source/release contract.
+### Added
 
-#### Added
+- Deterministic shared Sudoku-grid navigation in `SharedGameState`:
+  - one-cell row/column movement;
+  - deterministic initial selection;
+  - board-edge clamping;
+  - invalid movement rejection.
+- Portable shared Compose keyboard/focus baseline:
+  - focusable Sudoku grid;
+  - Up/Down/Left/Right navigation;
+  - Backspace/Delete erase through existing clue-protected state logic.
+- Shared Notes action selected-state semantics in addition to the existing visible mode indicator.
+- Common `PuzzleExchangeService` around `SNP1` puzzle codes.
+- Unique-solution import acceptance in common engine code; syntactically valid but ambiguous puzzle codes are rejected.
+- `PuzzleExchangeServiceTest` compatibility/uniqueness regression coverage.
+- `docs/V2_0_13_RELEASE.md` as the current release-version authority.
+- Desktop package-version synchronization in `scripts/verify_release_contract.py` and its regression suite.
 
-- Kotlin Multiplatform targets for the `sudoku-engine` domain module:
-  - Android;
-  - Desktop JVM;
-  - iOS arm64;
-  - iOS Simulator arm64;
-  - Web/Wasm.
-- New `sharedUI` Compose Multiplatform module.
-- Portable `SharedGameState` with:
-  - generated puzzles;
-  - seven difficulty levels;
-  - fixed/editable cells;
-  - number entry;
-  - candidate notes;
-  - peer-note cleanup;
-  - conflict feedback;
-  - erase;
-  - bounded undo;
-  - engine-backed hints;
-  - reset/new game.
-- Responsive shared Sudoku UI using Compose Multiplatform/Material 3.
-- Desktop Compose application entry point.
-- iOS/iPadOS `ComposeUIViewController` bridge and static `SudokuNovaSharedUI.framework` configuration.
-- SwiftUI host sources under `iosApp/`.
-- Web/Wasm entry point, production host page, and responsive browser shell.
-- Non-exported Android `CrossPlatformActivity` that hosts the shared UI while preserving `MainActivity` as the mature production launcher.
-- Portable gameplay-state regression tests.
-- Dedicated `.github/workflows/cross-platform.yml` hosted matrix covering:
-  - shared tests/compile;
-  - Android shared integration;
-  - Web production distribution;
-  - iOS Simulator framework linking on macOS;
-  - Desktop application images on Linux, Windows, and macOS.
-- Cross-platform documentation authority: `docs/CROSS_PLATFORM.md`.
-- iOS host integration guide under `iosApp/README.md`.
-- Documentation-coverage ownership/rules/tests for `sharedUI/` and `iosApp/`.
+### Changed
 
-#### Changed
+- Android source version promoted to:
+  - `versionCode 2013`;
+  - `versionName 2.0.13`.
+- Compose Desktop native package version promoted to `2.0.13`.
+- Ordinary Android CI release verification now expects 2013 / 2.0.13.
+- Protected Production Release Validation defaults now expect 2013 / 2.0.13.
+- Release-contract verification now fails when Desktop `packageVersion` differs from Android `versionName`.
+- `README.md`, `docs/README.md`, `docs/CROSS_PLATFORM.md`, `docs/SUDOKU_ENGINE.md`, `docs/KEYBOARD_SHORTCUTS.md`, and `what_changed.md` are aligned with the 2.0.13 source/parity boundary.
 
-- `sudoku-engine` migrated from JVM-only configuration to Kotlin Multiplatform while retaining its platform-independent implementation/test source trees.
-- Root Gradle/version-catalog configuration now registers KMP and Compose Multiplatform plugins/dependencies while retaining:
-  - Android Gradle Plugin 9.3.1;
-  - Kotlin 2.4.10;
-  - Android compile/target SDK 37;
-  - JDK/JVM 17.
-- Android `:app` now consumes `:sharedUI` in addition to `:sudoku-engine`.
-- Standard Android CI now runs shared engine tests, shared gameplay-state tests, and shared Desktop/Web compilation before the existing Android/release gates.
-- `README.md`, `docs/README.md`, `ARCHITECTURE.md`, `PROJECT_STRUCTURE.md`, `BUILDING.md`, `TESTING.md`, `CI_CD.md`, and `REPOSITORY_FILE_REFERENCE.md` were aligned with the real multiplatform build graph and evidence boundaries.
-- Documentation continues to distinguish repository build support from production signing/notarization/store/device/browser evidence.
+### Preserved
 
-#### Preserved
+- Existing `SNP1` checksum/vector compatibility.
+- Classic 9×9 Sudoku correctness and unique generated-puzzle requirements.
+- Mature Android Room/DataStore state and product features.
+- English/Hindi shared-resource parity guards.
+- `SNG1` active-game validation and local adapters.
+- Fail-closed signing/secret/release-output guards.
+- Exact-head workflow evidence rules.
 
-The mature Android production surface remains intact. Cross-platform extraction does **not** remove or silently downgrade Android-only capabilities such as Room/DataStore persistence, history/saved puzzles, backup/transfer, full navigation, learning/statistics surfaces, localization, Android accessibility integration, Macrobenchmark tooling, or the 2.0.12 release verification pipeline.
+### Still Pending / Not Claimed
 
-#### Verification Boundary
+- Shared imported/custom-puzzle gameplay provenance/persistence model.
+- Shared clipboard/share/file-picker adapters.
+- Shared challenges, learning/statistics, and full settings parity.
+- Direct shared digit/Notes/Hint keyboard shortcuts.
+- Real target focus, touch/pointer, resize, large-font, accessibility, lifecycle, and browser E2E evidence.
+- Apple production host/signing/provisioning/App Store evidence.
+- Windows/macOS/Linux production signing/install/notarization/distribution evidence.
+- Android production signing, physical-device QA, store acceptance, final `SHIP`, `v2.0.13` tag, or public release.
 
-This work is not considered merge-verified until `Android CI`, `Android Instrumentation`, and every `Cross-Platform CI` job are green on the same exact final PR head SHA.
+### Verification Boundary
 
-Repository compilation/framework/package generation does not by itself prove:
+PR #41 is merge-ready only after `Android CI`, `Android Instrumentation`, and `Cross-Platform CI` are all green on one exact final head SHA. Older successful runs cannot be mixed with a newer head.
 
-- Apple signing/provisioning or App Store acceptance;
-- macOS signing/notarization;
-- Windows signing/reputation;
-- Linux distribution-channel compatibility;
-- broad browser/device compatibility;
-- physical-device accessibility/lifecycle/performance quality;
-- public store/release publication.
+---
 
-### 2.0.12 Android Repository/Release Baseline — Verified and Merged
+## Recently Merged Cross-Platform Foundations
 
-PR #30 consolidated the final Android 2.0.12 source/version/documentation/release-hardening line and merged to `main` at:
+### Shared Active-Game Persistence — PR #39
+
+PR #39 added the versioned `SNG1` active-game transport and common/native persistence boundary.
+
+Major additions:
+
+- `SharedGameSnapshot` and fail-closed restore validation;
+- deterministic bounded `SharedGameSnapshotCodec`;
+- `SharedGameStore` / `SharedGameTextStore` interfaces;
+- encoded-store composition;
+- Compose restore/autosave ownership;
+- staged Android shared-host `SharedPreferences` adapter;
+- Desktop `Preferences` adapter;
+- Web `localStorage` adapter;
+- Apple `NSUserDefaults` adapter;
+- persistence regression tests;
+- `docs/SHARED_PERSISTENCE.md`.
+
+Exact final head:
+
+```text
+2a83189356640cbd8ef6f88e7fbf76bbb2fcb845
+```
+
+That head passed Android CI, Android Instrumentation, and Cross-Platform CI before merge.
+
+### Room 2.8.4 Maintenance — PR #40
+
+Room runtime/ktx/compiler/testing were updated to 2.8.4 on the verified post-persistence base rather than merging a stale-base dependency branch.
+
+Exact final head:
+
+```text
+56183604d8693f7b5997c399030a9916cb56e567
+```
+
+That head passed all three required workflow families before merge. The resulting `main` checkpoint used to start 2.0.13 is:
+
+```text
+fc95093405c1dc03141e888cc77923fe8f92bcec
+```
+
+The older Dependabot PR #35 was closed as superseded.
+
+### Cross-Platform Foundation — PR #33
+
+The 2.0.12 cross-platform foundation introduced:
+
+- Kotlin Multiplatform `sudoku-engine` targets for Android, Desktop JVM, iOS/iOS Simulator, and Web/Wasm;
+- Compose Multiplatform `sharedUI`;
+- responsive portable gameplay state/UI;
+- Desktop launcher/package path;
+- iOS/iPadOS framework + SwiftUI host sources;
+- Web/Wasm launcher/distribution shell;
+- non-exported Android shared host;
+- English/Hindi shared resource parity;
+- shared cell semantics and non-color conflict evidence;
+- hosted multi-OS Cross-Platform CI;
+- fail-closed documentation ownership for shared/platform files.
+
+Exact final head:
+
+```text
+514ff1a1b79dce0ee75c9c20af7211af51362649
+```
+
+Exact-head results:
+
+- Android CI #919 / `32627989504` — green;
+- Android Instrumentation #335 / `32627989511` — green;
+- Cross-Platform CI #70 / `32627989561` — green.
+
+Repository build support did not and does not imply signing, notarization, store, physical-device, or broad browser evidence.
+
+---
+
+## 2.0.12 Android Repository/Release Baseline — Verified and Merged
+
+PR #30 consolidated the Android 2.0.12 source/version/documentation/release-hardening line and merged to `main` at:
 
 ```text
 5fdafd77332b4889c5bd64bd23b1c4869ade0962
 ```
 
-The final PR #30 head was:
+Final PR #30 head:
 
 ```text
 f097f7fb58a4d9b5e4f87b998b01e9d082ac9f29
 ```
 
-That exact head passed the required Android CI and API-35 Android Instrumentation gates before merge.
+The exact head passed required Android CI and API-35 Android Instrumentation before merge.
 
-The source contract is:
+Historical source contract:
 
 ```text
 applicationId = in.sanskar.sudokunova
@@ -104,20 +167,11 @@ targetSdk     = 37
 compileSdk    = 37
 ```
 
-#### Added/Strengthened
+Major release-engineering work included fail-closed tracked-file documentation ownership, embedded APK identity inspection, release verifier regression/CLI checks, certificate-bound signed validation paths, synchronized source/workflow release contracts, and `docs/V2_0_12_RELEASE.md`.
 
-- fail-closed tracked-file documentation ownership and detailed-guide indexing;
-- embedded APK application/version/minSdk/targetSdk/debuggable identity inspection;
-- deterministic APK identity evidence;
-- release-verifier CLI-boundary regression tests;
-- mandatory signed-release APK v2-or-newer signature-scheme enforcement;
-- `docs/V2_0_12_RELEASE.md` as the current Android release authority;
-- protected production validation defaults synchronized to 2012/2.0.12;
-- release-contract synchronization across source, ordinary CI, and protected release validation.
+The repository baseline did not itself prove a publicly shipped 2.0.12 binary.
 
-#### Evidence Boundary
-
-The verified repository baseline does not itself prove a published 2.0.12 store release. Production signing, physical-device/manual QA, representative performance evidence, repository administration, Play Console validation, final SHIP decision, tagging, GitHub Release creation, and public distribution remain separate real-evidence requirements.
+---
 
 ## Historical Release-Engineering Foundations
 
@@ -135,9 +189,7 @@ Exact-head evidence:
 - API-35 instrumentation run #229 / ID `32211246802` — green;
 - merge commit `27640cb9089ddae4a9242bb84a8927c3761201f4`.
 
-Major repository-side additions included certificate-bound signed-release verification, protected release validation, Macrobenchmark infrastructure, repository consistency guards, exact release-identity checks, and performance-evidence documentation.
-
-These runs are historical evidence only and do not prove newer heads.
+Major additions included certificate-bound signed-release verification, protected release validation, Macrobenchmark infrastructure, repository consistency guards, exact release-identity checks, and performance-evidence documentation.
 
 ### v1.0 RC1 Repository Preparation
 
@@ -153,7 +205,7 @@ Exact-head evidence:
 - API-35 instrumentation run #188 / ID `32151771297` — green;
 - merge commit `2329881aff8dabaf8d040918e16b6113e3900245`.
 
-This historical line introduced the release-output verifier, optional secret-backed fail-closed signing, release evidence/checksums, Play Store preparation, GitHub settings guidance, and stable-release documentation foundations.
+This line introduced release-output verification, optional fail-closed secret-backed signing, release evidence/checksums, Play Store preparation, GitHub settings guidance, and stable-release documentation foundations.
 
 ### v0.9.0 Release Hardening — 2026-08-18
 
@@ -169,11 +221,11 @@ Exact-head evidence:
 - API-35 instrumentation run `32139568591` — green;
 - merge commit `18944dc56757e1c1c9d51939cb0cafa72e4b5ee2`.
 
-Major work included repository security checks, bounded backup/file validation, accessibility and large-text hardening, off-main-thread solver/hint work, Room/DataStore integrity review, localization cleanup, release R8/AAB verification, repository metadata/policies, and comprehensive documentation.
+Major work included bounded backup/file validation, accessibility and large-text hardening, off-main-thread solver/hint work, Room/DataStore integrity review, localization cleanup, R8/AAB verification, repository metadata/policies, and comprehensive documentation.
 
 ## Earlier Product Milestones
 
-Earlier milestones established the current feature-rich Android product foundation, including:
+Earlier milestones established the feature-rich Android product foundation, including:
 
 - Classic Sudoku board/solver/generator;
 - seven difficulty levels;
@@ -187,7 +239,7 @@ Earlier milestones established the current feature-rich Android product foundati
 - Room/DataStore local persistence;
 - offline-first/privacy-oriented behavior.
 
-Detailed milestone history is preserved in the repository's historical documentation, merged pull requests, and:
+Detailed history is preserved in merged PRs and:
 
 - `docs/archive/what_changed_through_2026-08-19.md`;
 - `docs/V09_HARDENING_AUDIT.md`;

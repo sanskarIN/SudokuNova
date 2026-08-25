@@ -4,6 +4,7 @@ from scripts.verify_release_contract import (
     ReleaseContract,
     compare_contracts,
     parse_ci_expected_contract,
+    parse_desktop_package_version,
     parse_gradle_release_contract,
     parse_protected_workflow_defaults,
 )
@@ -79,6 +80,18 @@ class ReleaseContractVerifierTest(unittest.TestCase):
                 '''
             )
 
+    def test_parses_desktop_package_version(self) -> None:
+        self.assertEqual(
+            "2.0.13",
+            parse_desktop_package_version('packageVersion = "2.0.13"'),
+        )
+
+    def test_rejects_duplicate_desktop_package_version(self) -> None:
+        with self.assertRaisesRegex(ValueError, "exactly one Desktop packageVersion"):
+            parse_desktop_package_version(
+                'packageVersion = "2.0.13"\npackageVersion = "2.0.14"'
+            )
+
     def test_parses_ordinary_ci_expected_contract(self) -> None:
         contract = parse_ci_expected_contract(
             '''
@@ -129,20 +142,21 @@ class ReleaseContractVerifierTest(unittest.TestCase):
     def test_compare_contracts_accepts_matching_values(self) -> None:
         source = ReleaseContract("in.sanskar.sudokunova", 1000, "1.0.0-rc.1", 26, 37)
 
-        self.assertEqual([], compare_contracts(source, source, source))
+        self.assertEqual([], compare_contracts(source, source, source, "1.0.0-rc.1"))
 
     def test_compare_contracts_reports_every_drift(self) -> None:
         source = ReleaseContract("in.sanskar.sudokunova", 1000, "1.0.0-rc.1", 26, 37)
         ordinary = ReleaseContract("in.sanskar.other", 999, "wrong", 25, 36)
         protected = ReleaseContract("in.sanskar.other2", 998, "wrong2", 24, 35)
 
-        errors = compare_contracts(source, ordinary, protected)
+        errors = compare_contracts(source, ordinary, protected, "9.9.9")
 
-        self.assertEqual(10, len(errors))
+        self.assertEqual(11, len(errors))
         self.assertTrue(any("ordinary CI application ID" in error for error in errors))
         self.assertTrue(any("ordinary CI min SDK" in error for error in errors))
         self.assertTrue(any("protected workflow defaults target SDK" in error for error in errors))
         self.assertTrue(any("protected workflow defaults version name" in error for error in errors))
+        self.assertTrue(any("Desktop package version" in error for error in errors))
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ The engine must not depend on:
 - Android lifecycle/ViewModels;
 - player-facing localized prose.
 
-The Android `app` module translates engine evidence into localized UI presentation.
+Platform UIs translate engine evidence into localized presentation.
 
 ## `SudokuBoard`
 
@@ -60,7 +60,7 @@ Important distinctions:
 
 Candidate calculation returns digits legal for an empty cell under current row/column/box constraints.
 
-Candidates are a logical state derived from the board, not the same thing as player Notes stored by the Android game state.
+Candidates are a logical state derived from the board, not the same thing as player Notes stored by gameplay state.
 
 ## `SudokuSolver`
 
@@ -251,7 +251,7 @@ Reveal must not fabricate:
 - candidate eliminations;
 - unsupported logical strategy.
 
-The Android UI should label/present Reveal separately from supported techniques.
+Platform UIs should label/present Reveal separately from supported techniques.
 
 ## `TeachingPracticeCatalog`
 
@@ -276,13 +276,34 @@ The engine owns the platform-independent `SNP1` puzzle-share format:
 SNP1.<DIFFICULTY>.<81-digit-puzzle>.<CRC32>
 ```
 
-The codec enforces length, version, enum, payload, checksum and board-validity constraints.
+The codec enforces length, version, enum, payload, checksum and board-validity constraints. It intentionally remains a format codec: a board can be syntactically valid while still having zero or multiple solutions.
 
-Unique solvability is checked at the Android acceptance boundary before imported play.
+The established fixed compatibility vector is retained in tests so multiplatform refactoring cannot silently change existing `SNP1` codes.
 
 See `DATA_FORMATS.md`.
 
-## Android Presentation Boundary
+## `PuzzleExchangeService`
+
+`PuzzleExchangeService` is the common import/export acceptance boundary introduced for 2.0.13.
+
+Export delegates to `PuzzleCodeCodec` so generated codes remain `SNP1` compatible.
+
+Import performs two stages:
+
+1. decode and validate the `SNP1` transport with `PuzzleCodeCodec`;
+2. analyze the decoded board with `SudokuSolver` using a solution limit of two and accept it only when exactly one solution exists.
+
+A successful import returns structured `ImportedPuzzle` data containing:
+
+- the original puzzle board;
+- the uniquely proven solution board;
+- the encoded difficulty.
+
+This keeps unique-solution acceptance in common engine code instead of duplicating correctness logic independently in Android, Desktop, Web, or Apple hosts.
+
+Current shared active-game persistence (`SNG1`) remains generated-game/seed based. Importing an `SNP1` puzzle into a persistent custom-game session requires explicit provenance/serialization support and must not be faked by assigning an unrelated generator seed.
+
+## Platform Presentation Boundary
 
 The engine should expose structured data such as:
 
@@ -290,24 +311,26 @@ The engine should expose structured data such as:
 - source/target cell indices;
 - unit information;
 - eliminated candidates;
-- placements.
+- placements;
+- validated imported puzzle data.
 
-The Android app should own:
+Platform UIs should own:
 
 - localized technique names;
 - English/Hindi explanations;
 - cell labels such as “row 2 column 5”;
 - colors/borders;
-- Compose dialogs;
-- TalkBack content descriptions.
+- dialogs and platform interaction surfaces;
+- accessibility descriptions;
+- clipboard/share/file-picker adapters when those are implemented.
 
-Do not put Android resource IDs or translated prose into `sudoku-engine`.
+Do not put Android resource IDs, platform UI classes, or translated prose into `sudoku-engine`.
 
 ## Threading
 
-Engine classes are ordinary JVM logic and do not select Android coroutine dispatchers themselves.
+Engine classes are ordinary multiplatform logic and do not select platform coroutine dispatchers themselves.
 
-Callers must schedule expensive solver/generator/hint work appropriately. The Android application uses background dispatchers for CPU-heavy analysis in UI flows.
+Callers must schedule expensive solver/generator/hint/import-analysis work appropriately. Platform UI layers should avoid running expensive analysis on render-critical paths.
 
 ## Correctness Invariants
 
@@ -318,7 +341,9 @@ Engine changes must preserve:
 - invalid-board rejection;
 - correct solution counting;
 - unique generated puzzles;
+- unique-solution acceptance for imported puzzle exchange;
 - deterministic seeded behavior where promised;
+- `SNP1` checksum/format compatibility;
 - legal candidate states;
 - teaching placements equal the solved value;
 - teaching eliminations never remove the solved value;
@@ -336,10 +361,10 @@ sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/
 Run:
 
 ```bash
-./gradlew :sudoku-engine:test --stacktrace
+./gradlew :sudoku-engine:desktopTest --stacktrace
 ```
 
-The suite includes board, solver, generator, difficulty, logical corpus, advanced teaching, practice and hint regression coverage.
+The suite includes board, solver, generator, difficulty, puzzle-code compatibility, puzzle-exchange uniqueness, logical corpus, advanced teaching, practice and hint regression coverage.
 
 See `TESTING.md` for the complete strategy.
 

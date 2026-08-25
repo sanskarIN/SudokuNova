@@ -3,6 +3,7 @@ package com.sanskar.sudokunova.shared
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -202,7 +209,9 @@ private fun SudokuGrid(state: SharedGameState) {
             modifier = Modifier
                 .width(gridSize)
                 .aspectRatio(1f)
-                .border(2.dp, MaterialTheme.colorScheme.outline),
+                .border(2.dp, MaterialTheme.colorScheme.outline)
+                .focusable()
+                .onPreviewKeyEvent { event -> handleGridKeyEvent(event, state) },
         ) {
             repeat(SudokuBoard.SIZE) { row ->
                 Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
@@ -217,6 +226,34 @@ private fun SudokuGrid(state: SharedGameState) {
                 }
             }
         }
+    }
+}
+
+private fun handleGridKeyEvent(event: KeyEvent, state: SharedGameState): Boolean {
+    if (event.type != KeyEventType.KeyDown) return false
+
+    return when (event.key) {
+        Key.DirectionUp -> {
+            state.moveSelection(rowDelta = -1, columnDelta = 0)
+            true
+        }
+        Key.DirectionDown -> {
+            state.moveSelection(rowDelta = 1, columnDelta = 0)
+            true
+        }
+        Key.DirectionLeft -> {
+            state.moveSelection(rowDelta = 0, columnDelta = -1)
+            true
+        }
+        Key.DirectionRight -> {
+            state.moveSelection(rowDelta = 0, columnDelta = 1)
+            true
+        }
+        Key.Backspace, Key.Delete -> {
+            state.erase()
+            true
+        }
+        else -> false
     }
 }
 
@@ -366,6 +403,7 @@ private fun GameActions(state: SharedGameState) {
                 label = notesLabel,
                 onClick = state::toggleNotesMode,
                 modifier = Modifier.weight(1f),
+                selected = state.notesMode,
             )
             ActionButton(stringResource(Res.string.action_erase), state::erase, Modifier.weight(1f))
             ActionButton(stringResource(Res.string.action_undo), state::undo, Modifier.weight(1f))
@@ -386,8 +424,14 @@ private fun ActionButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    selected: Boolean? = null,
 ) {
-    OutlinedButton(onClick = onClick, modifier = modifier) {
+    val semanticsModifier = if (selected == null) {
+        modifier
+    } else {
+        modifier.semantics { this.selected = selected }
+    }
+    OutlinedButton(onClick = onClick, modifier = semanticsModifier) {
         Text(label, maxLines = 1)
     }
 }
