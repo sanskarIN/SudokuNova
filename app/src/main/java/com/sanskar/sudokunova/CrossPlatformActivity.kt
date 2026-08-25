@@ -6,7 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import com.sanskar.sudokunova.shared.EncodedSharedGameStore
+import com.sanskar.sudokunova.shared.EncodedSharedSettingsStore
 import com.sanskar.sudokunova.shared.SharedGameState
+import com.sanskar.sudokunova.shared.SharedSettingsState
 import com.sanskar.sudokunova.shared.SudokuNovaSharedApp
 import com.sanskar.sudokunova.shared.restoreFrom
 import com.sanskar.sudokunova.shared.saveTo
@@ -20,19 +22,26 @@ import kotlinx.coroutines.launch
  */
 class CrossPlatformActivity : ComponentActivity() {
     private val sharedState = SharedGameState()
+    private val sharedSettingsState = SharedSettingsState()
     private lateinit var gameStore: EncodedSharedGameStore
+    private lateinit var settingsStore: EncodedSharedSettingsStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         gameStore = EncodedSharedGameStore(CrossPlatformSharedPreferencesGameTextStore(this))
+        settingsStore = EncodedSharedSettingsStore(CrossPlatformSharedPreferencesSettingsTextStore(this))
         lifecycleScope.launch {
             sharedState.restoreFrom(gameStore)
+            runCatching { sharedSettingsState.restoreFrom(settingsStore) }
         }
 
         setContent {
-            SudokuNovaSharedApp(state = sharedState)
+            SudokuNovaSharedApp(
+                state = sharedState,
+                settingsState = sharedSettingsState,
+            )
         }
     }
 
@@ -40,6 +49,7 @@ class CrossPlatformActivity : ComponentActivity() {
         super.onStop()
         lifecycleScope.launch {
             sharedState.saveTo(gameStore)
+            runCatching { sharedSettingsState.saveTo(settingsStore) }
         }
     }
 }
