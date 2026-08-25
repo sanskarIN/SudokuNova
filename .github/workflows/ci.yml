@@ -94,7 +94,7 @@ jobs:
       - name: Verify multiplatform engine tests
         run: ./gradlew :sudoku-engine:desktopTest --stacktrace
 
-      - name: Verify shared gameplay-state tests
+      - name: Verify shared gameplay and settings tests
         run: ./gradlew :sharedUI:desktopTest --stacktrace
 
       - name: Compile shared desktop and Web/Wasm UI
@@ -143,8 +143,8 @@ jobs:
             --aab app/build/outputs/bundle/release/app-release.aab \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code 2013 \
-            --expected-version-name 2.0.13 \
+            --expected-version-code 2014 \
+            --expected-version-name 2.0.14 \
             --expected-application-id in.sanskar.sudokunova \
             --require-apk-manifest \
             --expected-min-sdk 26 \
