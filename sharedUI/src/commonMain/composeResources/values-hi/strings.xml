@@ -13,6 +13,11 @@
     <string name="difficulty_master">मास्टर</string>
     <string name="difficulty_extreme">अत्यंत कठिन</string>
 
+    <string name="settings_theme">थीम</string>
+    <string name="theme_system">सिस्टम</string>
+    <string name="theme_light">हल्की</string>
+    <string name="theme_dark">गहरी</string>
+
     <string name="action_notes">नोट्स</string>
     <string name="action_erase">मिटाएँ</string>
     <string name="action_undo">पूर्ववत करें</string>
