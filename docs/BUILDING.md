@@ -1,22 +1,20 @@
 # Building SudokuNova
 
-This guide covers the current SudokuNova 2.0.13 repository, including the mature Android application and Kotlin/Compose Multiplatform targets. For the detailed platform-support matrix and evidence boundaries, also read [`CROSS_PLATFORM.md`](CROSS_PLATFORM.md).
+This guide covers the SudokuNova 2.0.14 repository, including the mature Android application and Kotlin/Compose Multiplatform targets. For the detailed platform-support matrix and evidence boundaries, also read [`CROSS_PLATFORM.md`](CROSS_PLATFORM.md).
 
 ## Required Tooling
 
 Current repository configuration:
 
-- JDK 17
-- Gradle 9.5 via the committed wrapper
-- Android Gradle Plugin 9.3.1
-- Kotlin 2.4.10
-- Compose Multiplatform 1.11.1
-- Room 2.8.4 for mature Android persistence
-- Android compile/target SDK 37
-- Android application min SDK 26
-- Macrobenchmark test-module min SDK 29
-- AndroidX Benchmark Macrobenchmark 1.4.1
-- AndroidX ProfileInstaller 1.4.1
+- JDK 17;
+- Gradle 9.5 through the committed wrapper;
+- Android Gradle Plugin 9.3.1;
+- Kotlin 2.4.10;
+- Compose Multiplatform 1.11.1;
+- Room 2.8.4 for mature Android persistence;
+- Android compile/target SDK 37;
+- Android application min SDK 26;
+- Macrobenchmark test-module min SDK 29.
 
 Use the committed Gradle wrapper so local and CI builds use the same Gradle distribution.
 
@@ -27,36 +25,27 @@ Additional platform tooling:
 - Desktop native images/packages: a JDK containing `jpackage` on the host OS;
 - Web: a modern WebAssembly-capable browser for runtime QA.
 
-## Current 2.0.13 Release Contract
+## Current 2.0.14 Source Contract
 
 ```text
 applicationId          = in.sanskar.sudokunova
-Android versionCode    = 2013
-Android versionName    = 2.0.13
-Desktop packageVersion = 2.0.13
+Android versionCode    = 2014
+Android versionName    = 2.0.14
+Desktop packageVersion = 2.0.14
 minSdk                 = 26
 targetSdk              = 37
 compileSdk             = 37
 ```
 
-[`V2_0_13_RELEASE.md`](V2_0_13_RELEASE.md) is the current release authority. `V2_0_12_RELEASE.md` and older release documents remain historical evidence.
+[`V2_0_14_RELEASE.md`](V2_0_14_RELEASE.md) is the current release-preparation authority. Older release documents remain historical evidence.
 
-The release-contract guard requires the Android version name and Desktop package version to remain synchronized in addition to ordinary/protected Android CI identity expectations.
+The release-contract guard requires Android source identity, ordinary Android CI expectations, protected production-validation defaults, and Desktop `packageVersion` to remain synchronized.
 
-## Clone
+## Clone and Configuration Check
 
 ```bash
 git clone https://github.com/sanskarIN/SudokuNova.git
 cd SudokuNova
-```
-
-Use `main` for the last merged state. When validating a pull request, checkout the exact PR head/branch and record its commit SHA; never reuse evidence from another head.
-
-## Basic Gradle Commands
-
-Configuration check:
-
-```bash
 ./gradlew tasks
 ```
 
@@ -66,88 +55,62 @@ Windows PowerShell:
 .\gradlew.bat tasks
 ```
 
-Clean only when stale generated state is suspected or a release-evidence procedure explicitly requires it:
+Use `main` for the last merged state. When validating PR #44 or another pull request, checkout the exact head being evaluated and record its SHA. Never reuse evidence from another head.
 
-```bash
-./gradlew clean
-```
+## Shared Multiplatform Tests
 
-# Shared Multiplatform Builds
-
-## Shared Engine Tests
-
-Linux/macOS:
+### Sudoku engine
 
 ```bash
 ./gradlew :sudoku-engine:desktopTest --stacktrace
 ```
 
-Windows PowerShell:
+The engine suite protects board/solver/generator/difficulty/teaching/hints/practice behavior, the fixed `SNP1` compatibility vector, and unique-solution `PuzzleExchangeService` acceptance.
 
-```powershell
-.\gradlew.bat :sudoku-engine:desktopTest --stacktrace
-```
-
-The suite includes Classic Sudoku correctness, generation/solver/difficulty/teaching tests, the fixed `SNP1` compatibility vector, and `PuzzleExchangeService` unique-solution acceptance.
-
-## Shared Gameplay/Persistence Tests
+### Shared gameplay, active-game persistence, and settings
 
 ```bash
 ./gradlew :sharedUI:desktopTest --stacktrace
 ```
 
-Coverage includes gameplay state, deterministic grid navigation, typed statuses, notes/undo/reset/hints, `SNG1` serialization, persistence/store wiring, and fail-closed restoration.
+Coverage includes gameplay state, deterministic grid navigation, notes/undo/reset/hints, `SNG1` active-game serialization/store behavior, `SNS1` settings serialization/store/state behavior, and fail-closed restoration.
 
-## Compile Shared Desktop and Web/Wasm
+### Compile shared Desktop and Web/Wasm
 
 ```bash
 ./gradlew :sharedUI:compileKotlinDesktop :sharedUI:compileKotlinWasmJs --stacktrace
 ```
 
-This compile gate protects common input/resource/semantics code across representative targets; it does not replace runtime QA.
+This protects portable Compose/resource/input/settings APIs across representative targets. Compilation is not runtime accessibility, focus, lifecycle, or browser evidence.
 
-## Desktop Development Run
+## Desktop
+
+Development run:
 
 ```bash
 ./gradlew :sharedUI:run
 ```
 
-Windows:
-
-```powershell
-.\gradlew.bat :sharedUI:run
-```
-
-## Desktop Application Image
+Application image:
 
 ```bash
 ./gradlew :sharedUI:createDistributable --stacktrace
 ```
 
-Output is under:
+Native distribution configuration declares MSI on Windows, DMG on macOS, and DEB on Linux with:
 
 ```text
-sharedUI/build/compose/binaries/main/app/
+packageVersion = 2.0.14
 ```
 
-Native distribution configuration declares Windows MSI, macOS DMG, and Linux DEB formats, with package version `2.0.13`. Build native packages on their corresponding host OS. Code signing/notarization/reputation/distribution are separate external evidence.
+Build native packages on the corresponding host. Code signing, notarization, reputation, and clean-machine install/upgrade QA remain external evidence.
 
-## Web/Wasm Production Distribution
+## Web/Wasm
+
+Production distribution:
 
 ```bash
 ./gradlew :sharedUI:wasmJsBrowserDistribution --stacktrace
-```
-
-Windows:
-
-```powershell
-.\gradlew.bat :sharedUI:wasmJsBrowserDistribution --stacktrace
-```
-
-Output:
-
-```text
-sharedUI/build/dist/wasmJs/productionExecutable/
 ```
 
 Development server:
@@ -156,53 +119,51 @@ Development server:
 ./gradlew :sharedUI:wasmJsBrowserDevelopmentRun
 ```
 
-A successful build does not prove the intended browser/device matrix, focus/accessibility behavior, or privacy-mode persistence.
+Production output is under:
 
-## iOS Simulator Framework
+```text
+sharedUI/build/dist/wasmJs/productionExecutable/
+```
 
-On macOS:
+A successful build does not prove the intended browser matrix, accessibility/focus behavior, or `localStorage` behavior in private/privacy modes.
+
+## iOS/iPadOS Frameworks
+
+Simulator framework on macOS:
 
 ```bash
 ./gradlew :sharedUI:linkDebugFrameworkIosSimulatorArm64 --stacktrace
 ```
 
-Output:
+Expected output:
 
 ```text
 sharedUI/build/bin/iosSimulatorArm64/debugFramework/SudokuNovaSharedUI.framework
 ```
 
-## iOS Device Framework
-
-On macOS:
+Device framework:
 
 ```bash
 ./gradlew :sharedUI:linkReleaseFrameworkIosArm64 --stacktrace
 ```
 
-Output:
+Expected output:
 
 ```text
 sharedUI/build/bin/iosArm64/releaseFramework/SudokuNovaSharedUI.framework
 ```
 
-`iosApp/` contains SwiftUI host sources. A production Apple application additionally needs a real/reproducible Xcode application host, final identity/deployment/assets, signing/provisioning, physical-device QA, and App Store validation. Framework compilation is not publication evidence.
+`iosApp/` contains SwiftUI host sources. A production Apple application additionally needs a real/reproducible Xcode application host, final identity/deployment/assets, signing/provisioning, physical-device QA, and App Store validation.
 
-# Android Application Builds
+## Android Builds
 
-## Debug APK
+Debug APK:
 
 ```bash
 ./gradlew :app:assembleDebug --stacktrace
 ```
 
-Windows:
-
-```powershell
-.\gradlew.bat :app:assembleDebug --stacktrace
-```
-
-Expected output:
+Output:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
@@ -210,140 +171,80 @@ app/build/outputs/apk/debug/app-debug.apk
 
 The debug build uses `.debug` application-ID and `-debug` version-name suffixes.
 
-The Android app consumes `:sudoku-engine` and `:sharedUI`. `MainActivity` remains the mature launcher; `CrossPlatformActivity` is non-exported and validates the shared host surface.
-
-## Release APK
+Release APK and AAB:
 
 ```bash
-./gradlew :app:assembleRelease --stacktrace
+./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 ```
 
-Expected output directory:
+Without all production-signing environment values, ordinary/local verification intentionally produces an unsigned release APK. Release builds retain R8 and resource shrinking.
+
+Preserve:
 
 ```text
 app/build/outputs/apk/release/
-```
-
-Without production-signing environment values, local/ordinary CI verification intentionally produces an unsigned release APK such as:
-
-```text
-app/build/outputs/apk/release/app-release-unsigned.apk
-```
-
-Release enables R8 code shrinking and resource shrinking.
-
-## Android App Bundle
-
-```bash
-./gradlew :app:bundleRelease --stacktrace
-```
-
-Expected output:
-
-```text
 app/build/outputs/bundle/release/app-release.aab
-```
-
-A production artifact must use the protected signing process in [`PRODUCTION_SIGNING.md`](PRODUCTION_SIGNING.md) and [`PRODUCTION_RELEASE_VALIDATION.md`](PRODUCTION_RELEASE_VALIDATION.md). Source control intentionally contains no production signing secret.
-
-## R8 Mapping
-
-Preserve mapping output with the exact release commit:
-
-```text
 app/build/outputs/mapping/release/mapping.txt
 ```
-
-## Benchmark Build and Macrobenchmark
-
-Compile the release-like benchmark harness:
-
-```bash
-./gradlew :macrobenchmark:assembleBenchmark --stacktrace
-```
-
-Run committed benchmark tests on a representative physical target:
-
-```bash
-./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
-```
-
-Hosted-emulator timing must not be presented as production performance evidence. See [`PERFORMANCE_BENCHMARKING.md`](PERFORMANCE_BENCHMARKING.md).
-
-# Production Signing and Release Verification
 
 ## Production Signing
 
 Optional Android release signing uses exactly four environment values:
 
-- `SUDOKUNOVA_KEYSTORE_PATH`
-- `SUDOKUNOVA_KEYSTORE_PASSWORD`
-- `SUDOKUNOVA_KEY_ALIAS`
-- `SUDOKUNOVA_KEY_PASSWORD`
+- `SUDOKUNOVA_KEYSTORE_PATH`;
+- `SUDOKUNOVA_KEYSTORE_PASSWORD`;
+- `SUDOKUNOVA_KEY_ALIAS`;
+- `SUDOKUNOVA_KEY_PASSWORD`.
 
 Behavior is fail closed:
 
 - none configured → unsigned CI-safe release build;
-- all four configured → release signing enabled;
+- all four configured → signing enabled;
 - one to three configured → Gradle configuration fails.
 
 See [`PRODUCTION_SIGNING.md`](PRODUCTION_SIGNING.md).
 
-## Protected Signed-Release Validation
+## Protected Production Release Validation
 
 `.github/workflows/release-validation.yml` is manually dispatched through the protected `production-release` GitHub Environment.
 
-Current workflow defaults:
+Current source defaults:
 
-- version code `2013`;
-- version name `2.0.13`;
-- application ID `in.sanskar.sudokunova`;
-- minimum SDK `26`;
-- target SDK `37`.
-
-When the external environment is actually configured, the workflow can reconstruct a temporary keystore outside the repository, build signed R8 APK/AAB outputs, verify embedded application/version/SDK/debuggable identity, verify APK/AAB signatures and protected certificate fingerprints, retain non-secret evidence, and remove the temporary keystore.
-
-Committed workflow source does not prove environment reviewers, allowed refs, secrets, keys, or a successful production run.
-
-## Release Contract Guard
-
-```bash
-python -m unittest scripts.tests.test_verify_release_contract
-python scripts/verify_release_contract.py
+```text
+versionCode = 2014
+versionName = 2.0.14
+applicationId = in.sanskar.sudokunova
+minSdk = 26
+targetSdk = 37
 ```
 
-The guard requires these current sources to agree:
+When the external environment is actually configured, the workflow can build signed R8 APK/AAB outputs, validate embedded package/version/SDK/debuggable identity, require expected signature/certificate identity, record hashes/evidence, and remove temporary signing material.
 
-- `app/build.gradle.kts` Android application/version/SDK identity;
-- `sharedUI/build.gradle.kts` Desktop `packageVersion` = Android `versionName`;
-- ordinary Android CI expected application/version/SDK identity;
-- protected release-validation defaults and immutable application/SDK expectations.
+Committed workflow source does not prove that protected secrets, reviewers, allowed refs, or a successful protected run exist.
 
-It rejects duplicate/missing values, unsafe release names, invalid SDK ordering, production IDs ending in `.debug`, and Desktop/Android version drift.
+## Repository Guards
 
-## Repository Documentation Guards
+Run:
 
 ```bash
+python scripts/verify_no_secrets.py
 python -m unittest scripts.tests.test_verify_documentation_links
 python -m unittest scripts.tests.test_verify_documentation_coverage
+python -m unittest scripts.tests.test_verify_release_contract
+python -m unittest scripts.tests.test_verify_release_outputs
+python -m unittest scripts.tests.test_verify_release_cli_validation
+python -m unittest scripts.tests.test_verify_translations
 python scripts/verify_documentation_links.py
 python scripts/verify_documentation_coverage.py
-```
-
-Every tracked path must have a maintained documentation owner, and every detailed `docs/*.md` guide must remain indexed from `docs/README.md`.
-
-## Translation Guard
-
-```bash
-python -m unittest scripts.tests.test_verify_translations
+python scripts/verify_release_contract.py
 python scripts/verify_translations.py
 ```
 
-This covers the established Android localization scope and full shared English/Hindi key/placeholder parity.
+The documentation guard fails closed when a tracked path has no documentation owner or a detailed guide is not indexed from `docs/README.md`.
 
-## Release Artifact Verifier
+## 2.0.14 Release Artifact Verification
 
-After unsigned 2.0.13 outputs exist:
+After unsigned outputs exist:
 
 ```bash
 python scripts/verify_release_outputs.py \
@@ -351,8 +252,8 @@ python scripts/verify_release_outputs.py \
   --aab app/build/outputs/bundle/release/app-release.aab \
   --mapping app/build/outputs/mapping/release/mapping.txt \
   --metadata app/build/outputs/apk/release/output-metadata.json \
-  --expected-version-code 2013 \
-  --expected-version-name 2.0.13 \
+  --expected-version-code 2014 \
+  --expected-version-name 2.0.14 \
   --expected-application-id in.sanskar.sudokunova \
   --require-apk-manifest \
   --expected-min-sdk 26 \
@@ -361,61 +262,26 @@ python scripts/verify_release_outputs.py \
   --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
 ```
 
-PowerShell:
+This unsigned path is build/artifact-integrity evidence only. Real production signing requires the protected certificate-bound workflow.
 
-```powershell
-python scripts/verify_release_outputs.py `
-  --apk app/build/outputs/apk/release/app-release-unsigned.apk `
-  --aab app/build/outputs/bundle/release/app-release.aab `
-  --mapping app/build/outputs/mapping/release/mapping.txt `
-  --metadata app/build/outputs/apk/release/output-metadata.json `
-  --expected-version-code 2013 `
-  --expected-version-name 2.0.13 `
-  --expected-application-id in.sanskar.sudokunova `
-  --require-apk-manifest `
-  --expected-min-sdk 26 `
-  --expected-target-sdk 37 `
-  --output app/build/outputs/release-evidence/sha256.txt `
-  --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
-```
-
-This unsigned path is build/artifact integrity evidence only. Use the certificate-bound protected workflow for real production signing validation.
-
-# Test and Quality Commands
-
-Android JVM unit tests:
+## Android Test and Quality Tasks
 
 ```bash
 ./gradlew :app:testDebugUnitTest --stacktrace
-```
-
-Android instrumentation-test compilation:
-
-```bash
 ./gradlew :app:assembleDebugAndroidTest --stacktrace
-```
-
-Macrobenchmark compilation:
-
-```bash
 ./gradlew :macrobenchmark:assembleBenchmark --stacktrace
-```
-
-Android lint:
-
-```bash
 ./gradlew :app:lintDebug :app:lintRelease --stacktrace
 ```
 
-Repository security guard:
+Representative physical-device performance measurement:
 
 ```bash
-python scripts/verify_no_secrets.py
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace
 ```
 
-# Full Local Non-Connected Verification
+Hosted-emulator timing must not be described as representative production performance evidence.
 
-Linux/macOS:
+## Full Local Non-Connected Verification
 
 ```bash
 python scripts/verify_no_secrets.py
@@ -443,117 +309,32 @@ python scripts/verify_translations.py
   :app:assembleRelease \
   :app:bundleRelease \
   --stacktrace
-python scripts/verify_release_outputs.py \
-  --apk app/build/outputs/apk/release/app-release-unsigned.apk \
-  --aab app/build/outputs/bundle/release/app-release.aab \
-  --mapping app/build/outputs/mapping/release/mapping.txt \
-  --metadata app/build/outputs/apk/release/output-metadata.json \
-  --expected-version-code 2013 \
-  --expected-version-name 2.0.13 \
-  --expected-application-id in.sanskar.sudokunova \
-  --require-apk-manifest \
-  --expected-min-sdk 26 \
-  --expected-target-sdk 37 \
-  --output app/build/outputs/release-evidence/sha256.txt \
-  --apk-identity-output app/build/outputs/release-evidence/apk-identity.txt
 ```
 
-Windows PowerShell uses the same Python commands and `./gradlew` tasks through `.\gradlew.bat`.
+Then run connected/platform-native/runtime checks on the required targets.
 
-API-35 connected tests, iOS framework validation on macOS, Desktop images on their host OSes, Web runtime/browser QA, and representative physical-device Macrobenchmark evidence remain separate gates.
+## CI Build Contract
 
-## Partial-Signing Fail-Closed Regression
+The final PR #44 head must pass on one exact SHA:
 
-A Bash-compatible environment containing only one signing variable should fail configuration:
+1. **Android CI** — repository guards, shared tests/compile, Android unit/test-APK/Macrobenchmark compilation, lint, debug/release/R8/AAB builds, and exact 2014/2.0.14 identity evidence;
+2. **Android Instrumentation** — API-35 connected Compose/Room suite;
+3. **Cross-Platform CI** — shared tests, Android shared integration, Web production distribution, iOS Simulator framework, and Desktop application images on Linux/Windows/macOS.
 
-```bash
-SUDOKUNOVA_KEY_ALIAS=partial-test ./gradlew :app:tasks --quiet
-```
+Any later source or documentation commit invalidates older runs as final evidence.
 
-Never use real secrets merely to test this guard.
+## Evidence Boundary
 
-## Install Debug APK
+Repository build success does not itself prove:
 
-```bash
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
+- Android production certificate identity;
+- physical-device lifecycle/accessibility/performance quality;
+- target settings persistence across real restarts/privacy modes;
+- Apple signing/provisioning/App Store acceptance;
+- macOS signing/notarization;
+- Windows signing/reputation/clean-machine install;
+- Linux clean install/upgrade/remove;
+- intended browser/device compatibility;
+- store acceptance, final `SHIP`, tagging, or publication.
 
-For signed 2.0.13 release installation, use the exact signed artifact and record evidence under [`V2_0_13_RELEASE.md`](V2_0_13_RELEASE.md).
-
-# CI Build Contract
-
-## Android CI
-
-`.github/workflows/ci.yml` verifies repository guards, shared engine/UI tests/compile, Android unit/test-APK/Macrobenchmark compilation, lint, debug APK, R8 release APK, AAB, and exact 2013/2.0.13 package/version/SDK/debuggable evidence.
-
-## Cross-Platform CI
-
-`.github/workflows/cross-platform.yml` validates:
-
-- shared engine/gameplay/persistence tests;
-- shared Desktop/Web compilation;
-- Android debug integration;
-- Web production distribution;
-- iOS Simulator framework linking on macOS;
-- Desktop application images on Linux, Windows, and macOS.
-
-## Android Instrumentation
-
-`.github/workflows/instrumentation.yml` runs the API-35 connected Compose/Room suite.
-
-## Protected Production Validation
-
-`.github/workflows/release-validation.yml` performs protected signed Android release verification only after deliberate maintainer dispatch in a correctly configured `production-release` environment.
-
-All workflow evidence applies only to the exact head SHA tested.
-
-# Android Build Types
-
-## Debug
-
-- `.debug` application-ID suffix;
-- `-debug` version-name suffix;
-- development/local/CI testing.
-
-## Benchmark
-
-- initialized from release;
-- R8/resource shrinking inherited;
-- non-debuggable target app;
-- debug signed for local measurement;
-- shell-profileable only through benchmark source-set manifest;
-- not a production artifact.
-
-## Release
-
-- minification/resource shrinking enabled;
-- optimized default ProGuard rules plus `app/proguard-rules.pro`;
-- must pass release lint/R8/AAB/output verification;
-- may remain unsigned in ordinary CI;
-- uses production signing only when all required secret-backed values are present.
-
-# Release-Signing Rules
-
-- Never commit keystores, private keys, certificates containing private material, or signing passwords.
-- Never embed signing secrets in Gradle, `local.properties`, resources, source, or workflow YAML.
-- Ordinary PR workflows must not receive production signing secrets.
-- Signing is all-or-nothing and fails closed when partially configured.
-- Missing/failed production signing must never be bypassed by committing credentials.
-
-# Common Failure Checks
-
-1. Confirm Java 17 and the committed Gradle wrapper.
-2. Confirm target-specific Android SDK/Xcode/browser/`jpackage` tooling.
-3. Confirm exact branch/commit under investigation.
-4. Read the first real Gradle/Kotlin/compiler/test/lint/R8/verifier error.
-5. For KMP configuration/compile failures, fix the shared source/configuration rather than removing target jobs.
-6. For iOS linking failures, validate on macOS/Xcode and the relevant Kotlin/Native target.
-7. For Desktop packaging failures, inspect host `jpackage`/packaging support.
-8. For Android release failures, check partial `SUDOKUNOVA_*` environment state, R8 diagnostics, output metadata, and exact 2013/2.0.13 contract.
-9. For release-contract failures, check Android metadata, Desktop `packageVersion`, ordinary CI, and protected workflow defaults together.
-10. For documentation coverage failures, document/index the new path instead of creating an unrelated catch-all rule.
-11. Check [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md), [`CROSS_PLATFORM.md`](CROSS_PLATFORM.md), and CI logs.
-
-# Evidence Policy
-
-A release-quality or platform-support statement must be tied to actual evidence. Source/build configuration may describe repository targets, but it must not claim physical-device coverage, accessibility success, production performance, Android production certificate identity, Apple signing/provisioning, notarization, Windows signing/reputation, store acceptance, repository administration, tag/GitHub Release creation, or public distribution unless those actions/checks were actually performed and recorded.
+Record those only after the corresponding real checks occur. See [`V2_0_14_RELEASE.md`](V2_0_14_RELEASE.md) and issue #43.
