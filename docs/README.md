@@ -2,7 +2,7 @@
 
 This directory is the maintained documentation hub for SudokuNova. Documentation follows an evidence-first rule: source-backed behavior may be described as implemented; future work must be labeled planned; automated, manual, signing, store, and device-verification claims are recorded only after the corresponding check actually happened.
 
-SudokuNova 2.0.14 keeps Android as the mature primary production surface while continuing the Kotlin/Compose Multiplatform layer. Start with [Cross-Platform Development and Builds](CROSS_PLATFORM.md) when working on Android shared UI, iOS/iPadOS, Windows, macOS, Linux, or Web.
+SudokuNova 2.0.15 keeps Android as the mature primary production surface while continuing the Kotlin/Compose Multiplatform layer. Start with [Cross-Platform Development and Builds](CROSS_PLATFORM.md) when working on Android shared UI, iOS/iPadOS, Windows, macOS, Linux, or Web.
 
 ## Choose Your Path
 
@@ -23,18 +23,19 @@ SudokuNova 2.0.14 keeps Android as the mature primary production surface while c
 2. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
 3. [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
 4. [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
-5. [Project Structure](PROJECT_STRUCTURE.md)
-6. [Architecture](ARCHITECTURE.md)
-7. [Building](BUILDING.md)
-8. [Testing](TESTING.md)
-9. [Quality Gates](QUALITY_GATES.md)
-10. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
-11. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
-12. [CI/CD](CI_CD.md)
-13. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
-14. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-15. [Contributing Guide](CONTRIBUTING_GUIDE.md)
-16. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+5. [Shared Cross-Platform Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+6. [Project Structure](PROJECT_STRUCTURE.md)
+7. [Architecture](ARCHITECTURE.md)
+8. [Building](BUILDING.md)
+9. [Testing](TESTING.md)
+10. [Quality Gates](QUALITY_GATES.md)
+11. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+12. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+13. [CI/CD](CI_CD.md)
+14. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+15. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+16. [Contributing Guide](CONTRIBUTING_GUIDE.md)
+17. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 ### I am changing Sudoku logic
 
@@ -52,14 +53,15 @@ SudokuNova 2.0.14 keeps Android as the mature primary production surface while c
 1. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
 2. [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
 3. [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
-4. [Architecture](ARCHITECTURE.md)
-5. [Project Structure](PROJECT_STRUCTURE.md)
-6. [Building](BUILDING.md)
-7. [Testing](TESTING.md)
-8. [Quality Gates](QUALITY_GATES.md)
-9. [CI/CD](CI_CD.md)
-10. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
-11. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+4. [Shared Cross-Platform Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+5. [Architecture](ARCHITECTURE.md)
+6. [Project Structure](PROJECT_STRUCTURE.md)
+7. [Building](BUILDING.md)
+8. [Testing](TESTING.md)
+9. [Quality Gates](QUALITY_GATES.md)
+10. [CI/CD](CI_CD.md)
+11. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+12. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
 
 The portable code lives primarily in `sudoku-engine/`, `sharedUI/`, and `iosApp/`. Android's existing `app/` module remains the primary production application while shared parity is expanded incrementally.
 
@@ -67,48 +69,50 @@ The portable code lives primarily in `sudoku-engine/`, `sharedUI/`, and `iosApp/
 
 1. [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
 2. [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
-3. [Data Storage](DATA_STORAGE.md)
-4. [Data Formats](DATA_FORMATS.md)
-5. [Backup / Restore](BACKUP_RESTORE.md)
-6. [v0.7 Transfer/Backup Technical Record](TRANSFER_BACKUP_V07.md)
-7. [Privacy](PRIVACY.md)
-8. [Security](SECURITY.md)
-9. [`../SECURITY.md`](../SECURITY.md)
-10. [Testing](TESTING.md)
+3. [Shared Cross-Platform Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+4. [Data Storage](DATA_STORAGE.md)
+5. [Data Formats](DATA_FORMATS.md)
+6. [Backup / Restore](BACKUP_RESTORE.md)
+7. [v0.7 Transfer/Backup Technical Record](TRANSFER_BACKUP_V07.md)
+8. [Privacy](PRIVACY.md)
+9. [Security](SECURITY.md)
+10. [`../SECURITY.md`](../SECURITY.md)
+11. [Testing](TESTING.md)
 
-### I am preparing 2.0.14 or a later release
+### I am preparing 2.0.15 or a later release
 
 Read in this order:
 
-1. [2.0.14 Release Line](V2_0_14_RELEASE.md)
+1. [2.0.15 Release Line](V2_0_15_RELEASE.md)
 2. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
 3. [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
-4. [Building](BUILDING.md)
-5. [Production Signing](PRODUCTION_SIGNING.md)
-6. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
-7. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
-8. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
-9. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
-10. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
-11. [Releasing](RELEASING.md)
-12. [Release Checklist](RELEASE_CHECKLIST.md)
-13. [Release QA](RELEASE_QA.md)
-14. [QA Matrix](QA_MATRIX.md)
-15. [Quality Gates](QUALITY_GATES.md)
-16. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
-17. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
-18. [CI/CD](CI_CD.md)
-19. [Testing](TESTING.md)
-20. [Performance](PERFORMANCE.md)
-21. [Accessibility](ACCESSIBILITY.md)
-22. [Privacy](PRIVACY.md)
-23. [`../SECURITY.md`](../SECURITY.md)
-24. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
-25. [`../CHANGELOG.md`](../CHANGELOG.md)
-26. [`../ROADMAP.md`](../ROADMAP.md)
-27. [`../what_changed.md`](../what_changed.md)
+4. [Shared Cross-Platform Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+5. [Building](BUILDING.md)
+6. [Production Signing](PRODUCTION_SIGNING.md)
+7. [Production Release Validation Workflow](PRODUCTION_RELEASE_VALIDATION.md)
+8. [Performance Benchmarking and Evidence](PERFORMANCE_BENCHMARKING.md)
+9. [Play Store Release Preparation](PLAY_STORE_RELEASE.md)
+10. [GitHub Repository Settings](GITHUB_REPOSITORY_SETTINGS.md)
+11. [Exact-Head Verification](EXACT_HEAD_VERIFICATION.md)
+12. [Releasing](RELEASING.md)
+13. [Release Checklist](RELEASE_CHECKLIST.md)
+14. [Release QA](RELEASE_QA.md)
+15. [QA Matrix](QA_MATRIX.md)
+16. [Quality Gates](QUALITY_GATES.md)
+17. [Repository File Reference and Documentation Coverage](REPOSITORY_FILE_REFERENCE.md)
+18. [Repository Consistency Guards](REPOSITORY_GUARDS.md)
+19. [CI/CD](CI_CD.md)
+20. [Testing](TESTING.md)
+21. [Performance](PERFORMANCE.md)
+22. [Accessibility](ACCESSIBILITY.md)
+23. [Privacy](PRIVACY.md)
+24. [`../SECURITY.md`](../SECURITY.md)
+25. [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)
+26. [`../CHANGELOG.md`](../CHANGELOG.md)
+27. [`../ROADMAP.md`](../ROADMAP.md)
+28. [`../what_changed.md`](../what_changed.md)
 
-For historical 2.0.13 and 2.0.12 release decisions, use [2.0.13 Release Line](V2_0_13_RELEASE.md) and [2.0.12 Release Line](V2_0_12_RELEASE.md). Production signing, notarization, store publication, physical-device QA, browser compatibility, and other external evidence must not be inferred from source compilation.
+For historical 2.0.14, 2.0.13, and 2.0.12 release decisions, use [2.0.14 Release Line](V2_0_14_RELEASE.md), [2.0.13 Release Line](V2_0_13_RELEASE.md), and [2.0.12 Release Line](V2_0_12_RELEASE.md). Production signing, notarization, store publication, physical-device QA, browser compatibility, and other external evidence must not be inferred from source compilation.
 
 ## Product and User Documentation
 
@@ -150,6 +154,9 @@ Versioned `SNG1` active-game snapshot encoding, fail-closed restore rules, commo
 ### [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
 Versioned `SNS1` settings encoding, portable settings state/store boundaries, native local adapters, localized theme behavior, compatibility rules, privacy limits, tests, and runtime evidence boundaries.
 
+### [Shared Cross-Platform Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+Validated `SNP1` import/export, imported-session provenance, `SNG2` active-game snapshots, shared Compose exchange UI, and the clipboard/share/file-picker follow-up boundary.
+
 ### [Project Structure](PROJECT_STRUCTURE.md)
 Repository tree, modules, packages, source/test locations, workflows, and change-placement rules.
 
@@ -178,6 +185,9 @@ Portable active-game snapshot/storage contract and per-platform local adapter bo
 
 ### [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
 Portable local user-settings format/state/storage contract and target adapter boundaries.
+
+### [Shared Cross-Platform Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+Portable puzzle-code validation, imported-session provenance, SNG1/SNG2 compatibility, and shared exchange UI boundaries.
 
 ### [Data Storage](DATA_STORAGE.md)
 DataStore/Room responsibilities, reset behavior, migrations, and local-data integrity.
@@ -303,8 +313,11 @@ Historical v1.0 RC handoff, candidate metadata, artifact/signing pipeline, autom
 
 ## Current Release and Planning
 
+### [2.0.15 Release Line](V2_0_15_RELEASE.md)
+Current source/version/release authority for `versionCode 2015` / `versionName 2.0.15`, shared puzzle exchange, imported-session provenance, and its evidence boundary.
+
 ### [2.0.14 Release Line](V2_0_14_RELEASE.md)
-Current source/version/release authority for `versionCode 2014` / `versionName 2.0.14`, portable settings persistence, keyboard parity, and its evidence boundary.
+Historical source/version/release authority for `versionCode 2014` / `versionName 2.0.14`, portable settings persistence, keyboard parity, and its evidence boundary.
 
 ### [2.0.13 Release Line](V2_0_13_RELEASE.md)
 Historical source/version/release authority for `versionCode 2013` / `versionName 2.0.13` and its repository preparation evidence.
@@ -361,7 +374,7 @@ Immutable detailed history through 2026-08-19.
 
 ## Historical vs Current Authority
 
-`V2_0_14_RELEASE.md` is the current release-version authority. `V2_0_13_RELEASE.md` and `V2_0_12_RELEASE.md` remain historical source/release evidence. `CROSS_PLATFORM.md` is the current authority for repository-supported non-Android build targets and shared-platform architecture. `SHARED_SETTINGS.md` is the current authority for the portable `SNS1` settings contract. Historical milestone documents intentionally preserve the evidence and assumptions of their original release lines; do not reinterpret them as current verification.
+`V2_0_15_RELEASE.md` is the current release-version authority. `V2_0_14_RELEASE.md`, `V2_0_13_RELEASE.md`, and `V2_0_12_RELEASE.md` remain historical source/release evidence. `CROSS_PLATFORM.md` is the current authority for repository-supported non-Android build targets and shared-platform architecture. `SHARED_SETTINGS.md` is the current authority for the portable `SNS1` settings contract. `SHARED_PUZZLE_EXCHANGE.md` is the current authority for shared SNP1 import/export and SNG1/SNG2 imported-session provenance. Historical milestone documents intentionally preserve the evidence and assumptions of their original release lines; do not reinterpret them as current verification.
 
 ## Documentation Maintenance Rule
 
