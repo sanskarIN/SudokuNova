@@ -102,7 +102,7 @@ class SharedGameState(
      */
     fun importPuzzleCode(raw: String): Boolean {
         val imported = puzzleExchangeService.importCode(raw.trim()) ?: run {
-            status = SharedGameStatus.SelectCell
+            status = SharedGameStatus.InvalidPuzzleCode
             return false
         }
         val canonicalCode = puzzleExchangeService.exportCode(imported.puzzle, imported.difficulty)
@@ -120,7 +120,7 @@ class SharedGameState(
         notesMode = false
         sourceCode = canonicalCode
         history = emptyList()
-        status = SharedGameStatus.NewPuzzle(imported.difficulty)
+        status = SharedGameStatus.ImportedPuzzle(imported.difficulty)
         return true
     }
 
