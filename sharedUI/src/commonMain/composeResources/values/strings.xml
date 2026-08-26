@@ -18,6 +18,13 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
 
+    <string name="puzzle_exchange_title">Puzzle exchange</string>
+    <string name="puzzle_code_label">SNP1 puzzle code</string>
+    <string name="puzzle_code_hint">Paste a validated SNP1 code</string>
+    <string name="puzzle_import">Import puzzle</string>
+    <string name="puzzle_export">Current puzzle code</string>
+    <string name="puzzle_imported">Imported puzzles keep their original code for active-session restore.</string>
+
     <string name="action_notes">Notes</string>
     <string name="action_erase">Erase</string>
     <string name="action_undo">Undo</string>
@@ -39,6 +46,8 @@
     <string name="status_fixed_cell_selected">Clue cell selected. Choose an empty cell to edit.</string>
     <string name="status_cell_selected">Row %1$d, column %2$d selected.</string>
     <string name="status_new_puzzle">New %1$s puzzle ready.</string>
+    <string name="status_imported_puzzle">Imported %1$s puzzle ready.</string>
+    <string name="status_invalid_puzzle_code">That puzzle code is invalid or does not have a unique solution.</string>
     <string name="status_notes_enabled">Notes mode enabled.</string>
     <string name="status_notes_disabled">Notes mode disabled.</string>
     <string name="status_select_editable_cell">Select an editable cell first.</string>
