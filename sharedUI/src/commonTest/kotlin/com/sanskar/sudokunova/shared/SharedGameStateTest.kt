@@ -10,6 +10,9 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class SharedGameStateTest {
+    private val puzzleCode =
+        "SNP1.HARD.530070000600195000098000060800060003400803001700020006060000280000419005000080079.8B59A2D7"
+
     @Test
     fun notesMoveUndoResetAndFixedCluesRemainConsistent() {
         val state = SharedGameState()
@@ -104,6 +107,48 @@ class SharedGameStateTest {
         assertEquals(snapshot.notes, state.notes)
         assertEquals(snapshot.selectedIndex, state.selectedIndex)
         assertEquals(snapshot.notesMode, state.notesMode)
+        assertEquals(null, snapshot.sourceCode)
+        assertFalse(state.isImported)
+    }
+
+    @Test
+    fun importedPuzzleLoadsExportsAndRestoresWithOriginalProvenance() {
+        val state = SharedGameState()
+
+        assertTrue(state.importPuzzleCode(puzzleCode))
+        assertTrue(state.isImported)
+        assertEquals(Difficulty.HARD, state.difficulty)
+        assertEquals(puzzleCode, state.sourceCode)
+        assertEquals(puzzleCode, state.puzzleCode())
+        assertEquals(
+            "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+            state.board.toPuzzleString(),
+        )
+
+        val editableIndex = state.board.emptyIndices().first()
+        val candidate = state.board.candidates(editableIndex).first()
+        state.select(editableIndex)
+        state.enter(candidate)
+        val snapshot = state.snapshot()
+        assertEquals(puzzleCode, snapshot.sourceCode)
+        assertTrue(SharedGameSnapshotCodec.encode(snapshot).startsWith("SNG2|"))
+
+        state.newGame(Difficulty.EASY)
+        assertFalse(state.isImported)
+        assertTrue(state.restore(snapshot))
+        assertTrue(state.isImported)
+        assertEquals(puzzleCode, state.sourceCode)
+        assertEquals(snapshot.board, state.board.toPuzzleString())
+        assertEquals(snapshot.notes, state.notes)
+    }
+
+    @Test
+    fun invalidImportedPuzzleCodeLeavesCurrentGameUnchanged() {
+        val state = SharedGameState()
+        val original = state.snapshot()
+
+        assertFalse(state.importPuzzleCode("not-a-sudoku-code"))
+        assertEquals(original, state.snapshot())
     }
 
     @Test
