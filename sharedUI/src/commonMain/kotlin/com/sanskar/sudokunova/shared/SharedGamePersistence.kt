@@ -11,6 +11,11 @@ data class SharedGameSnapshot(
     val notes: Map<Int, Set<Int>>,
     val selectedIndex: Int?,
     val notesMode: Boolean,
+    /**
+     * Original validated SNP1 puzzle code for imported/custom sessions.
+     * Null means this snapshot belongs to a locally generated puzzle.
+     */
+    val sourceCode: String? = null,
 )
 
 interface SharedGameStore {
