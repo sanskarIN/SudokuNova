@@ -43,6 +43,8 @@ class SharedGameState(
     var status by mutableStateOf<SharedGameStatus>(SharedGameStatus.SelectCell)
         private set
 
+    private var history: List<GameSnapshot> = emptyList()
+
     var sourceCode by mutableStateOf<String?>(null)
         private set
 
