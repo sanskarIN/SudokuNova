@@ -2,7 +2,7 @@
 
 > **Think. Solve. Master the Grid.**
 
-SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Kotlin Multiplatform, Jetpack Compose, and Compose Multiplatform. Android remains the mature primary production surface while the shared engine, gameplay UI, persistence, localization, accessibility/input foundations, and validated puzzle exchange are extended across Android, iOS/iPadOS, Windows, macOS, Linux, and Web.
+SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Kotlin Multiplatform, Jetpack Compose, and Compose Multiplatform. Android remains the mature primary production surface while the shared engine, gameplay UI, persistence, settings, localization, accessibility/input foundations, and validated puzzle exchange are extended across Android, iOS/iPadOS, Windows, macOS, Linux, and Web.
 
 **Made by the Sanskar**
 
@@ -15,32 +15,42 @@ SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Ko
 
 ## Current Development Status
 
-The repository is preparing **SudokuNova 2.0.13** on draft PR #41 from a verified `main` checkpoint.
+The repository is preparing **SudokuNova 2.0.14** on draft PR #44 from the exact-head verified and merged 2.0.13 checkpoint.
 
 Current source contract:
 
 ```text
-applicationId         = in.sanskar.sudokunova
-versionCode           = 2013
-versionName           = 2.0.13
-Desktop packageVersion= 2.0.13
-minSdk                = 26
-targetSdk             = 37
-compileSdk            = 37
+applicationId          = in.sanskar.sudokunova
+versionCode            = 2014
+versionName            = 2.0.14
+Desktop packageVersion = 2.0.14
+minSdk                 = 26
+targetSdk              = 37
+compileSdk             = 37
 JDK/JVM                = 17
 ```
 
-The 2.0.13 line builds on three already verified/merged repository milestones:
+The 2.0.14 line builds on verified repository milestones including:
 
-- the 2.0.12 cross-platform foundation (PR #33);
+- the 2.0.12 Android release-engineering baseline;
+- the cross-platform KMP/Compose foundation (PR #33);
 - cross-platform active-game persistence (PR #39);
-- Room 2.8.4 maintenance on the verified post-persistence base (PR #40).
+- Room 2.8.4 maintenance (PR #40);
+- the 2.0.13 puzzle-exchange, navigation, accessibility/input, and release-contract hardening line (PR #41).
 
-2.0.13 adds repository-verifiable parity hardening including deterministic shared grid navigation, a focusable arrow/Backspace/Delete keyboard baseline, Notes selected semantics, a common unique-solution `SNP1` puzzle exchange boundary, and Desktop/Android/CI release-version synchronization.
+2.0.14 adds repository-verifiable parity work around local user settings and keyboard interaction:
 
-**2.0.13 is not claimed as publicly released merely because source metadata or CI paths exist.** Production signing, representative real-device QA, accessibility/performance evidence, platform signing/notarization, store validation, final SHIP/tagging, and publication require separate real evidence.
+- portable `SharedUserSettings`, `SharedTheme`, and `SharedInputMode` models;
+- deterministic bounded `SNS1` settings persistence;
+- common settings store/state boundaries;
+- Android `SharedPreferences`, Desktop `Preferences`, Web `localStorage`, and Apple `NSUserDefaults` adapters;
+- restore/autosave wiring in each staged shared host;
+- localized English/Hindi System/Light/Dark shared theme controls;
+- direct shared `1`–`9`, `N` Notes, and `H` Hint keyboard handling in addition to arrows and Backspace/Delete.
 
-See [2.0.13 Release Line](docs/V2_0_13_RELEASE.md), [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md).
+**2.0.14 is not claimed as publicly released merely because source metadata, build paths, or CI exist.** Production signing, representative real-device QA, accessibility/performance evidence, platform signing/notarization, store validation, final SHIP/tagging, and publication require separate real evidence.
+
+See [2.0.14 Release Line](docs/V2_0_14_RELEASE.md), [Shared Cross-Platform User Settings](docs/SHARED_SETTINGS.md), [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md).
 
 ## Platform Architecture
 
@@ -61,7 +71,7 @@ Repository build support is not production distribution evidence. Apple signing/
 ```text
 :sudoku-engine   Kotlin Multiplatform Sudoku correctness/domain
       ↑
-:sharedUI        Compose Multiplatform gameplay/persistence/UI
+:sharedUI        Compose Multiplatform gameplay/persistence/settings/UI
       ↑
 :app             Mature Android application
 
@@ -101,11 +111,15 @@ Portable Compose foundation includes:
 - typed gameplay statuses;
 - English/Hindi resources with key/placeholder parity guards;
 - localized Sudoku-cell semantics;
-- Notes selected semantics;
+- Notes and theme selected semantics;
 - deterministic grid selection movement;
-- focusable arrow-key navigation and Backspace/Delete erase baseline;
+- focusable arrow-key navigation;
+- direct `1`–`9` entry, `N` Notes, `H` Hint, and Backspace/Delete erase handling;
 - `SNG1` active-game snapshot encoding and fail-closed restore;
 - local active-game adapters for staged Android shared host, Desktop, Web, and Apple targets;
+- `SNS1` local user-settings encoding and fail-closed restore;
+- local settings adapters for staged Android shared host, Desktop, Web, and Apple targets;
+- localized System/Light/Dark theme selection;
 - common restore/autosave ownership;
 - Desktop, Web/Wasm, and Apple Compose entry points.
 
@@ -136,20 +150,22 @@ Implemented in shared/common code:
 - seven difficulty levels;
 - portable gameplay state/UI;
 - English/Hindi migrated UI resources;
-- cell and Notes semantics;
+- cell, Notes, and shared-theme selected semantics;
 - non-color conflict communication;
 - active-game local persistence abstractions/adapters;
+- local user-settings format/state/storage adapters;
+- persisted System/Light/Dark shared theme;
 - validated `SNP1` puzzle-code exchange;
-- arrow-key grid navigation plus Backspace/Delete erase baseline.
+- arrow-key grid navigation, direct digit entry, Notes/Hint keys, and Backspace/Delete erase.
 
 Still intentionally incomplete for shared targets:
 
 - persisted imported/custom-game provenance and UI session model;
+- common history/saved-puzzle persistence parity;
 - clipboard/share/file-picker adapters;
 - challenges/custom-puzzle presentation parity;
 - learning/statistics presentation/persistence;
-- full settings/theme breadth;
-- direct shared digit/Notes/Hint keyboard shortcuts;
+- behavioral parity for every stored settings field;
 - reliable target runtime input/focus/resize/accessibility/browser E2E evidence;
 - production Apple/Windows/macOS/Linux/Web distribution evidence.
 
@@ -194,7 +210,7 @@ Output:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Android 2.0.13 release verification outputs
+### Android 2.0.14 release verification outputs
 
 ```bash
 ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
@@ -228,7 +244,7 @@ Complete host requirements and platform evidence boundaries are documented in [B
 
 Three PR workflow families protect the current line:
 
-1. **Android CI** — repository guards, shared tests/compile, Android JVM/test-APK/Macrobenchmark compilation, lint, debug/release/R8/AAB builds, and exact 2013/2.0.13 artifact identity evidence.
+1. **Android CI** — repository guards, shared tests/compile, Android JVM/test-APK/Macrobenchmark compilation, lint, debug/release/R8/AAB builds, and exact 2014/2.0.14 artifact identity evidence.
 2. **Android Instrumentation** — API-35 connected Compose/Room regression suite.
 3. **Cross-Platform CI** — shared tests, Android shared integration, Web production distribution, iOS Simulator framework, and Desktop application images on Linux/Windows/macOS.
 
@@ -262,9 +278,10 @@ Start at **[docs/README.md](docs/README.md)**.
 
 High-value references:
 
-- [2.0.13 Release Line](docs/V2_0_13_RELEASE.md)
+- [2.0.14 Release Line](docs/V2_0_14_RELEASE.md)
 - [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md)
 - [Shared Active-Game Persistence](docs/SHARED_PERSISTENCE.md)
+- [Shared User Settings](docs/SHARED_SETTINGS.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Building](docs/BUILDING.md)
 - [Testing](docs/TESTING.md)
@@ -279,7 +296,7 @@ High-value references:
 - [Releasing](docs/RELEASING.md)
 - [What Changed](what_changed.md)
 
-Historical 2.0.12 release authority remains at [V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md).
+Historical release authorities remain at [V2_0_13_RELEASE.md](docs/V2_0_13_RELEASE.md) and [V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md).
 
 ## Release Evidence Boundary
 

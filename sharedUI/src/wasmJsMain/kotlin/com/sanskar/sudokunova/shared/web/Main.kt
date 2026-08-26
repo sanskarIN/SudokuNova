@@ -4,8 +4,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import com.sanskar.sudokunova.shared.EncodedSharedGameStore
+import com.sanskar.sudokunova.shared.EncodedSharedSettingsStore
 import com.sanskar.sudokunova.shared.SudokuNovaSharedApp
 import com.sanskar.sudokunova.shared.rememberPersistedSharedGameState
+import com.sanskar.sudokunova.shared.rememberPersistedSharedSettingsState
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -13,7 +15,14 @@ fun main() {
         val gameStore = remember {
             EncodedSharedGameStore(WebLocalStorageGameTextStore())
         }
+        val settingsStore = remember {
+            EncodedSharedSettingsStore(WebLocalStorageSettingsTextStore())
+        }
         val state = rememberPersistedSharedGameState(gameStore)
-        SudokuNovaSharedApp(state = state)
+        val settingsState = rememberPersistedSharedSettingsState(settingsStore)
+        SudokuNovaSharedApp(
+            state = state,
+            settingsState = settingsState,
+        )
     }
 }

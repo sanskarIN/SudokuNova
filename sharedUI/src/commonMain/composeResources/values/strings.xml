@@ -13,6 +13,11 @@
     <string name="difficulty_master">Master</string>
     <string name="difficulty_extreme">Extreme</string>
 
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
     <string name="action_notes">Notes</string>
     <string name="action_erase">Erase</string>
     <string name="action_undo">Undo</string>

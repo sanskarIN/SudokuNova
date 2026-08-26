@@ -2,63 +2,103 @@
 
 All notable SudokuNova changes are documented here. The project follows Semantic Versioning where practical and separates **source/repository milestones** from **actual public release evidence**.
 
-## [Unreleased] — 2.0.13 Preparation
+## [Unreleased] — 2.0.14 Preparation
 
-SudokuNova 2.0.13 is being prepared on PR #41 from the verified post-persistence/Room `main` checkpoint. Source metadata is now `versionCode 2013` / `versionName 2.0.13`, but public release, signing, device QA, store approval, tagging, and distribution are not inferred from source changes.
+SudokuNova 2.0.14 is being prepared on PR #44 from the exact-head verified and merged 2.0.13 `main` checkpoint. Source metadata is now `versionCode 2014` / `versionName 2.0.14`, but public release, signing, device QA, store approval, tagging, and distribution are not inferred from source changes.
 
 ### Added
 
-- Deterministic shared Sudoku-grid navigation in `SharedGameState`:
-  - one-cell row/column movement;
-  - deterministic initial selection;
-  - board-edge clamping;
-  - invalid movement rejection.
-- Portable shared Compose keyboard/focus baseline:
-  - focusable Sudoku grid;
-  - Up/Down/Left/Right navigation;
-  - Backspace/Delete erase through existing clue-protected state logic.
-- Shared Notes action selected-state semantics in addition to the existing visible mode indicator.
-- Common `PuzzleExchangeService` around `SNP1` puzzle codes.
-- Unique-solution import acceptance in common engine code; syntactically valid but ambiguous puzzle codes are rejected.
-- `PuzzleExchangeServiceTest` compatibility/uniqueness regression coverage.
-- `docs/V2_0_13_RELEASE.md` as the current release-version authority.
-- Desktop package-version synchronization in `scripts/verify_release_contract.py` and its regression suite.
+- Portable shared user-settings model:
+  - `SharedUserSettings`;
+  - `SharedTheme` (`SYSTEM`, `LIGHT`, `DARK`);
+  - `SharedInputMode` (`CELL_FIRST`, `NUMBER_FIRST`);
+  - validated mistake limits (`0`, `3`, `5`).
+- Deterministic bounded `SNS1` settings transport with fail-closed decoding.
+- Common settings storage boundaries:
+  - `SharedSettingsStore`;
+  - `SharedSettingsTextStore`;
+  - `EncodedSharedSettingsStore`.
+- Observable `SharedSettingsState` and Compose restore/autosave ownership.
+- Native local settings adapters:
+  - Android staged shared host `SharedPreferences`;
+  - Desktop `java.util.prefs.Preferences`;
+  - Web `localStorage`;
+  - Apple `NSUserDefaults`.
+- Localized English/Hindi System/Light/Dark theme controls in the shared Compose surface.
+- Shared keyboard parity additions:
+  - digits `1` through `9` route through existing value/note entry rules;
+  - `N` toggles Notes mode;
+  - `H` requests a hint;
+  - existing arrows and Backspace/Delete remain supported.
+- Shared settings regression suites for codec, encoded store, and observable state behavior.
+- `docs/SHARED_SETTINGS.md` as the `SNS1` settings architecture/compatibility authority.
+- `docs/V2_0_14_RELEASE.md` as the current source/release preparation authority.
+- Issue #43 as the 2.0.14 real-evidence release tracker.
 
 ### Changed
 
 - Android source version promoted to:
-  - `versionCode 2013`;
-  - `versionName 2.0.13`.
-- Compose Desktop native package version promoted to `2.0.13`.
-- Ordinary Android CI release verification now expects 2013 / 2.0.13.
-- Protected Production Release Validation defaults now expect 2013 / 2.0.13.
-- Release-contract verification now fails when Desktop `packageVersion` differs from Android `versionName`.
-- `README.md`, `docs/README.md`, `docs/CROSS_PLATFORM.md`, `docs/SUDOKU_ENGINE.md`, `docs/KEYBOARD_SHORTCUTS.md`, and `what_changed.md` are aligned with the 2.0.13 source/parity boundary.
+  - `versionCode 2014`;
+  - `versionName 2.0.14`.
+- Compose Desktop native package version promoted to `2.0.14`.
+- Ordinary Android CI release verification now expects 2014 / 2.0.14.
+- Protected Production Release Validation defaults now expect 2014 / 2.0.14.
+- `CrossPlatformActivity`, Desktop, Web, and Apple shared hosts now restore/save both active-game state and local shared settings.
+- Shared Compose `MaterialTheme` follows persisted System/Light/Dark preference.
+- `README.md`, `docs/README.md`, `docs/CROSS_PLATFORM.md`, `docs/KEYBOARD_SHORTCUTS.md`, and release documentation are aligned with the 2.0.14 source/parity boundary.
 
 ### Preserved
 
-- Existing `SNP1` checksum/vector compatibility.
+- Existing `SNP1` checksum/vector and unique-solution import compatibility.
 - Classic 9×9 Sudoku correctness and unique generated-puzzle requirements.
-- Mature Android Room/DataStore state and product features.
-- English/Hindi shared-resource parity guards.
+- Mature Android Room/DataStore settings/history/product features.
 - `SNG1` active-game validation and local adapters.
+- English/Hindi shared-resource parity guards.
 - Fail-closed signing/secret/release-output guards.
 - Exact-head workflow evidence rules.
+- Offline-first behavior: the new shared settings path introduces no cloud/account/analytics dependency.
 
 ### Still Pending / Not Claimed
 
+- Behavioral parity for every field represented in `SharedUserSettings`.
+- Shared history/saved-puzzle persistence.
 - Shared imported/custom-puzzle gameplay provenance/persistence model.
 - Shared clipboard/share/file-picker adapters.
-- Shared challenges, learning/statistics, and full settings parity.
-- Direct shared digit/Notes/Hint keyboard shortcuts.
-- Real target focus, touch/pointer, resize, large-font, accessibility, lifecycle, and browser E2E evidence.
+- Shared challenges and learning/statistics presentation/persistence.
+- Real target focus, touch/pointer, resize, large-font, accessibility, lifecycle, settings persistence, and browser E2E evidence.
 - Apple production host/signing/provisioning/App Store evidence.
 - Windows/macOS/Linux production signing/install/notarization/distribution evidence.
-- Android production signing, physical-device QA, store acceptance, final `SHIP`, `v2.0.13` tag, or public release.
+- Android production signing, physical-device QA, store acceptance, final `SHIP`, `v2.0.14` tag, or public release.
 
 ### Verification Boundary
 
-PR #41 is merge-ready only after `Android CI`, `Android Instrumentation`, and `Cross-Platform CI` are all green on one exact final head SHA. Older successful runs cannot be mixed with a newer head.
+PR #44 is merge-ready only after `Android CI`, `Android Instrumentation`, and `Cross-Platform CI` are all green on one exact final head SHA. Older successful runs cannot be mixed with a newer head.
+
+---
+
+## 2.0.13 Repository Preparation — Verified and Merged
+
+PR #41 added deterministic shared grid navigation, focusable arrow/erase keyboard handling, Notes selected semantics, common unique-solution `SNP1` puzzle exchange, Desktop package-version release-contract synchronization, and the 2013 / 2.0.13 source promotion.
+
+Final verified PR head:
+
+```text
+61371eab0c22197ffd4250805cf58caa6425418f
+```
+
+Exact-head results:
+
+- Android CI #1013 / run `32733975637` — green;
+- Android Instrumentation #384 / run `32733975646` — green;
+- Cross-Platform CI #118 / run `32733975747` — green.
+
+Merged to `main` as:
+
+```text
+adabaf9841eadaa172c8a236b2cbe4a6c4ef6699
+```
+
+The merge proved repository preparation only; issue #42 retains real production/manual/store evidence requirements for that source line.
 
 ---
 
@@ -100,13 +140,11 @@ Exact final head:
 56183604d8693f7b5997c399030a9916cb56e567
 ```
 
-That head passed all three required workflow families before merge. The resulting `main` checkpoint used to start 2.0.13 is:
+That head passed all three required workflow families before merge. Its resulting `main` checkpoint was:
 
 ```text
 fc95093405c1dc03141e888cc77923fe8f92bcec
 ```
-
-The older Dependabot PR #35 was closed as superseded.
 
 ### Cross-Platform Foundation — PR #33
 

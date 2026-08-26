@@ -1,17 +1,17 @@
 # What Changed
 
-## Current Development State — SudokuNova 2.0.13 Preparation — 2026-08-24
+## Current Development State — SudokuNova 2.0.14 Preparation — 2026-08-25
 
 **Repository:** `https://github.com/sanskarIN/SudokuNova`  
 **Base branch:** `main`  
-**Current verified main checkpoint before 2.0.13 work:** `fc95093405c1dc03141e888cc77923fe8f92bcec`  
-**Active branch:** `release/v2.0.13-prep`  
-**Active pull request:** `#41`  
-**Head immediately before this ledger update:** `9ffd48c6ab9445d66fddf24277ce27eeb4dcccda`  
-**Current source release target:** `2.0.13`  
-**Android versionCode:** `2013`  
-**Android versionName:** `2.0.13`  
-**Desktop package version:** `2.0.13`  
+**Verified 2.0.13 merge baseline:** `adabaf9841eadaa172c8a236b2cbe4a6c4ef6699`  
+**Active branch:** `release/v2.0.14-prep`  
+**Active pull request:** `#44`  
+**Release evidence tracker:** `#43`  
+**Current source release target:** `2.0.14`  
+**Android versionCode:** `2014`  
+**Android versionName:** `2.0.14`  
+**Desktop packageVersion:** `2.0.14`  
 **Android application ID:** `in.sanskar.sudokunova`  
 **minSdk:** `26`  
 **targetSdk / compileSdk:** `37`  
@@ -22,432 +22,646 @@
 **Room:** `2.8.4`  
 **License:** MIT
 
-This is the active implementation/handoff ledger. Historical 2.0.12 work remains preserved in Git history, merged pull requests, `docs/V2_0_12_RELEASE.md`, and the repository archive. Exact-head workflow evidence applies only to the commit it tested; final 2.0.13 merge verification must use the final PR #41 head after the last source/documentation commit.
+This is the active implementation and handoff ledger for the 2.0.14 source line. It is intentionally updated **before** the final exact-head workflow freeze. Once the final candidate head is green, workflow/run evidence should be recorded in PR #44 and issue #43 without adding another documentation-only source commit and invalidating those successful runs.
+
+Repository preparation does not equal a public release. Production signing, representative device/runtime/accessibility/performance checks, Apple/Desktop/Web distribution evidence, store acceptance, final `SHIP`, immutable tagging, GitHub Release creation, and public distribution remain evidence-gated work in issue #43.
 
 ---
 
-## Verified Work Merged Before 2.0.13
+## Verified 2.0.13 Baseline
 
-### 2.0.12 cross-platform foundation — PR #33
-
-PR #33 was merged only after all required workflow families were green on exact final head:
+PR #41 final verified head:
 
 ```text
-514ff1a1b79dce0ee75c9c20af7211af51362649
+61371eab0c22197ffd4250805cf58caa6425418f
 ```
 
-Exact-head evidence:
+Exact-head workflow evidence:
 
-- Android CI #919 / run `32627989504` — SUCCESS;
-- Android Instrumentation #335 / run `32627989511` — SUCCESS;
-- Cross-Platform CI #70 / run `32627989561` — SUCCESS.
+- Android CI #1013 / run `32733975637` — SUCCESS;
+- Android Instrumentation #384 / run `32733975646` — SUCCESS;
+- Cross-Platform CI #118 / run `32733975747` — SUCCESS.
 
-That line established:
+PR #41 merged to `main` as:
+
+```text
+adabaf9841eadaa172c8a236b2cbe4a6c4ef6699
+```
+
+The 2.0.14 branch was created directly from that merge, so no stale pre-2.0.13 line is being reused.
+
+The inherited verified baseline includes:
 
 - Kotlin Multiplatform `sudoku-engine`;
 - Compose Multiplatform `sharedUI`;
-- Android shared host while preserving mature `MainActivity`;
-- Desktop JVM, iOS/iPadOS framework, SwiftUI host sources, and Web/Wasm targets;
-- shared gameplay state/UI;
-- English/Hindi shared resources and parity checks;
-- shared Sudoku-cell semantics and non-color conflict feedback;
-- hosted multi-OS cross-platform CI.
+- mature Android launcher retained alongside the staged shared host;
+- Desktop, iOS/iPadOS framework, and Web/Wasm entry points;
+- English/Hindi shared resources and parity guard;
+- shared Sudoku-cell semantics and non-color conflict evidence;
+- deterministic grid navigation and focusable arrow/erase handling;
+- versioned `SNG1` active-game persistence and native local adapters;
+- `PuzzleExchangeService` with `SNP1` compatibility and unique-solution acceptance;
+- Android/Desktop release-version synchronization;
+- hosted Android, instrumentation, and cross-platform CI families.
 
-### Cross-platform active-game persistence — PR #39
-
-PR #39 was merged only after exact final head:
-
-```text
-2a83189356640cbd8ef6f88e7fbf76bbb2fcb845
-```
-
-passed:
-
-- Android CI #969 / run `32684886751` — SUCCESS;
-- Android Instrumentation #358 / run `32684886794` — SUCCESS;
-- Cross-Platform CI #90 / run `32684886753` — SUCCESS.
-
-It added:
-
-- `SharedGameSnapshot`;
-- deterministic bounded `SNG1` encoding;
-- fail-closed snapshot decoding/restore validation;
-- `SharedGameStore` and `SharedGameTextStore` boundaries;
-- `EncodedSharedGameStore`;
-- common restore/autosave ownership;
-- staged Android `SharedPreferences` adapter;
-- Desktop `Preferences` adapter;
-- Web `localStorage` adapter;
-- Apple `NSUserDefaults` adapter;
-- persistence regression tests and `docs/SHARED_PERSISTENCE.md`.
-
-The mature Android Room/DataStore model remained intact.
-
-### Room 2.8.4 maintenance — PR #40
-
-PR #40 recreated the Room update on the verified post-persistence `main` rather than merging stale-base Dependabot PR #35.
-
-Verified head:
-
-```text
-56183604d8693f7b5997c399030a9916cb56e567
-```
-
-Exact-head evidence:
-
-- Android CI #976 / run `32685637068` — SUCCESS;
-- Android Instrumentation #361 / run `32685637074` — SUCCESS;
-- Cross-Platform CI #94 / run `32685637057` — SUCCESS.
-
-Merged `main` checkpoint used for 2.0.13:
-
-```text
-fc95093405c1dc03141e888cc77923fe8f92bcec
-```
-
-The stale Dependabot PR #35 was then closed as superseded.
+Older workflow results are historical only and are not final evidence for 2.0.14.
 
 ---
 
-## 2.0.13 Branch and Pull Request
+# 2.0.14 Implementation
 
-A clean branch was created from verified `main`:
-
-```text
-release/v2.0.13-prep
-```
-
-Draft PR:
-
-```text
-#41 — release: prepare SudokuNova 2.0.13 parity hardening
-```
-
-The release line remains draft until source/documentation hardening is complete and one exact final head passes every required workflow family.
-
----
-
-## Shared Keyboard and Focus Baseline
-
-`SharedGameState` now owns deterministic one-cell grid movement through `moveSelection(rowDelta, columnDelta)`.
-
-Rules:
-
-- row/column deltas are limited to `-1..1`;
-- zero movement is rejected;
-- when no cell is selected, the first movement establishes index `0` deterministically;
-- movement clamps at all four board edges;
-- movement always resolves to a valid `0..80` cell index;
-- selection status continues through the existing typed `SharedGameStatus` model.
-
-Regression coverage verifies:
-
-- initial keyboard-style selection;
-- horizontal and vertical movement;
-- top/left edge clamping;
-- bottom/right edge clamping;
-- rejection of zero and multi-cell movement requests.
-
-The shared Compose Sudoku grid is now explicitly focusable and handles key-down events for:
-
-- Up/Down/Left/Right → shared deterministic selection movement;
-- Backspace/Delete → the existing clue-protected shared erase action.
-
-Direct shared digit-key, Notes-shortcut, and Hint-shortcut parity is **not** claimed yet. Visible controls remain available.
-
----
-
-## Shared Accessibility Action Semantics
-
-Shared cells already expose localized row/column/value-or-notes/fixed-or-editable/selected/conflict descriptions and selected semantics.
-
-2.0.13 extends action-state semantics by marking the portable Notes action selected when Notes mode is enabled. The existing visible check mark is retained, so Notes mode is not communicated by color alone.
-
-Real TalkBack, VoiceOver, desktop accessibility API, browser accessibility-tree, keyboard/focus traversal, pointer/touch, large-font, and resize behavior still require target runtime evidence.
-
----
-
-## Common Puzzle-Code Exchange Boundary
+## Portable Shared User-Settings Model
 
 Added:
 
 ```text
-sudoku-engine/src/main/kotlin/com/sanskar/sudokunova/engine/PuzzleExchangeService.kt
+sharedUI/src/commonMain/kotlin/com/sanskar/sudokunova/shared/SharedUserSettings.kt
 ```
 
-`PuzzleExchangeService` separates transport decoding from playable-import acceptance.
+The common model defines:
 
-Export:
+```text
+SharedTheme.SYSTEM
+SharedTheme.LIGHT
+SharedTheme.DARK
 
-- delegates to the established `PuzzleCodeCodec`;
-- retains the existing `SNP1` wire format and checksum behavior.
+SharedInputMode.CELL_FIRST
+SharedInputMode.NUMBER_FIRST
+```
 
-Import:
+`SharedUserSettings` now provides a portable representation for:
 
-1. decodes/validates `SNP1` through `PuzzleCodeCodec`;
-2. runs `SudokuSolver.analyze(..., solutionLimit = 2)`;
-3. rejects malformed, unsolvable, or multiple-solution inputs;
-4. returns `ImportedPuzzle` only when exactly one solution is proven;
-5. returns the original puzzle, unique solution, and encoded difficulty as structured data.
+- theme;
+- dynamic-color preference;
+- input mode;
+- peer highlighting;
+- same-number highlighting;
+- automatic mistake checking;
+- automatic note removal;
+- timer visibility;
+- haptics preference;
+- sound preference;
+- reduced-motion preference;
+- high-contrast preference;
+- mistake limit.
+
+Mistake limits are validated against the mature supported values:
+
+```text
+0 = unlimited
+3
+5
+```
+
+The schema is deliberately broader than the first shared UI behavior. Persisting a field does not falsely claim that every target already implements the corresponding native feedback or interaction semantics.
+
+---
+
+## Common Settings Storage Boundary
 
 Added:
 
 ```text
-sudoku-engine/src/test/kotlin/com/sanskar/sudokunova/engine/PuzzleExchangeServiceTest.kt
+sharedUI/src/commonMain/kotlin/com/sanskar/sudokunova/shared/SharedSettingsPersistence.kt
 ```
 
-Coverage verifies:
+It defines:
 
-- successful unique-puzzle import;
-- returned unique solution/difficulty;
-- exact established `SNP1` compatibility vector;
-- ambiguous empty-board rejection;
-- malformed-code rejection.
+- `SHARED_SETTINGS_STORAGE_KEY = "sudokunova.shared.settings.v1"`;
+- `SharedSettingsStore` for typed load/save/clear;
+- `SharedSettingsTextStore` as the minimal native text-storage boundary;
+- `EncodedSharedSettingsStore` to compose native storage with the common codec.
 
-Important boundary: `SNG1` active-game persistence is generated-game/seed based. An imported/custom puzzle must not be persisted by inventing an unrelated generator seed. Shared custom/imported gameplay sessions therefore still need explicit provenance/state design before that parity item can be called complete.
+Common code imports no Android `Context`, DataStore, Java Preferences, browser DOM storage, or Apple Foundation type.
 
 ---
 
-## 2.0.13 Version Promotion
+## Deterministic `SNS1` Settings Format
+
+Added:
+
+```text
+sharedUI/src/commonMain/kotlin/com/sanskar/sudokunova/shared/SharedSettingsCodec.kt
+```
+
+Current format prefix:
+
+```text
+SNS1
+```
+
+Current deterministic field order:
+
+```text
+theme
+dynamicColor
+inputMode
+highlightPeers
+highlightSameNumbers
+autoCheckMistakes
+autoRemoveNotes
+showTimer
+haptics
+sounds
+reducedMotion
+highContrast
+mistakeLimit
+```
+
+The default vector is pinned by regression coverage to:
+
+```text
+SNS1|theme=SYSTEM|dynamicColor=1|inputMode=CELL_FIRST|highlightPeers=1|highlightSameNumbers=1|autoCheckMistakes=1|autoRemoveNotes=1|showTimer=1|haptics=1|sounds=0|reducedMotion=0|highContrast=0|mistakeLimit=3
+```
+
+Fail-closed validation rejects:
+
+- empty payloads;
+- payloads over 512 characters;
+- unsupported versions;
+- incorrect field counts;
+- malformed key/value pairs;
+- unknown keys;
+- duplicate keys;
+- missing fields;
+- booleans other than `0` or `1`;
+- unknown enum values;
+- unsupported mistake limits.
+
+`SNS1` is a compatibility and validation format, not encryption and not a secret store.
+
+---
+
+## Shared Settings Tests
+
+Added:
+
+```text
+sharedUI/src/commonTest/kotlin/com/sanskar/sudokunova/shared/SharedSettingsCodecTest.kt
+sharedUI/src/commonTest/kotlin/com/sanskar/sudokunova/shared/EncodedSharedSettingsStoreTest.kt
+sharedUI/src/commonTest/kotlin/com/sanskar/sudokunova/shared/SharedSettingsStateTest.kt
+```
+
+Coverage includes:
+
+- exact deterministic default encoding;
+- non-default round trips;
+- unsupported-version rejection;
+- malformed-boolean rejection;
+- unknown-enum rejection;
+- invalid mistake-limit rejection;
+- missing/duplicate/extra/oversized payload rejection;
+- typed encoded-store save/load/clear;
+- corrupt stored payload fail-closed behavior;
+- observable settings update/replace;
+- settings save/restore/clear;
+- synchronous nullable suspend-result handling without confusing a successful `null` with an unfinished coroutine.
+
+---
+
+## Observable Shared Settings State
+
+Added:
+
+```text
+sharedUI/src/commonMain/kotlin/com/sanskar/sudokunova/shared/SharedSettingsState.kt
+sharedUI/src/commonMain/kotlin/com/sanskar/sudokunova/shared/PersistedSharedSettingsState.kt
+```
+
+`SharedSettingsState` provides observable common state plus:
+
+- immutable-transform update;
+- replacement;
+- restore from `SharedSettingsStore`;
+- save;
+- clear stored settings.
+
+`rememberPersistedSharedSettingsState`:
+
+1. starts from safe defaults;
+2. attempts one restore;
+3. keeps the UI usable if storage/decode fails;
+4. marks restoration complete;
+5. autosaves later observable changes.
+
+Storage failure is not allowed to become a gameplay failure.
+
+---
+
+## Native Local Settings Adapters
+
+### Android staged shared host
+
+Added:
+
+```text
+app/src/main/java/com/sanskar/sudokunova/CrossPlatformSharedPreferencesSettingsTextStore.kt
+```
+
+It uses a private `SharedPreferences` file:
+
+```text
+sudokunova_shared_settings
+```
+
+The mature Android application retains its existing DataStore settings authority. The shared-host adapter does not silently replace or migrate mature Android settings.
+
+### Desktop
+
+Added:
+
+```text
+sharedUI/src/desktopMain/kotlin/com/sanskar/sudokunova/shared/desktop/DesktopPreferencesSettingsTextStore.kt
+```
+
+It uses:
+
+```text
+Preferences.userRoot().node("in/sanskar/sudokunova")
+```
+
+and flushes writes/removals.
+
+### Web/Wasm
+
+Added:
+
+```text
+sharedUI/src/wasmJsMain/kotlin/com/sanskar/sudokunova/shared/web/WebLocalStorageSettingsTextStore.kt
+```
+
+It uses browser `localStorage` with the shared settings key.
+
+Browser quotas, clearing behavior, private/privacy modes, and compatibility remain runtime-evidence concerns.
+
+### iOS/iPadOS
+
+Added:
+
+```text
+sharedUI/src/iosMain/kotlin/com/sanskar/sudokunova/shared/ios/AppleUserDefaultsSettingsTextStore.kt
+```
+
+It uses `NSUserDefaults.standardUserDefaults`.
+
+Framework compilation does not prove physical-device lifecycle, backup, signing/provisioning, TestFlight, or App Store behavior.
+
+---
+
+## Shared Host Integration
+
+Updated Android `CrossPlatformActivity` to own and restore/save both:
+
+- `SharedGameState` through `EncodedSharedGameStore`;
+- `SharedSettingsState` through `EncodedSharedSettingsStore`.
+
+Updated Desktop, Web, and Apple entry points to create independent active-game and settings stores, restore/autosave both states, and pass them into the shared application.
+
+The new settings path remains local/offline and introduces no cloud/account/analytics dependency.
+
+---
+
+## Shared Theme Behavior
+
+Updated:
+
+```text
+sharedUI/src/commonMain/kotlin/com/sanskar/sudokunova/shared/SudokuNovaSharedApp.kt
+```
+
+The shared app now accepts both gameplay and settings state.
+
+Theme behavior:
+
+- `SYSTEM` follows `isSystemInDarkTheme()`;
+- `LIGHT` uses the shared Material 3 light color scheme;
+- `DARK` uses the shared Material 3 dark color scheme.
+
+A localized System/Light/Dark picker updates `SharedSettingsState`, exposes selected semantics, applies the change immediately, and persists it through the host settings store.
+
+The stored `dynamicColor` preference is not misrepresented as portable Material You behavior. Android-only dynamic color still requires an Android-specific implementation decision.
+
+---
+
+## Shared Localization
+
+Updated both shared resource sets:
+
+```text
+sharedUI/src/commonMain/composeResources/values/strings.xml
+sharedUI/src/commonMain/composeResources/values-hi/strings.xml
+```
+
+Added matching English/Hindi keys for:
+
+- Theme;
+- System;
+- Light;
+- Dark.
+
+The existing deterministic translation key/placeholder parity guard remains authoritative.
+
+---
+
+## Shared Hardware-Keyboard Parity
+
+The inherited 2.0.13 shared grid already supported:
+
+- Up/Down/Left/Right movement;
+- Backspace/Delete erase.
+
+2.0.14 adds:
+
+- `1` through `9` → existing `SharedGameState.enter(value)` path;
+- `N` → `toggleNotesMode()`;
+- `H` → `hint()`.
+
+The visible number pad and actions remain available.
+
+Routing digit input through `SharedGameState.enter` preserves existing invariants:
+
+- fixed clues cannot be overwritten;
+- Notes mode toggles candidates rather than placing a value;
+- normal entry retains conflict/correctness status behavior;
+- peer-note cleanup remains centralized in shared state.
+
+Real hardware-keyboard/focus behavior remains target-specific runtime QA.
+
+---
+
+## 2.0.14 Version Promotion and Release Contract
 
 Android source metadata is now:
 
 ```text
+versionCode = 2014
+versionName = 2.0.14
+```
+
+Compose Desktop native distribution metadata is now:
+
+```text
+packageVersion = 2.0.14
+```
+
+Ordinary Android CI release verification expects:
+
+```text
+versionCode = 2014
+versionName = 2.0.14
 applicationId = in.sanskar.sudokunova
-versionCode   = 2013
-versionName   = 2.0.13
-minSdk        = 26
-targetSdk     = 37
-compileSdk    = 37
+minSdk = 26
+targetSdk = 37
 ```
 
-Desktop packaging now declares:
+Protected Production Release Validation defaults are now:
 
 ```text
-packageName    = SudokuNova
-packageVersion = 2.0.13
+expected_version_code = 2014
+expected_version_name = 2.0.14
 ```
 
-Ordinary Android CI release-output verification now expects:
-
-```text
---expected-version-code 2013
---expected-version-name 2.0.13
-```
-
-Protected Production Release Validation defaults now also use:
-
-```text
-expected_version_code = 2013
-expected_version_name = 2.0.13
-```
-
-No production signing or publication is inferred from these source changes.
+The existing release-contract guard continues to fail when Android source, ordinary CI, protected defaults, or Desktop package version drift apart.
 
 ---
 
-## Release Contract Hardened for Desktop
-
-The existing release-contract verifier previously synchronized:
-
-- Android `app/build.gradle.kts`;
-- ordinary Android CI expected identity;
-- protected production-validation defaults.
-
-2.0.13 extends it to parse `sharedUI/build.gradle.kts` and require:
-
-```text
-Desktop packageVersion == Android versionName
-```
-
-The guard now fails when the Desktop package is missing, duplicated, malformed, or version-drifted from the Android source release identity.
-
-Regression tests cover:
-
-- valid Desktop package-version parsing;
-- duplicate Desktop version rejection;
-- matching Android/Desktop/CI/protected contracts;
-- Desktop mismatch included in drift diagnostics.
-
-This prevents a future version promotion from accidentally leaving a stale Desktop installer/application version.
-
----
-
-## 2.0.13 Documentation Authority
+# Documentation Synchronization
 
 Added:
 
 ```text
-docs/V2_0_13_RELEASE.md
+docs/SHARED_SETTINGS.md
+docs/V2_0_14_RELEASE.md
 ```
 
-It is now the current release-version authority and documents:
-
-- 2013 / 2.0.13 source identity;
-- Desktop 2.0.13 package identity;
-- repository-verifiable 2.0.13 scope;
-- exact-head three-workflow merge rule;
-- ordinary and protected release expectations;
-- cross-platform evidence boundaries;
-- manual/device/signing/store requirements that source control cannot prove.
-
-`docs/V2_0_12_RELEASE.md` is retained unchanged as historical 2.0.12 authority.
-
-Updated documentation includes:
-
-- `docs/README.md` — indexes 2.0.13 as current and 2.0.12 as historical;
-- `docs/SUDOKU_ENGINE.md` — documents `PuzzleExchangeService` and the distinction between codec validity and uniqueness acceptance;
-- `docs/KEYBOARD_SHORTCUTS.md` — separates mature Android keyboard coverage from the shared 2.0.13 arrow/erase baseline;
-- `docs/CROSS_PLATFORM.md` — updates version identity, feature-parity matrix, puzzle exchange, keyboard/focus, Room 2.8.4, build commands, and evidence boundary.
-
----
-
-## Atomic Commit Structure for This Continuation
-
-The 2.0.13 line intentionally uses focused commits. Current commit families include:
-
-### Maintenance integration
-
-- merge verified Room 2.8.4 PR #40;
-- close stale Dependabot PR #35 as superseded.
-
-### Shared input/accessibility
-
-- `feat(shared): add deterministic grid navigation`;
-- `test(shared): cover keyboard-style grid navigation`;
-- `feat(shared): add portable keyboard grid controls`.
-
-### Puzzle exchange
-
-- `feat(engine): add validated puzzle exchange service`;
-- `test(engine): verify puzzle exchange uniqueness gate`.
-
-### Version/release identity
-
-- `release(android): promote app metadata to 2.0.13`;
-- `release(desktop): promote package version to 2.0.13`;
-- `ci: verify Android 2.0.13 release identity`;
-- `release(ci): promote protected validation defaults to 2.0.13`.
-
-### Release/documentation
-
-- `docs(release): add 2.0.13 release authority`;
-- `docs: index the 2.0.13 release line`;
-- `docs(engine): document validated puzzle exchange boundary`;
-- `docs(input): document shared keyboard navigation`;
-- `docs(platform): align parity matrix with 2.0.13`.
-
-### Release guard
-
-- `build: guard desktop package version parity`;
-- `test: cover desktop release version guard`;
-- this active-ledger update.
-
----
-
-## Exact-Head Verification Status
-
-During this continuation, each source/documentation commit creates a newer PR #41 head. Workflow runs attached to earlier heads become historical and must not be combined into final evidence.
-
-Required final PR #41 evidence on one SHA:
-
-1. `Android CI` — success;
-2. `Android Instrumentation` — success;
-3. `Cross-Platform CI` — success, including shared code/tests, Android shared integration, Web/Wasm distribution, iOS Simulator framework, and Desktop application images on Linux/Windows/macOS.
-
-No final 2.0.13 green claim is recorded in this section yet because the branch is still being edited. After the final documentation/changelog/PR metadata commit, freeze the branch and use only workflows attached to that final SHA.
-
-If a final-head workflow exposes a real source defect, fix that defect and repeat the entire exact-head evidence requirement on the new SHA.
-
----
-
-## Remaining Repository Work After Current 2.0.13 Scope
-
-Issue #34 remains open. Important remaining work includes:
-
-- explicit shared custom/imported gameplay-session provenance and persistence;
-- platform-safe clipboard/share/file-picker abstractions where justified;
-- shared challenges/custom-puzzle presentation/domain integration;
-- shared learning/statistics presentation and persistence;
-- portable settings/theme breadth and local settings adapters;
-- direct shared digit/Notes/Hint keyboard shortcut parity;
-- reliable target runtime input/focus/resize/browser smoke tests;
-- expensive puzzle generation/hint/import analysis lifecycle/cancellation ownership where measurement shows it is needed;
-- real iOS/iPadOS production host/project/assets/signing/device validation;
-- clean-machine Windows/macOS/Linux packaging/runtime validation;
-- Web browser-support matrix and runtime accessibility/persistence verification.
-
-Do not convert these into completed checkboxes merely because adjacent source abstractions exist.
-
----
-
-## External Evidence Not Claimed
-
-This repository continuation does **not** claim completion of:
-
-- Android production keystore/certificate validation unless the protected workflow actually succeeds;
-- final signed installation/upgrade QA on representative Android devices;
-- final TalkBack/VoiceOver/desktop/browser accessibility QA;
-- representative physical-device startup/frame/memory/ANR evidence;
-- process-death/lifecycle recovery on each target;
-- representative Hindi layout/font-scale runtime evidence;
-- Apple Xcode production target/signing/provisioning/TestFlight/App Store acceptance;
-- macOS signing/notarization/Gatekeeper validation;
-- Windows signing/reputation/clean-machine installation evidence;
-- Linux clean install/upgrade/remove evidence;
-- intended Web browser/device compatibility/privacy-mode evidence;
-- Play Console or other store acceptance;
-- final `SHIP` decision;
-- immutable `v2.0.13` tag;
-- GitHub Release or public store/Web distribution.
-
-Those require real-world evidence and must remain explicit release tasks.
-
----
-
-## Current Authorities
-
-Current release authority:
+Updated for the real 2.0.14 source/behavior/evidence boundary:
 
 ```text
-docs/V2_0_13_RELEASE.md
-```
-
-Historical 2.0.12 authority:
-
-```text
-docs/V2_0_12_RELEASE.md
-```
-
-Cross-platform authority:
-
-```text
+README.md
+CHANGELOG.md
+docs/README.md
 docs/CROSS_PLATFORM.md
+docs/KEYBOARD_SHORTCUTS.md
+docs/BUILDING.md
+docs/CI_CD.md
+docs/PRODUCTION_RELEASE_VALIDATION.md
+docs/TESTING.md
+what_changed.md
 ```
 
-Shared persistence authority:
+`docs/SHARED_SETTINGS.md` is the detailed authority for:
 
-```text
-docs/SHARED_PERSISTENCE.md
-```
+- `SNS1` format and validation;
+- common settings state/store interfaces;
+- platform adapters;
+- restore/autosave ownership;
+- compatibility policy;
+- privacy/security boundaries;
+- tests;
+- runtime evidence limits.
 
-Detailed history through 2026-08-19 remains archived at:
+`docs/V2_0_14_RELEASE.md` is the current source/release preparation authority.
 
-```text
-docs/archive/what_changed_through_2026-08-19.md
-```
+The documentation hub indexes both new guides, preserving the fail-closed detailed-guide discoverability rule.
 
-The previous active 2.0.12 cross-platform ledger remains recoverable from Git history before this update.
+The build, CI/CD, testing, and protected-validation guides were explicitly moved off their stale 2.0.12/2.0.13 contracts and now consistently describe 2014 / 2.0.14.
 
 ---
 
-## Current Handoff Rule
+# Release Tracking
 
-PR #41 is the active 2.0.13 preparation line from verified `main` checkpoint `fc950934...`.
+Created issue #43:
 
-Do not merge PR #41 based on conflict-free status, intermediate green runs, or older 2.0.12 evidence. Complete the remaining repository synchronization, freeze one final head, require all three workflow families on that exact SHA, repair any concrete failure without weakening gates, and only then consider merging the repository-side 2.0.13 preparation.
+```text
+v2.0.14: release validation and production readiness
+```
 
-Even a fully green merge does not by itself prove production signing, manual/device QA, store acceptance, tagging, or publication.
+It separates repository exact-head gates from:
 
-**SudokuNova — Think. Solve. Master the Grid.**  
-**Made by the Sanskar**
+- protected signed Android validation;
+- Android real-device QA;
+- accessibility/adaptive-layout QA;
+- representative performance evidence;
+- Apple/Desktop/Web runtime/distribution evidence;
+- store acceptance and final `SHIP` decision.
+
+Opened draft PR #44:
+
+```text
+release: prepare SudokuNova 2.0.14 shared settings parity
+```
+
+Base commit:
+
+```text
+adabaf9841eadaa172c8a236b2cbe4a6c4ef6699
+```
+
+Intermediate workflow runs are diagnostic only. Every later source/documentation commit supersedes their merge evidence.
+
+---
+
+# Atomic 2.0.14 Commit Ledger
+
+## Common settings model, format, and tests
+
+- `00579753881177480c5c95cd87784ec1500a8c51` — `feat(shared-settings): add portable user settings model`
+- `1573f023cb3cefabc1e97807aa876fabe11e855d` — `feat(shared-settings): add common settings store boundary`
+- `5ed25f8e2e220a850e77e815af7140e7152f7c18` — `feat(shared-settings): add deterministic SNS1 codec`
+- `ef2869bad2f7df0aa0b86a528494f447b175ba09` — `test(shared-settings): cover SNS1 settings codec`
+- `e01a0a47f5b1593c8d6f07b64653ab4ba6f179b5` — `test(shared-settings): cover encoded settings store`
+- `a7b05aa3b6ecef8af5f2b71b4cc6d26d37deb698` — `feat(shared-settings): add observable settings state`
+- `82733d50acde875b499456d7ed1357ef39f4486b` — `feat(shared-settings): add Compose restore and autosave state`
+- `72eec3f24031b87109e8a32f07d06d20760c55ba` — `test(shared-settings): cover settings state persistence`
+
+## Native adapters
+
+- `81b0943d95f8e5e1f5552277d0a3c29f3495d28b` — `feat(android): add shared settings preferences adapter`
+- `b6a3d63d37346f1c659613ce7e3ddf3e15bd4596` — `feat(desktop): add shared settings preferences adapter`
+- `76dfea4d9bd62de94db9cb3dbd00a2c9c5a88611` — `feat(web): add shared settings localStorage adapter`
+- `e3dbfd24ad2dd8d7a3871374f413c39328c70999` — `feat(ios): add shared settings user-defaults adapter`
+
+## Shared UI, localization, and host wiring
+
+- `45bffbd8638b257ffe178cc86caf5cef4ecd33dc` — `feat(shared-settings): add localized theme controls`
+- `7949398f4879326b690bd648838a479a4f64a0c3` — `feat(shared-settings): localize Hindi theme controls`
+- `61db48c457a999d65d2982c91cef834c7850b392` — `feat(shared-ui): apply persisted theme and keyboard parity`
+- `58c73275737621fb68301fc005e275f4653b2d3f` — `feat(android): restore and persist shared settings`
+- `c1d5b17e05dadb5392dfed079250ee643fa71c45` — `feat(desktop): restore and autosave shared settings`
+- `ad60c1e0908b9d31f0d9a061c649437a4cac2587` — `feat(web): restore and autosave shared settings`
+- `0a5ba469078a8dcec2f1eebbdc046dca23a24b96` — `feat(ios): restore and autosave shared settings`
+
+## Version and CI contract
+
+- `8532b83bf3106c839e447d87443bf150f224a9fb` — `build(android): promote source version to 2.0.14`
+- `a674a66cfe911c53f56d49f9a801bf42d3e01a66` — `build(desktop): promote package version to 2.0.14`
+- `38b300fd757a21774c5e6c0183e30e8355da8953` — `ci(android): verify 2.0.14 release outputs`
+- `30038eb46cc1d87dd36107cfc12d99b475f83958` — `ci(release): promote protected validation defaults to 2.0.14`
+
+## Documentation
+
+- `5db79f4abf15972eafb309be79b3034858c115ed` — `docs(release): add 2.0.14 preparation authority`
+- `bdffa7e4e3dad205b1cf0614f9deb6749a54e33f` — `docs(settings): document shared SNS1 persistence contract`
+- `70811eaa3a7dfe84d79b8e6896813a40676555f2` — `docs(index): add shared settings and 2.0.14 guides`
+- `40e07ee34c3db4daac3bed8065292a3a844640e3` — `docs(input): document shared 2.0.14 keyboard parity`
+- `de56179f4bab7e515714d0603f64de9fa9f97983` — `docs(readme): align public status with 2.0.14`
+- `be9531532daba183d53ce55146a789b9fbe94fe7` — `docs(cross-platform): add shared settings parity`
+- `a2cdef441a06dd96685d1da61309cb8f4a3580a3` — `docs(changelog): record 2.0.14 settings parity`
+- `183e4f60ed78042fe6e48f578394f06554fc421e` — `docs(ledger): record complete 2.0.14 preparation work`
+- `6ff0a2962ed25c72436a9b1fa9a40fdbfd249e43` — `docs(build): align build guide with 2.0.14`
+- `b5f1cdc0465ba0dcb377090007945d8b602faa2f` — `docs(ci): align automated gates with 2.0.14`
+- `2368390e13b884f02ac01870d49a57e0e63e72c0` — `docs(release): align protected validation with 2.0.14`
+- `74656de3280a21299043c767fcc152ab3ff491b8` — `docs(testing): align coverage with 2.0.14`
+
+This ledger-finalization commit itself becomes the next branch head. It intentionally does not attempt to pre-state its own SHA.
+
+---
+
+# Privacy and Security Properties Preserved
+
+The 2.0.14 settings work adds no network synchronization path and no new third-party dependency.
+
+It introduces no:
+
+- account requirement;
+- remote analytics;
+- advertising identifier;
+- telemetry upload;
+- cloud settings database;
+- credential storage.
+
+The settings payload is local preference state only. It must never be repurposed for passwords, API tokens, signing keys, keystores, or other secrets.
+
+Existing fail-closed secret/signing checks, artifact identity verification, documentation ownership, translation parity, Sudoku correctness, `SNP1`, and `SNG1` invariants remain in place.
+
+---
+
+# Remaining Repository Work After 2.0.14
+
+## Shared product parity
+
+- common history/saved-puzzle model and local adapters;
+- imported/custom puzzle gameplay provenance and persistence;
+- platform-safe clipboard/share/file-picker abstractions;
+- challenges/custom-puzzle shared presentation;
+- learning/statistics shared presentation/persistence;
+- behavior for additional portable settings fields where cross-platform semantics are justified.
+
+## Performance and lifecycle
+
+- move expensive portable generation/hint work off render-critical paths where measurement justifies it;
+- define common cancellation/lifecycle ownership for long-running work;
+- add deterministic shared performance regressions where meaningful;
+- collect real platform startup/render/input measurements.
+
+## Real target evidence
+
+- Android production signing and representative physical-device QA;
+- TalkBack/VoiceOver/browser/Desktop accessibility validation;
+- large-font/high-contrast/reduced-motion checks;
+- real hardware keyboard/focus/pointer/touch behavior;
+- settings persistence across real target restart/lifecycle/privacy modes;
+- Apple app host/signing/provisioning/TestFlight/App Store evidence;
+- Windows clean-machine/MSI/signing/reputation evidence;
+- macOS DMG/signing/notarization/Gatekeeper evidence;
+- Linux DEB clean install/remove/upgrade evidence;
+- Web browser support/runtime/accessibility/privacy-mode matrix;
+- store/publication evidence.
+
+These cannot be truthfully completed through source code alone.
+
+---
+
+# Final 2.0.14 Repository Merge Gate
+
+After this ledger-finalization commit, freeze the branch except for concrete CI-discovered defects.
+
+The exact final head must independently pass:
+
+1. Android CI;
+2. Android Instrumentation;
+3. Cross-Platform CI.
+
+Android CI must retain:
+
+- repository security guard;
+- release verifier unit/CLI tests;
+- documentation-link/coverage regression and direct guards;
+- release-contract regression/direct guard;
+- translation parity;
+- shared engine tests;
+- shared gameplay/persistence/settings tests;
+- Desktop/Web common compilation;
+- Android JVM tests;
+- Android instrumentation compilation;
+- Macrobenchmark compilation;
+- debug/release lint;
+- debug APK;
+- R8 release APK;
+- release AAB;
+- exact embedded `in.sanskar.sudokunova` / 2014 / 2.0.14 / minSdk 26 / targetSdk 37 / non-debuggable identity;
+- deterministic release evidence.
+
+Cross-Platform CI must retain:
+
+- shared code/tests;
+- Android shared integration;
+- Web/Wasm production distribution;
+- iOS Simulator framework linking;
+- Linux Desktop image;
+- Windows Desktop image;
+- macOS Desktop image.
+
+Do not disable targets, weaken validation, or mix successful runs from different SHAs to make the merge appear green.
+
+After all three workflow families succeed on the same frozen head, record that SHA and the run IDs in PR #44 and issue #43, mark the PR ready, and merge using the verified head.
+
+---
+
+# Evidence Boundary After Merge
+
+A future exact-head verified merge of PR #44 means **repository-prepared 2.0.14**. It does not automatically mean **publicly shipped 2.0.14**.
+
+Issue #43 remains open until real protected signing, device/runtime/accessibility/performance, platform distribution, store, and final `SHIP` evidence is completed.
+
+Do not create an immutable `v2.0.14` tag, GitHub Release, store/public distribution claim, or final SHIP claim solely from repository CI.
