@@ -2,6 +2,7 @@ package com.sanskar.sudokunova.engine
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class PuzzleExchangeServiceTest {
@@ -11,14 +12,17 @@ class PuzzleExchangeServiceTest {
     )
 
     @Test
-    fun uniquePuzzleCodeImportsWithSolvedBoardAndDifficulty() {
+    fun uniquePuzzleCodeImportsWithSolvedBoardDifficultyAndAssessment() {
         val code = service.exportCode(puzzle, Difficulty.HARD)
 
         val imported = service.importCode(code)
 
-        assertEquals(puzzle, imported?.puzzle)
-        assertEquals(Difficulty.HARD, imported?.difficulty)
-        assertEquals(true, imported?.solution?.isComplete)
+        assertNotNull(imported)
+        assertEquals(puzzle, imported.puzzle)
+        assertEquals(Difficulty.HARD, imported.difficulty)
+        assertEquals(true, imported.solution.isComplete)
+        assertEquals(Difficulty.BEGINNER, imported.assessment.estimatedDifficulty)
+        assertEquals(0, imported.assessment.metrics.guesses)
     }
 
     @Test
