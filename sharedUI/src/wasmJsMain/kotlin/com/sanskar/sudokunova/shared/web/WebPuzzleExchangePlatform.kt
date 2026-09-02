@@ -5,9 +5,8 @@ import com.sanskar.sudokunova.shared.PuzzleExchangePlatform
 import com.sanskar.sudokunova.shared.PuzzleExchangeResult
 import com.sanskar.sudokunova.shared.PuzzleExchangeTextResult
 import kotlinx.browser.window
-import org.w3c.dom.events.Event
 
-/** Browser clipboard/share adapter. File transport is kept behind the browser boundary. */
+/** Browser exchange seam; hosts can progressively add file/share APIs without changing common UI. */
 class WebPuzzleExchangePlatform : PuzzleExchangePlatform {
     override fun copyText(text: String): PuzzleExchangeResult {
         if (!PuzzleExchangeLimits.isBoundedCode(text)) {
@@ -19,19 +18,16 @@ class WebPuzzleExchangePlatform : PuzzleExchangePlatform {
         }.getOrElse { PuzzleExchangeResult.Failed("Clipboard is unavailable in this browser.") }
     }
 
-    override fun pasteText(): PuzzleExchangeTextResult =
-        PuzzleExchangeTextResult.Unsupported
+    override fun pasteText(): PuzzleExchangeTextResult = PuzzleExchangeTextResult.Unsupported
 
-    override fun shareText(text: String): PuzzleExchangeResult {
-        if (!PuzzleExchangeLimits.isBoundedCode(text)) {
-            return PuzzleExchangeResult.Failed("Puzzle code is too large.")
-        }
-        return PuzzleExchangeResult.Unsupported
-    }
+    override fun shareText(text: String): PuzzleExchangeResult =
+        if (PuzzleExchangeLimits.isBoundedCode(text)) PuzzleExchangeResult.Unsupported
+        else PuzzleExchangeResult.Failed("Puzzle code is too large.")
 
     override fun importTextFile(onText: (String) -> Unit): PuzzleExchangeResult =
         PuzzleExchangeResult.Unsupported
 
     override fun exportTextFile(fileName: String, text: String): PuzzleExchangeResult =
-        PuzzleExchangeResult.Unsupported
+        if (PuzzleExchangeLimits.isBoundedFileText(text)) PuzzleExchangeResult.Unsupported
+        else PuzzleExchangeResult.Failed("Puzzle file is too large.")
 }
