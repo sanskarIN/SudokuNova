@@ -9,6 +9,7 @@ import java.awt.Frame
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 /** Desktop/JVM clipboard and file exchange adapter. */
@@ -50,10 +51,8 @@ class DesktopPuzzleExchangePlatform(
             val directory = dialog.directory
             val fileName = dialog.file
             if (directory == null || fileName == null) return PuzzleExchangeResult.Failed("No file selected.")
-            val text = File(directory, fileName).readText()
-            if (!PuzzleExchangeLimits.isBoundedFileText(text)) {
-                return PuzzleExchangeResult.Failed("Puzzle file is too large.")
-            }
+            val text = readBoundedText(File(directory, fileName))
+                ?: return PuzzleExchangeResult.Failed("Unable to read puzzle file.")
             onText(text)
             PuzzleExchangeResult.Success
         }.getOrElse { PuzzleExchangeResult.Failed("Unable to read puzzle file.") }
@@ -75,5 +74,23 @@ class DesktopPuzzleExchangePlatform(
             File(directory, selectedName).writeText(text)
             PuzzleExchangeResult.Success
         }.getOrElse { PuzzleExchangeResult.Failed("Unable to write puzzle file.") }
+    }
+
+    private fun readBoundedText(file: File): String? {
+        return file.inputStream().use { stream ->
+            val output = ByteArrayOutputStream(PuzzleExchangeLimits.MAX_FILE_TEXT_LENGTH)
+            val buffer = ByteArray(128)
+            var total = 0
+            while (true) {
+                val count = stream.read(buffer)
+                if (count < 0) break
+                total += count
+                if (total > PuzzleExchangeLimits.MAX_FILE_TEXT_LENGTH) {
+                    throw IllegalArgumentException("Puzzle file is too large.")
+                }
+                output.write(buffer, 0, count)
+            }
+            output.toByteArray().toString(Charsets.UTF_8)
+        }
     }
 }
