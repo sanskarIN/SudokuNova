@@ -40,11 +40,18 @@ The current adapters provide:
 
 - Android: clipboard, native share sheet, and Storage Access Framework import/export requests;
 - Desktop/JVM: system clipboard and native file dialogs;
-- future Web/Wasm and Apple hosts: platform-specific implementations behind the same interface.
+- Web/Wasm: bounded browser clipboard/file/share seams, with asynchronous browser APIs still requiring a future suspend/callback contract for full parity;
+- Apple hosts: a bounded adapter seam for native host integration.
 
 Adapters enforce bounded payloads before transport. File operations are also bounded on the read/write path; a platform must not turn arbitrary external text into a playable puzzle without passing the shared SNP1 validator.
 
-The common UI continues to use platform-neutral text selection until native adapter actions are explicitly wired into each host.
+## Shared UI Wiring
+
+`SudokuNovaSharedApp()` accepts an optional `PuzzleExchangePlatform`. When supplied, the common `PuzzleExchangePanel` renders the reusable Copy, Paste, Share, Import file, and Export file controls through `PuzzleExchangeCoordinator`.
+
+The Android `CrossPlatformActivity` now supplies `AndroidPuzzleExchangePlatform(this)` and forwards document-picker results back to that adapter. Existing callers that do not supply a platform retain the code-only exchange UI, so the common API remains backward compatible.
+
+Desktop, Web/Wasm, and Apple hosts still require their native lifecycle integration before their transport operations can be considered production-complete.
 
 ## Testing Expectations
 
@@ -59,4 +66,5 @@ Changes to this contract should retain coverage for:
 - invalid import fail-closed behavior;
 - platform payload bounds before adapter invocation;
 - English/Hindi translation parity;
-- Android, Desktop, Web/Wasm, and Apple compilation paths where the shared UI is used.
+- Android, Desktop, Web/Wasm, and Apple compilation paths where the shared UI is used;
+- Android shared-host document lifecycle wiring.
