@@ -18,8 +18,10 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
     val state = rememberPersistedSharedGameState(gameStore)
     val settingsState = rememberPersistedSharedSettingsState(settingsStore)
+    val exchangePlatform = remember { IOSPuzzleExchangePlatform() }
     SudokuNovaSharedApp(
         state = state,
         settingsState = settingsState,
+        exchangePlatform = exchangePlatform,
     )
 }
