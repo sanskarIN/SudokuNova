@@ -14,6 +14,15 @@ class PuzzleExchangePlatformTest {
     }
 
     @Test
+    fun boundedFileTextAllowsLimitBoundary() {
+        assertTrue(
+            PuzzleExchangeLimits.isBoundedFileText(
+                "x".repeat(PuzzleExchangeLimits.MAX_FILE_TEXT_LENGTH),
+            ),
+        )
+    }
+
+    @Test
     fun oversizedCodeIsRejectedBeforePlatformCall() {
         val platform = RecordingPlatform()
         val result = platform.safeCopyText("x".repeat(PuzzleExchangeLimits.MAX_CODE_LENGTH + 1))
@@ -29,6 +38,11 @@ class PuzzleExchangePlatformTest {
 
         assertIs<PuzzleExchangeResult.Failed>(result)
         assertEquals(0, platform.shareCalls)
+    }
+
+    @Test
+    fun defaultFileNameUsesSnp1Extension() {
+        assertTrue(PuzzleExchangeLimits.DEFAULT_FILE_NAME.endsWith(".snp1"))
     }
 
     private class RecordingPlatform : PuzzleExchangePlatform {
