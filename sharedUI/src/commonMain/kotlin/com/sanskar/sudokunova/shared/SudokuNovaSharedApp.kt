@@ -62,12 +62,16 @@ import org.jetbrains.compose.resources.stringResource
 fun SudokuNovaSharedApp(
     state: SharedGameState = remember { SharedGameState() },
     settingsState: SharedSettingsState = remember { SharedSettingsState() },
+    exchangePlatform: PuzzleExchangePlatform? = null,
 ) {
     val settings = settingsState.settings
     val darkTheme = when (settings.theme) {
         SharedTheme.SYSTEM -> isSystemInDarkTheme()
         SharedTheme.LIGHT -> false
         SharedTheme.DARK -> true
+    }
+    val exchangeCoordinator = remember(exchangePlatform) {
+        exchangePlatform?.let(::PuzzleExchangeCoordinator)
     }
 
     MaterialTheme(
@@ -85,7 +89,7 @@ fun SudokuNovaSharedApp(
                 Header(state)
                 DifficultyPicker(state)
                 ThemePicker(settingsState)
-                PuzzleExchangePanel(state)
+                PuzzleExchangePanel(state, exchangeCoordinator)
                 SudokuGrid(state)
                 NumberPad(state)
                 GameActions(state)
@@ -195,7 +199,10 @@ private fun ThemePicker(settingsState: SharedSettingsState) {
 }
 
 @Composable
-private fun PuzzleExchangePanel(state: SharedGameState) {
+private fun PuzzleExchangePanel(
+    state: SharedGameState,
+    coordinator: PuzzleExchangeCoordinator? = null,
+) {
     var importCode by remember { mutableStateOf("") }
     Column(
         modifier = Modifier.fillMaxWidth().sizeIn(maxWidth = 720.dp),
@@ -233,6 +240,17 @@ private fun PuzzleExchangePanel(state: SharedGameState) {
                 text = state.puzzleCode(),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (coordinator != null) {
+            PuzzleExchangeActions(
+                coordinator = coordinator,
+                currentCode = state.puzzleCode(),
+                onImportedCode = { code ->
+                    if (state.importPuzzleCode(code)) {
+                        importCode = state.sourceCode.orEmpty()
+                    }
+                },
             )
         }
         if (state.isImported) {
