@@ -40,8 +40,8 @@ The current adapters provide:
 
 - Android: clipboard, native share sheet, and Storage Access Framework import/export requests;
 - Desktop/JVM: system clipboard and native file dialogs;
-- Web/Wasm: bounded browser clipboard/file/share seams, with asynchronous browser APIs still requiring a future suspend/callback contract for full parity;
-- Apple hosts: a bounded adapter seam for native host integration.
+- Web/Wasm: a bounded host seam; browser Promise/event APIs are deliberately not reported as synchronous success until the common contract supports asynchronous operations;
+- Apple hosts: native clipboard support for synchronous copy/paste, with share/document controllers remaining host-owned because UIKit presents them asynchronously.
 
 Adapters enforce bounded payloads before transport. File operations are also bounded on the read/write path; a platform must not turn arbitrary external text into a playable puzzle without passing the shared SNP1 validator.
 
@@ -49,9 +49,11 @@ Adapters enforce bounded payloads before transport. File operations are also bou
 
 `SudokuNovaSharedApp()` accepts an optional `PuzzleExchangePlatform`. When supplied, the common `PuzzleExchangePanel` renders the reusable Copy, Paste, Share, Import file, and Export file controls through `PuzzleExchangeCoordinator`.
 
-The Android `CrossPlatformActivity` now supplies `AndroidPuzzleExchangePlatform(this)` and forwards document-picker results back to that adapter. Existing callers that do not supply a platform retain the code-only exchange UI, so the common API remains backward compatible.
+Android `CrossPlatformActivity`, Desktop `Main.kt`, and the iOS `MainViewController()` now supply their platform adapters. The Web/Wasm entry point also supplies its bounded browser seam. Existing callers that do not supply a platform retain the code-only exchange UI, so the common API remains backward compatible.
 
-Desktop, Web/Wasm, and Apple hosts still require their native lifecycle integration before their transport operations can be considered production-complete.
+## Asynchronous Host Contract
+
+Web/Wasm and Apple document/share operations should not be made to look synchronous merely to fit the current interface. The next exchange API revision should introduce suspend/callback-based operations, explicit pending states, and completion/error callbacks. The existing synchronous contract remains intentionally conservative until that migration is implemented and tested.
 
 ## Testing Expectations
 
@@ -67,4 +69,6 @@ Changes to this contract should retain coverage for:
 - platform payload bounds before adapter invocation;
 - English/Hindi translation parity;
 - Android, Desktop, Web/Wasm, and Apple compilation paths where the shared UI is used;
-- Android shared-host document lifecycle wiring.
+- Android shared-host document lifecycle wiring;
+- iOS native clipboard behavior;
+- Web/Wasm asynchronous exchange contract before enabling browser transport success reporting.
