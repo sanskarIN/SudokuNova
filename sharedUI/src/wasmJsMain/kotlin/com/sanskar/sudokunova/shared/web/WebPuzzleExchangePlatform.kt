@@ -4,19 +4,22 @@ import com.sanskar.sudokunova.shared.PuzzleExchangeLimits
 import com.sanskar.sudokunova.shared.PuzzleExchangePlatform
 import com.sanskar.sudokunova.shared.PuzzleExchangeResult
 import com.sanskar.sudokunova.shared.PuzzleExchangeTextResult
-import kotlinx.browser.window
 
-/** Browser exchange seam; hosts can progressively add file/share APIs without changing common UI. */
+/**
+ * Browser exchange seam.
+ *
+ * Browser clipboard, share, and file-picker APIs are Promise/event based, while
+ * the current common contract is synchronous. The adapter therefore refuses to
+ * report success until the contract is made asynchronous rather than faking a
+ * completed operation.
+ */
 class WebPuzzleExchangePlatform : PuzzleExchangePlatform {
-    override fun copyText(text: String): PuzzleExchangeResult {
-        if (!PuzzleExchangeLimits.isBoundedCode(text)) {
-            return PuzzleExchangeResult.Failed("Puzzle code is too large.")
+    override fun copyText(text: String): PuzzleExchangeResult =
+        if (PuzzleExchangeLimits.isBoundedCode(text)) {
+            PuzzleExchangeResult.Unsupported
+        } else {
+            PuzzleExchangeResult.Failed("Puzzle code is too large.")
         }
-        return runCatching {
-            window.navigator.clipboard.writeText(text)
-            PuzzleExchangeResult.Success
-        }.getOrElse { PuzzleExchangeResult.Failed("Clipboard is unavailable in this browser.") }
-    }
 
     override fun pasteText(): PuzzleExchangeTextResult = PuzzleExchangeTextResult.Unsupported
 
