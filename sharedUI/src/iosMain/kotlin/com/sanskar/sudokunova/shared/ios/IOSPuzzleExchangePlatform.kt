@@ -1,7 +1,7 @@
 package com.sanskar.sudokunova.shared.ios
 
 import com.sanskar.sudokunova.shared.PuzzleExchangeLimits
-import com.sanskar.sanskar.sudokunova.shared.PuzzleExchangePlatform
+import com.sanskar.sudokunova.shared.PuzzleExchangePlatform
 import com.sanskar.sudokunova.shared.PuzzleExchangeResult
 import com.sanskar.sudokunova.shared.PuzzleExchangeTextResult
 
