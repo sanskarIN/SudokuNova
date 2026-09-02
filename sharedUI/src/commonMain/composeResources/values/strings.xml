@@ -24,6 +24,11 @@
     <string name="puzzle_import">Import puzzle</string>
     <string name="puzzle_export">Current puzzle code</string>
     <string name="puzzle_imported">Imported puzzles keep their original code for active-session restore.</string>
+    <string name="puzzle_copy">Copy</string>
+    <string name="puzzle_paste">Paste</string>
+    <string name="puzzle_share">Share</string>
+    <string name="puzzle_import_file">Import file</string>
+    <string name="puzzle_export_file">Export file</string>
 
     <string name="action_notes">Notes</string>
     <string name="action_erase">Erase</string>
