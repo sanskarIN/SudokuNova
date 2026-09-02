@@ -21,17 +21,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -80,6 +85,7 @@ fun SudokuNovaSharedApp(
                 Header(state)
                 DifficultyPicker(state)
                 ThemePicker(settingsState)
+                PuzzleExchangePanel(state)
                 SudokuGrid(state)
                 NumberPad(state)
                 GameActions(state)
@@ -189,6 +195,57 @@ private fun ThemePicker(settingsState: SharedSettingsState) {
 }
 
 @Composable
+private fun PuzzleExchangePanel(state: SharedGameState) {
+    var importCode by remember { mutableStateOf("") }
+    Column(
+        modifier = Modifier.fillMaxWidth().sizeIn(maxWidth = 720.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = stringResource(Res.string.puzzle_exchange_title),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        OutlinedTextField(
+            value = importCode,
+            onValueChange = { importCode = it },
+            label = { Text(stringResource(Res.string.puzzle_code_label)) },
+            placeholder = { Text(stringResource(Res.string.puzzle_code_hint)) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+        Button(
+            onClick = {
+                if (state.importPuzzleCode(importCode)) {
+                    importCode = state.sourceCode.orEmpty()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(Res.string.puzzle_import))
+        }
+        Text(
+            text = stringResource(Res.string.puzzle_export),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SelectionContainer {
+            Text(
+                text = state.puzzleCode(),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (state.isImported) {
+            Text(
+                text = stringResource(Res.string.puzzle_imported),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun themeLabel(theme: SharedTheme): String = stringResource(
     when (theme) {
         SharedTheme.SYSTEM -> Res.string.theme_system
@@ -223,6 +280,11 @@ private fun statusLabel(status: SharedGameStatus): String = when (status) {
         Res.string.status_new_puzzle,
         difficultyLabel(status.difficulty),
     )
+    is SharedGameStatus.ImportedPuzzle -> stringResource(
+        Res.string.status_imported_puzzle,
+        difficultyLabel(status.difficulty),
+    )
+    SharedGameStatus.InvalidPuzzleCode -> stringResource(Res.string.status_invalid_puzzle_code)
     SharedGameStatus.NotesEnabled -> stringResource(Res.string.status_notes_enabled)
     SharedGameStatus.NotesDisabled -> stringResource(Res.string.status_notes_disabled)
     SharedGameStatus.SelectEditableCell -> stringResource(Res.string.status_select_editable_cell)

@@ -2,7 +2,7 @@
 
 > **Think. Solve. Master the Grid.**
 
-SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Kotlin Multiplatform, Jetpack Compose, and Compose Multiplatform. Android remains the mature primary production surface while the shared engine, gameplay UI, persistence, settings, localization, accessibility/input foundations, and validated puzzle exchange are extended across Android, iOS/iPadOS, Windows, macOS, Linux, and Web.
+SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Kotlin Multiplatform, Jetpack Compose, and Compose Multiplatform. Android remains the mature primary production surface while shared engine/gameplay foundations are extended across Android, iOS/iPadOS, Windows, macOS, Linux, and Web.
 
 **Made by the Sanskar**
 
@@ -15,42 +15,34 @@ SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Ko
 
 ## Current Development Status
 
-The repository is preparing **SudokuNova 2.0.14** on draft PR #44 from the exact-head verified and merged 2.0.13 checkpoint.
+The repository is preparing **SudokuNova 2.0.15** on draft PR #45 from the merged 2.0.14 settings/keyboard parity line.
 
 Current source contract:
 
 ```text
 applicationId          = in.sanskar.sudokunova
-versionCode            = 2014
-versionName            = 2.0.14
-Desktop packageVersion = 2.0.14
+versionCode            = 2015
+versionName            = 2.0.15
+Desktop packageVersion = 2.0.15
 minSdk                 = 26
 targetSdk              = 37
 compileSdk             = 37
 JDK/JVM                = 17
 ```
 
-The 2.0.14 line builds on verified repository milestones including:
+### 2.0.15 focus
 
-- the 2.0.12 Android release-engineering baseline;
-- the cross-platform KMP/Compose foundation (PR #33);
-- cross-platform active-game persistence (PR #39);
-- Room 2.8.4 maintenance (PR #40);
-- the 2.0.13 puzzle-exchange, navigation, accessibility/input, and release-contract hardening line (PR #41).
+- validated `SNP1` puzzle import/export in the shared engine/UI;
+- imported puzzle provenance retained in `SharedGameState`;
+- backward-compatible `SNG1` active-game snapshots;
+- new `SNG2` snapshots for imported-session restoration;
+- shared English/Hindi puzzle-exchange UI;
+- fail-closed import/restore validation and regression coverage;
+- release-contract, CI, and documentation alignment for version 2.0.15.
 
-2.0.14 adds repository-verifiable parity work around local user settings and keyboard interaction:
+**2.0.15 is not claimed as publicly released merely because source metadata, build paths, or CI exist.** Production signing, representative real-device QA, accessibility/performance evidence, platform signing/notarization, store validation, final SHIP/tagging, and publication require separate real evidence.
 
-- portable `SharedUserSettings`, `SharedTheme`, and `SharedInputMode` models;
-- deterministic bounded `SNS1` settings persistence;
-- common settings store/state boundaries;
-- Android `SharedPreferences`, Desktop `Preferences`, Web `localStorage`, and Apple `NSUserDefaults` adapters;
-- restore/autosave wiring in each staged shared host;
-- localized English/Hindi System/Light/Dark shared theme controls;
-- direct shared `1`–`9`, `N` Notes, and `H` Hint keyboard handling in addition to arrows and Backspace/Delete.
-
-**2.0.14 is not claimed as publicly released merely because source metadata, build paths, or CI exist.** Production signing, representative real-device QA, accessibility/performance evidence, platform signing/notarization, store validation, final SHIP/tagging, and publication require separate real evidence.
-
-See [2.0.14 Release Line](docs/V2_0_14_RELEASE.md), [Shared Cross-Platform User Settings](docs/SHARED_SETTINGS.md), [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md).
+See [2.0.15 Release Line](docs/V2_0_15_RELEASE.md), [Shared Puzzle Exchange](docs/SHARED_PUZZLE_EXCHANGE.md), [Cross-Platform Development](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md).
 
 ## Platform Architecture
 
@@ -71,7 +63,7 @@ Repository build support is not production distribution evidence. Apple signing/
 ```text
 :sudoku-engine   Kotlin Multiplatform Sudoku correctness/domain
       ↑
-:sharedUI        Compose Multiplatform gameplay/persistence/settings/UI
+:sharedUI        Compose Multiplatform gameplay/persistence/settings/exchange UI
       ↑
 :app             Mature Android application
 
@@ -96,51 +88,26 @@ Platform-independent correctness-critical code includes:
 - versioned `SNP1` puzzle codes;
 - `PuzzleExchangeService`, which accepts imported codes only after exactly one solution is proven.
 
-The engine contains no Android/Compose/persistence/UI dependency.
-
 ### `sharedUI`
 
 Portable Compose foundation includes:
 
 - generated games and seven difficulty levels;
 - responsive Sudoku grid and number pad;
-- fixed/editable cells;
-- notes with peer cleanup;
-- conflict feedback with semantic and non-color evidence;
+- fixed/editable cells and notes;
+- conflict feedback and accessibility semantics;
 - erase, bounded undo, hints, reset, new game;
-- typed gameplay statuses;
-- English/Hindi resources with key/placeholder parity guards;
-- localized Sudoku-cell semantics;
-- Notes and theme selected semantics;
-- deterministic grid selection movement;
-- focusable arrow-key navigation;
-- direct `1`–`9` entry, `N` Notes, `H` Hint, and Backspace/Delete erase handling;
-- `SNG1` active-game snapshot encoding and fail-closed restore;
-- local active-game adapters for staged Android shared host, Desktop, Web, and Apple targets;
-- `SNS1` local user-settings encoding and fail-closed restore;
-- local settings adapters for staged Android shared host, Desktop, Web, and Apple targets;
-- localized System/Light/Dark theme selection;
-- common restore/autosave ownership;
-- Desktop, Web/Wasm, and Apple Compose entry points.
-
-The shared surface intentionally does not claim every mature Android-only feature yet.
+- English/Hindi resources;
+- keyboard navigation and digit/Notes/Hint/erase shortcuts;
+- `SNG1` generated active-game persistence;
+- `SNG2` imported-session provenance persistence;
+- `SNS1` local settings persistence;
+- staged Android/Desktop/Web/Apple local-storage adapters;
+- validated puzzle-code import/export UI.
 
 ### `app`
 
-The Android application retains the established product surface, including:
-
-- full navigation/screens;
-- Room/DataStore persistence;
-- history/saved puzzles;
-- challenges/custom puzzles;
-- learning/statistics/achievements;
-- backup/transfer/import/export;
-- English/Hindi Android resources;
-- mature Android accessibility integration;
-- Android release/signing/artifact verification;
-- Macrobenchmark infrastructure.
-
-`MainActivity` remains the exported launcher. `CrossPlatformActivity` is non-exported and exercises the portable shared host.
+The Android application retains the mature product surface, including navigation, Room/DataStore persistence, history/saved puzzles, challenges/custom puzzles, learning/statistics/achievements, backup/transfer/import/export, Android accessibility, localization, themes/settings, release signing, artifact verification, and Macrobenchmark infrastructure.
 
 ## Current Cross-Platform Parity Boundary
 
@@ -149,20 +116,20 @@ Implemented in shared/common code:
 - Classic Sudoku correctness and unique generation;
 - seven difficulty levels;
 - portable gameplay state/UI;
-- English/Hindi migrated UI resources;
-- cell, Notes, and shared-theme selected semantics;
+- English/Hindi shared resources;
+- cell/Notes/theme selected semantics;
 - non-color conflict communication;
 - active-game local persistence abstractions/adapters;
 - local user-settings format/state/storage adapters;
 - persisted System/Light/Dark shared theme;
 - validated `SNP1` puzzle-code exchange;
-- arrow-key grid navigation, direct digit entry, Notes/Hint keys, and Backspace/Delete erase.
+- imported-session provenance and `SNG2` restore;
+- arrow navigation, digit entry, Notes/Hint keys, and Backspace/Delete erase.
 
 Still intentionally incomplete for shared targets:
 
-- persisted imported/custom-game provenance and UI session model;
-- common history/saved-puzzle persistence parity;
 - clipboard/share/file-picker adapters;
+- common history/saved-puzzle persistence parity;
 - challenges/custom-puzzle presentation parity;
 - learning/statistics presentation/persistence;
 - behavioral parity for every stored settings field;
@@ -170,12 +137,6 @@ Still intentionally incomplete for shared targets:
 - production Apple/Windows/macOS/Linux/Web distribution evidence.
 
 See issue #34 and [CROSS_PLATFORM.md](docs/CROSS_PLATFORM.md).
-
-## Major Android Capabilities
-
-The mature Android product includes Classic Sudoku gameplay, notes/undo/redo/hints/pause/restart, timer/mistakes/progress, autosave/resume, learning/practice, challenges, custom puzzles, local history/saves/statistics/achievements, backup/restore, import/export, accessibility, localization, themes/settings, and release-quality guards.
-
-Structured teaching evidence covers techniques including Naked/Hidden Singles, Naked/Hidden Pairs, Pointing Pair/Triple, Box-Line Reduction, Naked/Hidden Triples, and X-Wing.
 
 ## Build Quick Start
 
@@ -204,13 +165,7 @@ cd SudokuNova
 ./gradlew :app:assembleDebug --stacktrace
 ```
 
-Output:
-
-```text
-app/build/outputs/apk/debug/app-debug.apk
-```
-
-### Android 2.0.14 release verification outputs
+### Android 2.0.15 release verification outputs
 
 ```bash
 ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
@@ -244,8 +199,8 @@ Complete host requirements and platform evidence boundaries are documented in [B
 
 Three PR workflow families protect the current line:
 
-1. **Android CI** — repository guards, shared tests/compile, Android JVM/test-APK/Macrobenchmark compilation, lint, debug/release/R8/AAB builds, and exact 2014/2.0.14 artifact identity evidence.
-2. **Android Instrumentation** — API-35 connected Compose/Room regression suite.
+1. **Android CI** — repository guards, shared tests/compile, Android tests/lint/debug/release/R8/AAB builds, and exact 2015/2.0.15 artifact identity evidence.
+2. **Android Instrumentation** — connected Compose/Room regression suite.
 3. **Cross-Platform CI** — shared tests, Android shared integration, Web production distribution, iOS Simulator framework, and Desktop application images on Linux/Windows/macOS.
 
 A PR is merge-verified only when all required workflow families are green on the **same exact final head SHA**. Any later commit invalidates older runs as final evidence.
@@ -268,35 +223,28 @@ python scripts/verify_release_contract.py
 python scripts/verify_translations.py
 ```
 
-The release-contract guard synchronizes Android source identity, ordinary CI expectations, protected workflow defaults, and Desktop `packageVersion`.
-
-Documentation ownership is fail closed: every tracked path must map to maintained documentation, and every detailed documentation page must remain discoverable from the documentation index.
-
 ## Complete Documentation
 
 Start at **[docs/README.md](docs/README.md)**.
 
 High-value references:
 
-- [2.0.14 Release Line](docs/V2_0_14_RELEASE.md)
+- [2.0.15 Release Line](docs/V2_0_15_RELEASE.md)
+- [Shared Puzzle Exchange](docs/SHARED_PUZZLE_EXCHANGE.md)
 - [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md)
 - [Shared Active-Game Persistence](docs/SHARED_PERSISTENCE.md)
 - [Shared User Settings](docs/SHARED_SETTINGS.md)
+- [Data Formats](docs/DATA_FORMATS.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Building](docs/BUILDING.md)
 - [Testing](docs/TESTING.md)
 - [CI/CD](docs/CI_CD.md)
-- [Sudoku Engine](docs/SUDOKU_ENGINE.md)
-- [Data Formats](docs/DATA_FORMATS.md)
 - [Accessibility](docs/ACCESSIBILITY.md)
 - [Localization](docs/LOCALIZATION.md)
-- [Keyboard Shortcuts](docs/KEYBOARD_SHORTCUTS.md)
 - [Production Signing](docs/PRODUCTION_SIGNING.md)
 - [Production Release Validation](docs/PRODUCTION_RELEASE_VALIDATION.md)
 - [Releasing](docs/RELEASING.md)
 - [What Changed](what_changed.md)
-
-Historical release authorities remain at [V2_0_13_RELEASE.md](docs/V2_0_13_RELEASE.md) and [V2_0_12_RELEASE.md](docs/V2_0_12_RELEASE.md).
 
 ## Release Evidence Boundary
 
@@ -305,10 +253,10 @@ Do not claim any of the following without the corresponding real result:
 - Android production certificate identity and signed-build validation;
 - physical-device Android lifecycle/accessibility/performance quality;
 - Play Store acceptance/publication;
-- complete signed iOS/iPadOS app execution or App Store acceptance;
+- complete signed iOS/iPadOS execution or App Store acceptance;
 - macOS signing/notarization;
 - Windows signing/reputation/clean-machine installation;
-- Linux clean install/upgrade/remove/distribution compatibility;
+- Linux clean install/upgrade/remove compatibility;
 - intended Web browser/device/accessibility/persistence compatibility;
 - final public release/tag publication.
 

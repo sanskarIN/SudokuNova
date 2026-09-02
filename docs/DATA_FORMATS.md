@@ -66,7 +66,7 @@ The current codec requires:
 - matching CRC32 checksum;
 - valid Sudoku board constraints.
 
-The Android import flow performs an additional unique-solution analysis before accepting a decoded puzzle for play.
+The shared import flow performs an additional unique-solution analysis before accepting a decoded puzzle for play.
 
 ### Compatibility rule
 
@@ -194,13 +194,31 @@ Learning counters are bounded to avoid integer overflow.
 
 ## Active Game Format
 
-The active game is encoded/decoded through `GameStateCodec` and stored through `AppPreferencesRepository`.
+The mature Android active game is encoded/decoded through `GameStateCodec` and stored through `AppPreferencesRepository`.
 
-The active-state contract includes enough information to resume the game, including puzzle/solution/current board and gameplay state such as notes, selection, timer, mistakes, hint usage and provenance fields used by challenge/replay flows.
+The shared cross-platform active game is encoded/decoded through `SharedGameSnapshotCodec`.
 
-Malformed saved-game text must fail safely rather than constructing an invalid `GameState`.
+### Shared `SNG1` / `SNG2` snapshots
 
-When changing `GameState`, review whether the codec needs backward-compatible decoding or a versioned field addition.
+Generated shared sessions use `SNG1` and include:
+
+```text
+SNG1|<difficulty>|<seed>|<current-board>|<selected-index>|<notes-mode>|<notes>
+```
+
+Imported shared sessions use `SNG2` and append the canonical validated SNP1 source code:
+
+```text
+SNG2|<difficulty>|<seed>|<current-board>|<selected-index>|<notes-mode>|<notes>|<source-code>
+```
+
+`SNG1` remains readable for backward compatibility. Generated sessions continue to encode as SNG1 so older stored data is not rewritten unnecessarily.
+
+For SNG2, the source code is authoritative for reconstructing the starting puzzle and solution. Restore validates the source code again, checks that the restored board does not change fixed clues, and rejects notes on fixed or filled cells. Invalid snapshots must leave the current game unchanged.
+
+The shared codec bounds encoded size, board length, selection indexes, note indexes/values, source-code length, and field structure. Unsupported versions fail closed.
+
+The shared text-storage boundary remains platform-neutral; Android, Desktop, Web, and Apple hosts can provide native local storage without putting platform APIs in common code.
 
 ## Room Database
 
@@ -251,6 +269,8 @@ Before a production release, Android backup rules and the privacy policy must be
 ## Clipboard and Share Payloads
 
 Puzzle codes and result text can leave the application through explicit user actions such as clipboard/share sheet. These are user-directed exports and are not equivalent to background telemetry.
+
+The shared 2.0.15 UI intentionally exposes selectable puzzle-code text without adding an Android-only clipboard dependency to common code. Native clipboard/share/file-picker adapters remain a follow-up cross-platform boundary.
 
 Do not add hidden identifiers, secrets, or unrelated local data to share payloads.
 

@@ -8,6 +8,8 @@ import kotlin.test.assertNull
 
 class SharedGameSnapshotCodecTest {
     private val board = "0".repeat(81)
+    private val puzzleCode =
+        "SNP1.HARD.530070000600195000098000060800060003400803001700020006060000280000419005000080079.8B59A2D7"
 
     @Test
     fun roundTripIsDeterministicAndSortsNotes() {
@@ -34,6 +36,25 @@ class SharedGameSnapshotCodecTest {
     }
 
     @Test
+    fun roundTripSupportsImportedPuzzleProvenance() {
+        val snapshot = SharedGameSnapshot(
+            difficulty = Difficulty.HARD,
+            seed = 0L,
+            board = board,
+            notes = emptyMap(),
+            selectedIndex = null,
+            notesMode = false,
+            sourceCode = puzzleCode,
+        )
+
+        val encoded = SharedGameSnapshotCodec.encode(snapshot)
+
+        assertEquals("SNG2|HARD|0|${board}|-1|0||$puzzleCode", encoded)
+        assertEquals(snapshot, SharedGameSnapshotCodec.decode(encoded))
+        assertEquals(encoded, SharedGameSnapshotCodec.encode(SharedGameSnapshotCodec.decode(encoded)!!))
+    }
+
+    @Test
     fun roundTripSupportsNoSelectionAndNoNotes() {
         val snapshot = SharedGameSnapshot(
             difficulty = Difficulty.BEGINNER,
@@ -50,10 +71,11 @@ class SharedGameSnapshotCodecTest {
     }
 
     @Test
-    fun decodeRejectsUnsupportedOrMalformedPayloads() {
+    fun decodeSupportsLegacySng1AndRejectsUnsupportedVersions() {
         val valid = "SNG1|MEDIUM|1|${board}|-1|0|"
 
-        assertNull(SharedGameSnapshotCodec.decode(valid.replaceFirst("SNG1", "SNG2")))
+        assertEquals(null, SharedGameSnapshotCodec.decode(valid.replaceFirst("SNG1", "SNG3")))
+        assertEquals(valid, SharedGameSnapshotCodec.encode(SharedGameSnapshotCodec.decode(valid)!!))
         assertNull(SharedGameSnapshotCodec.decode(valid.replace("MEDIUM", "UNKNOWN")))
         assertNull(SharedGameSnapshotCodec.decode(valid.replace("|-1|", "|81|")))
         assertNull(SharedGameSnapshotCodec.decode(valid.replace("|0|", "|2|")))
@@ -62,7 +84,7 @@ class SharedGameSnapshotCodecTest {
     }
 
     @Test
-    fun decodeRejectsMalformedNotes() {
+    fun decodeRejectsMalformedNotesAndSourceCode() {
         val prefix = "SNG1|MEDIUM|1|${board}|-1|0|"
 
         assertNull(SharedGameSnapshotCodec.decode(prefix + "81:1"))
@@ -71,6 +93,7 @@ class SharedGameSnapshotCodecTest {
         assertNull(SharedGameSnapshotCodec.decode(prefix + "3:11"))
         assertNull(SharedGameSnapshotCodec.decode(prefix + "3:1,3:2"))
         assertNull(SharedGameSnapshotCodec.decode(prefix + "3:1,broken"))
+        assertNull(SharedGameSnapshotCodec.decode("SNG2|MEDIUM|0|${board}|-1|0||"))
     }
 
     @Test
@@ -95,6 +118,12 @@ class SharedGameSnapshotCodecTest {
         }
         assertFailsWith<IllegalArgumentException> {
             SharedGameSnapshotCodec.encode(valid.copy(notes = mapOf(0 to setOf(10))))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            SharedGameSnapshotCodec.encode(valid.copy(sourceCode = ""))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            SharedGameSnapshotCodec.encode(valid.copy(sourceCode = "bad|code"))
         }
     }
 

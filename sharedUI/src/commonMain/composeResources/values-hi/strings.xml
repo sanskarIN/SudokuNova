@@ -18,6 +18,13 @@
     <string name="theme_light">हल्की</string>
     <string name="theme_dark">गहरी</string>
 
+    <string name="puzzle_exchange_title">पहेली विनिमय</string>
+    <string name="puzzle_code_label">SNP1 पहेली कोड</string>
+    <string name="puzzle_code_hint">मान्य SNP1 कोड चिपकाएँ</string>
+    <string name="puzzle_import">पहेली आयात करें</string>
+    <string name="puzzle_export">वर्तमान पहेली कोड</string>
+    <string name="puzzle_imported">आयात की गई पहेलियाँ सक्रिय सत्र को पुनर्स्थापित करने के लिए अपना मूल कोड रखती हैं।</string>
+
     <string name="action_notes">नोट्स</string>
     <string name="action_erase">मिटाएँ</string>
     <string name="action_undo">पूर्ववत करें</string>
@@ -39,6 +46,8 @@
     <string name="status_fixed_cell_selected">सुराग वाला सेल चुना गया है। संपादित करने के लिए कोई खाली सेल चुनें।</string>
     <string name="status_cell_selected">पंक्ति %1$d, स्तंभ %2$d चुना गया है।</string>
     <string name="status_new_puzzle">नया %1$s सुडोकू तैयार है।</string>
+    <string name="status_imported_puzzle">आयात की गई %1$s पहेली तैयार है।</string>
+    <string name="status_invalid_puzzle_code">यह पहेली कोड अमान्य है या इसका एकमात्र समाधान नहीं है।</string>
     <string name="status_notes_enabled">नोट्स मोड चालू है।</string>
     <string name="status_notes_disabled">नोट्स मोड बंद है।</string>
     <string name="status_select_editable_cell">पहले कोई संपादन योग्य सेल चुनें।</string>
