@@ -10,6 +10,7 @@ import com.sanskar.sudokunova.shared.PuzzleExchangeLimits
 import com.sanskar.sudokunova.shared.PuzzleExchangePlatform
 import com.sanskar.sudokunova.shared.PuzzleExchangeResult
 import com.sanskar.sudokunova.shared.PuzzleExchangeTextResult
+import java.io.ByteArrayOutputStream
 
 /** Android clipboard/share/document-provider adapter for validated puzzle codes. */
 class AndroidPuzzleExchangePlatform(
@@ -113,15 +114,33 @@ class AndroidPuzzleExchangePlatform(
     }
 
     private fun completeImport(uri: Uri): PuzzleExchangeResult = runCatching {
-        val text = activity.contentResolver.openInputStream(uri)?.use { stream ->
-            stream.readBytes().toString(Charsets.UTF_8)
-        } ?: return PuzzleExchangeResult.Failed("Unable to read the selected file.")
+        val text = readBoundedText(uri)
+            ?: return PuzzleExchangeResult.Failed("Unable to read the selected file.")
         pendingImport?.invoke(text)
         pendingImport = null
         PuzzleExchangeResult.Success
     }.getOrElse {
         pendingImport = null
         PuzzleExchangeResult.Failed("Unable to read the selected file.")
+    }
+
+    private fun readBoundedText(uri: Uri): String? {
+        val input = activity.contentResolver.openInputStream(uri) ?: return null
+        return input.use { stream ->
+            val output = ByteArrayOutputStream(PuzzleExchangeLimits.MAX_FILE_TEXT_LENGTH)
+            val buffer = ByteArray(128)
+            var total = 0
+            while (true) {
+                val count = stream.read(buffer)
+                if (count < 0) break
+                total += count
+                if (total > PuzzleExchangeLimits.MAX_FILE_TEXT_LENGTH) {
+                    throw IllegalArgumentException("Puzzle file is too large.")
+                }
+                output.write(buffer, 0, count)
+            }
+            output.toByteArray().toString(Charsets.UTF_8)
+        }
     }
 
     private fun completeExport(uri: Uri): PuzzleExchangeResult = runCatching {
