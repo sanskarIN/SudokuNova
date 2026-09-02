@@ -53,7 +53,9 @@ Android `CrossPlatformActivity`, Desktop `Main.kt`, and the iOS `MainViewControl
 
 ## Asynchronous Host Contract
 
-Web/Wasm and Apple document/share operations should not be made to look synchronous merely to fit the current interface. The next exchange API revision should introduce suspend/callback-based operations, explicit pending states, and completion/error callbacks. The existing synchronous contract remains intentionally conservative until that migration is implemented and tested.
+The additive `PuzzleExchangeAsyncPlatform` contract now provides callback-based operations for platform APIs that complete asynchronously. Its `safe*` helpers apply the same code/file bounds at the common boundary and validate completed text again before forwarding it to the caller.
+
+Web/Wasm and Apple document/share operations must use this asynchronous boundary rather than pretending a Promise/event-based operation completed synchronously. The existing `PuzzleExchangePlatform` remains available for genuinely synchronous transports, preserving compatibility while the asynchronous implementations are introduced incrementally.
 
 ## Testing Expectations
 
@@ -67,8 +69,9 @@ Changes to this contract should retain coverage for:
 - fixed-clue and note integrity during restore;
 - invalid import fail-closed behavior;
 - platform payload bounds before adapter invocation;
+- asynchronous completion payload bounds;
 - English/Hindi translation parity;
 - Android, Desktop, Web/Wasm, and Apple compilation paths where the shared UI is used;
 - Android shared-host document lifecycle wiring;
 - iOS native clipboard behavior;
-- Web/Wasm asynchronous exchange contract before enabling browser transport success reporting.
+- Web/Wasm asynchronous exchange transport before enabling browser success reporting.
