@@ -2,6 +2,55 @@
 
 All notable SudokuNova changes are documented here. The project follows Semantic Versioning where practical and separates **source/repository milestones** from **actual public release evidence**.
 
+## [Unreleased] — v0.1.2 Preparation
+
+SudokuNova v0.1.2 is being prepared on `release/v0.1.2-prep` as a deliberately separate semantic-version line from the repository's later 2.x development history. Source metadata is `versionCode 2016` / `versionName 0.1.2` on this branch. Creating the preparation branch or changing source metadata does not prove public publication, production signing, device QA, store approval, tagging, or distribution.
+
+### Changed
+
+- Android release identity is aligned to:
+  - `versionCode 2016`;
+  - `versionName 0.1.2`.
+- Compose Desktop native package version is aligned to `0.1.2`.
+- Ordinary Android CI release verification is aligned to `2016 / 0.1.2`.
+- Protected Production Release Validation defaults are aligned to `2016 / 0.1.2`.
+- `docs/V0_1_2_RELEASE.md` defines the v0.1.2 preparation contract and evidence boundary.
+- `docs/README.md` indexes the v0.1.2 release line and current shared puzzle-exchange documentation.
+
+### Preserved
+
+- Classic 9×9 Sudoku correctness and unique generated-puzzle requirements.
+- Existing notes, undo/redo, hints, pause/restart, timer, and mistake handling.
+- Mature Android Room/DataStore persistence.
+- `SNP1` puzzle-code validation and exchange compatibility.
+- `SNG1` active-game persistence compatibility.
+- Shared `SNS1` settings validation and local persistence foundation.
+- English/Hindi shared-resource parity guards.
+- Offline-first/privacy-oriented behavior.
+- Cross-platform engine/shared-UI foundation without overstating production readiness.
+- Fail-closed signing, secret handling, and release-artifact identity verification.
+- Exact-head workflow evidence rules.
+
+### Verification Status
+
+The first v0.1.2 Android CI run on commit `de1bd364ba692734e90466f2e9213d4eb346d251` failed at repository consistency verification. The failure was actionable rather than a product-test failure: the existing documentation index did not link `docs/SHARED_PUZZLE_EXCHANGE.md` and `docs/V2_0_15_RELEASE.md`, and later v0.1.2 work corrected the documentation index. The run also confirmed that security, release-verifier regression, repository-guard regression, translation-parity, and fail-closed partial-signing checks reached their expected successful states before the documentation gate stopped the job.
+
+The failed run must not be treated as release evidence. Fresh workflow runs are required on the final v0.1.2 head after all source, CI, and documentation changes are complete.
+
+### Still Pending / Not Claimed
+
+- Fresh exact-head Android CI, Android Instrumentation, and Cross-Platform CI evidence.
+- Release APK/AAB build and identity verification on the final head.
+- Protected production signing and certificate-bound validation.
+- Physical-device Android QA.
+- Google Play approval/publication.
+- Apple signing/provisioning/TestFlight/App Store evidence.
+- Windows/macOS/Linux production signing, installation, notarization, and distribution evidence.
+- Broad browser runtime/accessibility evidence.
+- Immutable `v0.1.2` tag and public GitHub Release.
+
+---
+
 ## [Unreleased] — 2.0.14 Preparation
 
 SudokuNova 2.0.14 is being prepared on PR #44 from the exact-head verified and merged 2.0.13 `main` checkpoint. Source metadata is now `versionCode 2014` / `versionName 2.0.14`, but public release, signing, device QA, store approval, tagging, and distribution are not inferred from source changes.
