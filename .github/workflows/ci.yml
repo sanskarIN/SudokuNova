@@ -143,8 +143,8 @@ jobs:
             --aab app/build/outputs/bundle/release/app-release.aab \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code 2014 \
-            --expected-version-name 2.0.14 \
+            --expected-version-code 2016 \
+            --expected-version-name 0.1.2 \
             --expected-application-id in.sanskar.sudokunova \
             --require-apk-manifest \
             --expected-min-sdk 26 \
