@@ -63,6 +63,9 @@ jobs:
           python -m unittest scripts.tests.test_verify_release_contract
           python -m unittest scripts.tests.test_verify_translations
 
+      - name: Verify cross-platform release asset packaging guard
+        run: python -m unittest scripts.tests.test_release_artifacts
+
       - name: Verify partial release signing fails closed
         shell: bash
         run: |
