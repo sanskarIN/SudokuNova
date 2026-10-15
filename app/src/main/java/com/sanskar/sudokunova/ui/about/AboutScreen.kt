@@ -64,6 +64,10 @@ fun AboutScreen(onBack: () -> Unit) {
                             onClick = { uriHandler.openUri("https://github.com/sanskarIN/SudokuNova") },
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                         ) { Text(stringResource(R.string.v04_open_github)) }
+                        OutlinedButton(
+                            onClick = { uriHandler.openUri("https://sanskarin.github.io") },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        ) { Text(stringResource(R.string.v04_open_website)) }
                     }
                 }
             }
