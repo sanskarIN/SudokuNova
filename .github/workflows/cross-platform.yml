@@ -188,6 +188,12 @@ jobs:
           set -euo pipefail
           version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
           python -m scripts.release_artifacts stage --kind "${{ matrix.artifact }}" --tag "v$version"
+      - name: Verify Windows MSI identity and upgrade metadata
+        if: matrix.artifact == 'windows'
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path app/build.gradle.kts -Pattern 'versionName\\s*=\\s*"([^"]+)"').Matches.Groups[1].Value
+          ./scripts/verify_windows_msi.ps1 -Path "release-assets/SudokuNova-v$version-windows.msi" -ExpectedVersion $version
       - name: Upload validated installer candidate
         uses: actions/upload-artifact@v7
         with:
