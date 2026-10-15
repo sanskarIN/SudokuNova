@@ -13,6 +13,9 @@ on:
       - '*.gradle.kts'
       - '.github/workflows/cross-platform.yml'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/publish-release-assets.yml'
+      - 'scripts/release_artifacts.py'
+      - 'scripts/tests/test_release_artifacts.py'
   pull_request:
     branches:
       - main
