@@ -171,6 +171,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Build desktop application image
         run: ./gradlew :sharedUI:createDistributable --stacktrace
+      - name: Print jpackage diagnostic logs on failure
+        if: failure()
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for file in sharedUI/build/compose/logs/*/*-err.txt sharedUI/build/compose/logs/*/*-out.txt; do
+            echo "======= $file ======="
+            cat "$file"
+          done
       - name: Build platform-native release installer
         run: ./gradlew :sharedUI:${{ matrix.package_task }} --stacktrace
       - name: Verify installer package for current source version
