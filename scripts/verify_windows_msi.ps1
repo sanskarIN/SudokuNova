@@ -18,7 +18,8 @@ $database = $installer.OpenDatabase($resolved, 0)
 
 function Read-MsiProperty([string]$name) {
     # Property names are trusted literals, not user-controlled SQL identifiers.
-    $view = $database.OpenView("SELECT `Value` FROM `Property` WHERE `Property`='$name'")
+    $query = 'SELECT `Value` FROM `Property` WHERE `Property`=''{0}''' -f $name
+    $view = $database.OpenView($query)
     try {
         $view.Execute()
         $record = $view.Fetch()
