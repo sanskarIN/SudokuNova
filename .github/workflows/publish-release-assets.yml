@@ -1,0 +1,301 @@
+name: Publish Cross-Platform Release Assets
+
+# Publishing a GitHub Release starts builds; installers appear only after the
+# platform matrix succeeds and the publisher verifies every required output.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing published release tag (for controlled retry)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-assets-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+jobs:
+  preflight:
+    name: Verify release identity and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout immutable release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - name: Install JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Initialize Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Check release tag and production source contract
+        run: |
+          python -m scripts.release_artifacts check-tag --tag "$RELEASE_TAG"
+          python scripts/verify_release_contract.py
+          python scripts/verify_no_secrets.py
+          python scripts/verify_translations.py
+
+      - name: Run release packaging regression tests
+        run: python -m unittest scripts.tests.test_release_artifacts scripts.tests.test_verify_release_contract
+
+      - name: Test engine, shared UI and Android unit code
+        run: ./gradlew :sudoku-engine:desktopTest :sharedUI:desktopTest :app:testDebugUnitTest --stacktrace
+
+  android:
+    name: Build Android preview and optional signed packages
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      SUDOKUNOVA_KEYSTORE_BASE64: ${{ secrets.SUDOKUNOVA_KEYSTORE_BASE64 }}
+      SUDOKUNOVA_KEYSTORE_PASSWORD: ${{ secrets.SUDOKUNOVA_KEYSTORE_PASSWORD }}
+      SUDOKUNOVA_KEY_ALIAS: ${{ secrets.SUDOKUNOVA_KEY_ALIAS }}
+      SUDOKUNOVA_KEY_PASSWORD: ${{ secrets.SUDOKUNOVA_KEY_PASSWORD }}
+      SUDOKUNOVA_APK_CERT_SHA256: ${{ secrets.SUDOKUNOVA_APK_CERT_SHA256 }}
+      SUDOKUNOVA_AAB_CERT_SHA256: ${{ secrets.SUDOKUNOVA_AAB_CERT_SHA256 }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - name: Install JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Initialize Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Assemble debug-signed testing APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+      - name: Stage Android testing APK (not production signed)
+        run: python -m scripts.release_artifacts stage --kind android-debug --tag "$RELEASE_TAG"
+
+      - name: Build signed APK/AAB if all protected signing inputs exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          signing_vars=(
+            SUDOKUNOVA_KEYSTORE_BASE64 SUDOKUNOVA_KEYSTORE_PASSWORD
+            SUDOKUNOVA_KEY_ALIAS SUDOKUNOVA_KEY_PASSWORD
+            SUDOKUNOVA_APK_CERT_SHA256 SUDOKUNOVA_AAB_CERT_SHA256
+          )
+          populated=0
+          for name in "${signing_vars[@]}"; do
+            if [[ -n "${!name:-}" ]]; then populated=$((populated+1)); fi
+          done
+          if (( populated == 0 )); then
+            echo "Production signing not configured: publishing DEBUG testing APK only."
+            exit 0
+          fi
+          if (( populated != ${#signing_vars[@]} )); then
+            echo "Partial production signing configuration: refusing to publish." >&2
+            exit 1
+          fi
+
+          umask 077
+          keystore="$(mktemp "$RUNNER_TEMP/sudokunova-signing-XXXXXXXX")"
+          trap 'rm -f -- "$keystore"' EXIT
+          printf '%s' "$SUDOKUNOVA_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          test -s "$keystore"
+          export SUDOKUNOVA_KEYSTORE_PATH="$keystore"
+          ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
+
+          apksigner="$(command -v apksigner || true)"
+          if [[ -z "$apksigner" ]]; then
+            apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          fi
+          apkanalyzer="$(command -v apkanalyzer || true)"
+          if [[ -z "$apkanalyzer" ]]; then
+            apkanalyzer="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name apkanalyzer | sort -V | tail -n 1)"
+          fi
+          test -n "$apksigner"
+          test -n "$apkanalyzer"
+          export PATH="$(dirname "$apksigner"):$(dirname "$apkanalyzer"):$PATH"
+
+          python scripts/verify_release_outputs.py \
+            --apk app/build/outputs/apk/release/app-release.apk \
+            --aab app/build/outputs/bundle/release/app-release.aab \
+            --mapping app/build/outputs/mapping/release/mapping.txt \
+            --metadata app/build/outputs/apk/release/output-metadata.json \
+            --expected-version-code 2020 \
+            --expected-version-name 0.2.0 \
+            --expected-application-id in.sanskar.sudokunova \
+            --require-apk-manifest \
+            --expected-min-sdk 26 \
+            --expected-target-sdk 37 \
+            --require-signatures \
+            --expected-apk-cert-sha256="$SUDOKUNOVA_APK_CERT_SHA256" \
+            --expected-aab-cert-sha256="$SUDOKUNOVA_AAB_CERT_SHA256" \
+            --output "$RUNNER_TEMP/sudokunova-signed-checksums.txt"
+
+          python -m scripts.release_artifacts stage --kind android-signed --tag "$RELEASE_TAG"
+          python -m scripts.release_artifacts stage --kind android-aab --tag "$RELEASE_TAG"
+
+      - name: Upload Android outputs to publisher
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-android
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  desktop:
+    name: Build ${{ matrix.platform }} installer
+    needs: preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            runner: ubuntu-latest
+            task: packageDeb
+          - platform: windows
+            runner: windows-latest
+            task: packageMsi
+          - platform: macos
+            runner: macos-latest
+            task: packageDmg
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 65
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - name: Install JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Initialize Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build platform-native installer
+        run: ./gradlew :sharedUI:${{ matrix.task }} --stacktrace
+      - name: Stage installer and verify package header
+        run: python -m scripts.release_artifacts stage --kind ${{ matrix.platform }} --tag "${{ env.RELEASE_TAG }}"
+      - name: Upload installer to publisher
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ matrix.platform }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  web:
+    name: Build browser/Wasm distribution
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - name: Install JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Initialize Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build optimized browser distribution
+        run: ./gradlew :sharedUI:wasmJsBrowserDistribution --stacktrace
+      - name: Stage Web ZIP
+        run: python -m scripts.release_artifacts stage --kind web --tag "$RELEASE_TAG"
+      - name: Upload Web ZIP to publisher
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-web
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  ios:
+    name: Build iOS simulator developer framework
+    needs: preflight
+    runs-on: macos-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - name: Install JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Initialize Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Link iOS simulator framework
+        run: ./gradlew :sharedUI:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+      - name: Stage clearly labeled simulator framework (not an IPA)
+        run: python -m scripts.release_artifacts stage --kind ios-simulator --tag "$RELEASE_TAG"
+      - name: Upload framework to publisher
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-ios
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  attach:
+    name: Verify checksums and attach assets to published GitHub Release
+    needs: [android, desktop, web, ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - name: Confirm target release is published
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python -m scripts.release_artifacts check-tag --tag "$RELEASE_TAG"
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = "false"
+
+      - name: Download all validated platform output artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: release-assets
+
+      - name: Verify complete asset matrix and generate SHA-256 checksums
+        run: python -m scripts.release_artifacts checksums --tag "$RELEASE_TAG"
+
+      - name: Attach executables and checksums to GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name'
