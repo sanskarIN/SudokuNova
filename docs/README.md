@@ -2,7 +2,7 @@
 
 This directory is the maintained documentation hub for SudokuNova. Documentation follows an evidence-first rule: source-backed behavior may be described as implemented; future work must be labeled planned; automated, manual, signing, store, and device-verification claims are recorded only after the corresponding check actually happened.
 
-SudokuNova 2.0.14 keeps Android as the mature primary production surface while continuing the Kotlin/Compose Multiplatform layer. Start with [Cross-Platform Development and Builds](CROSS_PLATFORM.md) when working on Android shared UI, iOS/iPadOS, Windows, macOS, Linux, or Web.
+SudokuNova v0.2.0 is being prepared as the next public release. Android remains the mature primary production surface while the Kotlin/Compose Multiplatform layer continues. Start with [Cross-Platform Development and Builds](CROSS_PLATFORM.md) when working on Android shared UI, iOS/iPadOS, Windows, macOS, Linux, or Web.
 
 ## Choose Your Path
 
@@ -76,11 +76,11 @@ The portable code lives primarily in `sudoku-engine/`, `sharedUI/`, and `iosApp/
 9. [`../SECURITY.md`](../SECURITY.md)
 10. [Testing](TESTING.md)
 
-### I am preparing 2.0.14 or a later release
+### I am preparing v0.2.0 or a later release
 
 Read in this order:
 
-1. [2.0.14 Release Line](V2_0_14_RELEASE.md)
+1. [v0.2.0 Release Packaging and Publication](V0_2_0_RELEASE.md)
 2. [Cross-Platform Development and Builds](CROSS_PLATFORM.md)
 3. [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
 4. [Building](BUILDING.md)
@@ -146,6 +146,9 @@ Authoritative platform matrix, KMP/Compose boundaries, Android shared host, Desk
 
 ### [Shared Cross-Platform Active-Game Persistence](SHARED_PERSISTENCE.md)
 Versioned `SNG1` active-game snapshot encoding, fail-closed restore rules, common store interfaces, native Android/Desktop/Web/Apple adapters, Compose autosave behavior, compatibility policy, and runtime evidence boundaries.
+
+### [Shared Puzzle Exchange](SHARED_PUZZLE_EXCHANGE.md)
+Shared SNP1 puzzle import/export, provenance and persistence boundaries.
 
 ### [Shared Cross-Platform User Settings](SHARED_SETTINGS.md)
 Versioned `SNS1` settings encoding, portable settings state/store boundaries, native local adapters, localized theme behavior, compatibility rules, privacy limits, tests, and runtime evidence boundaries.
@@ -302,6 +305,12 @@ Historical canonical v1 stable-release notes source.
 Historical v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, and manual evidence boundaries.
 
 ## Current Release and Planning
+
+### [v0.2.0 Release Packaging and Publication](V0_2_0_RELEASE.md)
+Current public-release candidate identity, hosted platform installer matrix, signing boundaries, checksums, and post-publication GitHub asset workflow.
+
+### [2.0.15 Development Line](V2_0_15_RELEASE.md)
+Historical/parallel 2.0.15 source preparation; Android version-code conflicts must be reconciled before merge.
 
 ### [2.0.14 Release Line](V2_0_14_RELEASE.md)
 Current source/version/release authority for `versionCode 2014` / `versionName 2.0.14`, portable settings persistence, keyboard parity, and its evidence boundary.
