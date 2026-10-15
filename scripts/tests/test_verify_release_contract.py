@@ -86,6 +86,21 @@ class ReleaseContractVerifierTest(unittest.TestCase):
             parse_desktop_package_version('packageVersion = "2.0.13"'),
         )
 
+    def test_accepts_mac_specific_native_package_version_override(self) -> None:
+        self.assertEqual(
+            "0.2.0",
+            parse_desktop_package_version(
+                """
+                nativeDistributions {
+                    packageVersion = "0.2.0"
+                    macOS {
+                        packageVersion = "1.2.0"
+                    }
+                }
+                """
+            ),
+        )
+
     def test_rejects_duplicate_desktop_package_version(self) -> None:
         with self.assertRaisesRegex(ValueError, "exactly one Desktop packageVersion"):
             parse_desktop_package_version(
