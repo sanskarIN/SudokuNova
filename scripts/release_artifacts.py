@@ -21,16 +21,15 @@ from scripts.verify_release_contract import (
 )
 
 TAG_RE = re.compile(r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
-NAME_RE = re.compile(r"^SudokuNova-v[0-9]+\.[0-9]+\.[0-9]+-(?:android-DEBUG\.apk|android-signed\.apk|android-signed\.aab|windows\.msi|macos\.dmg|linux\.deb|web\.zip|ios-simulator-framework\.zip)$")
 
 # One and only one output per requested build kind.
 FILE_INPUTS = {
-    "android-debug": ("app/build/outputs/apk/debug", "*.apk", ".apk", "android-DEBUG.apk"),
-    "android-signed": ("app/build/outputs/apk/release", "*.apk", ".apk", "android-signed.apk"),
-    "android-aab": ("app/build/outputs/bundle/release", "*.aab", ".aab", "android-signed.aab"),
-    "windows": ("sharedUI/build/compose/binaries/main/msi", "*.msi", ".msi", "windows.msi"),
-    "macos": ("sharedUI/build/compose/binaries/main/dmg", "*.dmg", ".dmg", "macos.dmg"),
-    "linux": ("sharedUI/build/compose/binaries/main/deb", "*.deb", ".deb", "linux.deb"),
+    "android-debug": ("app/build/outputs/apk/debug", "*.apk", "android-DEBUG.apk"),
+    "android-signed": ("app/build/outputs/apk/release", "*.apk", "android-signed.apk"),
+    "android-aab": ("app/build/outputs/bundle/release", "*.aab", "android-signed.aab"),
+    "windows": ("sharedUI/build/compose/binaries/main/msi", "*.msi", "windows.msi"),
+    "macos": ("sharedUI/build/compose/binaries/main/dmg", "*.dmg", "macos.dmg"),
+    "linux": ("sharedUI/build/compose/binaries/main/deb", "*.deb", "linux.deb"),
 }
 ARCHIVE_INPUTS = {
     "web": ("sharedUI/build/dist/wasmJs/productionExecutable", "web.zip"),
@@ -100,7 +99,7 @@ def stage_asset(kind: str, tag: str, root: Path, output: Path) -> Path:
         raise ValueError(f"Unsupported platform asset kind: {kind}")
     output.mkdir(parents=True, exist_ok=True)
     if kind in FILE_INPUTS:
-        folder, pattern, _extension, suffix = FILE_INPUTS[kind]
+        folder, pattern, suffix = FILE_INPUTS[kind]
         source = _exactly_one_file(root / folder, pattern, kind)
         destination = output / f"SudokuNova-{tag}-{suffix}"
         shutil.copy2(source, destination)
@@ -153,7 +152,8 @@ def create_checksum_manifest(tag: str, assets_dir: Path) -> Path:
     lines = [f"# SudokuNova {tag} SHA-256 checksums"]
     for asset in assets:
         validate_binary(asset)
-        digest = hashlib.file_digest(asset.open("rb"), "sha256").hexdigest()
+        with asset.open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha256").hexdigest()
         lines.append(f"{digest}  {asset.name}")
     manifest = assets_dir / "SHA256SUMS.txt"
     manifest.write_text("\n".join(lines) + "\n", encoding="utf-8")
