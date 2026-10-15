@@ -3,6 +3,13 @@ name: Publish Cross-Platform Release Assets
 # Publishing a GitHub Release starts builds; installers appear only after the
 # platform matrix succeeds and the publisher verifies every required output.
 on:
+  # The first merge to main bootstraps v0.2.0 without manual GitHub UI actions.
+  # Creating a release with GITHUB_TOKEN does not retrigger release workflows,
+  # so this push-triggered workflow also builds and uploads the same assets.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-release-assets.yml'
   release:
     types: [published]
   workflow_dispatch:
@@ -20,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || 'v0.2.0' }}
 
 jobs:
   preflight:
@@ -31,7 +38,7 @@ jobs:
       - name: Checkout immutable release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
 
       - name: Install JDK 17
@@ -72,7 +79,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
         uses: actions/setup-java@v5
@@ -179,7 +186,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
         uses: actions/setup-java@v5
@@ -209,7 +216,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
         uses: actions/setup-java@v5
@@ -239,7 +246,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
         uses: actions/setup-java@v5
@@ -272,16 +279,13 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
-      - name: Confirm target release is published
+      - name: Confirm repository version and tag
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python -m scripts.release_artifacts check-tag --tag "$RELEASE_TAG"
-          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = "false"
 
       - name: Download all validated platform output artifacts
         uses: actions/download-artifact@v8
@@ -293,11 +297,50 @@ jobs:
       - name: Verify complete asset matrix and generate SHA-256 checksums
         run: python -m scripts.release_artifacts checksums --tag "$RELEASE_TAG"
 
-      - name: Attach executables and checksums to GitHub release
+      - name: Create draft release if necessary, then attach verified platform assets
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            if gh release view "$RELEASE_TAG" --json tagName > /dev/null 2>&1; then
+              echo "Refusing to overwrite an already published release in automatic push mode." >&2
+              exit 1
+            fi
+            cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
+          # SudokuNova v0.2.0
+
+          A cross-platform release candidate of SudokuNova's offline-first Sudoku game.
+
+          ### Included downloads
+          - Windows MSI, macOS DMG, Linux DEB desktop installers.
+          - WebAssembly browser distribution ZIP for static hosting.
+          - Android **DEBUG/testing-only** APK with a separate `.debug` application ID.
+          - iOS simulator **developer framework only**, not an installable iPhone/iPad IPA.
+          - SHA256SUMS.txt for checksum verification.
+          - Signed Android APK/AAB only when trustworthy signing credentials and independent certificate validation are configured.
+
+          ### Platform notices
+          macOS and Windows packages are not automatically notarized/code-signed;
+          OS security prompts may apply. Installer availability does not imply
+          real-device qualification. The macOS package metadata uses 1.2.0
+          because Apple's jpackage refuses 0.x package metadata, while the
+          public application release is v0.2.0.
+
+          See docs/V0_2_0_RELEASE.md for current distribution limitations and
+          release verification details.
+          NOTES
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft \
+              --title "SudokuNova $RELEASE_TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
+          else
+            gh release view "$RELEASE_TAG" --json tagName > /dev/null
+          fi
+
           gh release upload "$RELEASE_TAG" release-assets/* --clobber
-          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name'
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            gh release edit "$RELEASE_TAG" --draft=false --latest
+          fi
+
+          gh release view "$RELEASE_TAG" --json name,isDraft,assets \
+            --jq '{name: .name, draft: .isDraft, assets: [.assets[].name]}'
