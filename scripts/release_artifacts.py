@@ -127,7 +127,7 @@ def validate_binary(path: Path) -> None:
     elif suffix in {".deb", ".msi"}:
         with path.open("rb") as stream:
             signature = stream.read(8)
-        expected = b"!<arch>\\n" if suffix == ".deb" else bytes.fromhex("d0cf11e0a1b11ae1")
+        expected = b"!<arch>\n" if suffix == ".deb" else bytes.fromhex("d0cf11e0a1b11ae1")
         if signature != expected:
             raise ValueError(f"Invalid installer package header: {path.name}")
     elif suffix != ".dmg":
