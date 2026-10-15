@@ -20,7 +20,9 @@ TARGET_SDK_RE = re.compile(r"^\s*targetSdk\s*=\s*(\d+)\s*$", re.MULTILINE)
 VERSION_CODE_RE = re.compile(r'^\s*versionCode\s*=\s*(\d+)\s*$', re.MULTILINE)
 VERSION_NAME_RE = re.compile(r'^\s*versionName\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
 DESKTOP_PACKAGE_VERSION_RE = re.compile(
-    r'^([ \\t]*)packageVersion[ \\t]*=[ \\t]*"([^"]+)"[ \\t]*
+    r'^([ \t]*)packageVersion[ \t]*=[ \t]*"([^"]+)"[ \t]*$',
+    re.MULTILINE,
+)
 RELEASE_SAFE_VERSION_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._+-]*$")
 
 
