@@ -313,6 +313,10 @@ Historical v1.0 RC handoff, candidate metadata, artifact/signing pipeline, autom
 
 ## Current Release and Planning
 
+### [v0.2.1 Windows/Desktop Release](V0_2_1_RELEASE.md)
+Windows native menus and keyboard controls, developer website, MSI upgrade metadata, verification and patch release distribution requirements.
+
+
 ### [v0.2.0 Cross-Platform Release Packaging](V0_2_0_RELEASE.md)
 Current public release packaging workflow, native installers, signing limitations, SHA-256 checksums and GitHub publication process.
 
