@@ -124,11 +124,13 @@ def validate_binary(path: Path) -> None:
                     raise ValueError("Web asset has no root index.html")
         except BadZipFile as error:
             raise ValueError(f"Invalid ZIP-based asset: {path.name}") from error
-    elif suffix == ".deb" and path.open("rb").read(8) != b"!<arch>\n":
-        raise ValueError(f"Invalid Debian package header: {path.name}")
-    elif suffix == ".msi" and path.open("rb").read(8) != b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
-        raise ValueError(f"Invalid Windows installer header: {path.name}")
-    elif suffix not in {".deb", ".msi", ".dmg"}:
+    elif suffix in {".deb", ".msi"}:
+        with path.open("rb") as stream:
+            signature = stream.read(8)
+        expected = b"!<arch>\\n" if suffix == ".deb" else bytes.fromhex("d0cf11e0a1b11ae1")
+        if signature != expected:
+            raise ValueError(f"Invalid installer package header: {path.name}")
+    elif suffix != ".dmg":
         raise ValueError(f"Unexpected release extension: {suffix}")
 
 
