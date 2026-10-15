@@ -13,44 +13,26 @@ SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Ko
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84.svg)](https://developer.android.com/)
 
-## Current Development Status
+## Current Development Status — v0.2.0 Release Candidate
 
-The repository is preparing **SudokuNova 2.0.14** on draft PR #44 from the exact-head verified and merged 2.0.13 checkpoint.
+The repository is preparing public **v0.2.0**. The last published public release was **v0.1.1**; this preparation does not mean the v0.2.0 binaries have been built or published. The work preserves the existing Kotlin Multiplatform engine, Android app, shared UI, localization, local persistence and staged cross-platform hosts.
 
-Current source contract:
+Current candidate version contract:
 
 ```text
 applicationId          = in.sanskar.sudokunova
-versionCode            = 2014
-versionName            = 2.0.14
-Desktop packageVersion = 2.0.14
+versionCode            = 2020
+versionName            = 0.2.0
+Desktop packageVersion = 0.2.0
 minSdk                 = 26
 targetSdk              = 37
 compileSdk             = 37
 JDK/JVM                = 17
 ```
 
-The 2.0.14 line builds on verified repository milestones including:
+A new GitHub Actions workflow builds Windows MSI, macOS DMG, Linux DEB, Web ZIP, an Android debug testing APK, and an iOS simulator developer-framework ZIP **after a GitHub Release is published**. If trusted production signing secrets and certificate fingerprints are configured, the workflow also builds and verifies a signed Android APK and AAB. Downloads are attached only if all required build jobs succeed, and a SHA-256 manifest is included. The iOS framework is not a runnable IPA; Windows/macOS packages are not automatically code-signed/notarized.
 
-- the 2.0.12 Android release-engineering baseline;
-- the cross-platform KMP/Compose foundation (PR #33);
-- cross-platform active-game persistence (PR #39);
-- Room 2.8.4 maintenance (PR #40);
-- the 2.0.13 puzzle-exchange, navigation, accessibility/input, and release-contract hardening line (PR #41).
-
-2.0.14 adds repository-verifiable parity work around local user settings and keyboard interaction:
-
-- portable `SharedUserSettings`, `SharedTheme`, and `SharedInputMode` models;
-- deterministic bounded `SNS1` settings persistence;
-- common settings store/state boundaries;
-- Android `SharedPreferences`, Desktop `Preferences`, Web `localStorage`, and Apple `NSUserDefaults` adapters;
-- restore/autosave wiring in each staged shared host;
-- localized English/Hindi System/Light/Dark shared theme controls;
-- direct shared `1`–`9`, `N` Notes, and `H` Hint keyboard handling in addition to arrows and Backspace/Delete.
-
-**2.0.14 is not claimed as publicly released merely because source metadata, build paths, or CI exist.** Production signing, representative real-device QA, accessibility/performance evidence, platform signing/notarization, store validation, final SHIP/tagging, and publication require separate real evidence.
-
-See [2.0.14 Release Line](docs/V2_0_14_RELEASE.md), [Shared Cross-Platform User Settings](docs/SHARED_SETTINGS.md), [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md).
+See [v0.2.0 Release Packaging Guide](docs/V0_2_0_RELEASE.md), [Cross-Platform Development and Builds](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md). Future Android version codes must remain above 2020.
 
 ## Platform Architecture
 
