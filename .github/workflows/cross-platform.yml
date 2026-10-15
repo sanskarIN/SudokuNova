@@ -81,6 +81,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Build production WebAssembly distribution
         run: ./gradlew :sharedUI:wasmJsBrowserDistribution --stacktrace
+      - name: Verify browser release ZIP against source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
+          python -m scripts.release_artifacts stage --kind web --tag "v$version"
+      - name: Upload validated browser release candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-web-release-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload web distribution
         uses: actions/upload-artifact@v7
         with:
@@ -105,6 +118,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Link iOS Simulator framework
         run: ./gradlew :sharedUI:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+      - name: Verify iOS simulator framework ZIP against source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
+          python -m scripts.release_artifacts stage --kind ios-simulator --tag "v$version"
+      - name: Upload validated iOS simulator framework candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-ios-release-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload iOS framework
         uses: actions/upload-artifact@v7
         with:
