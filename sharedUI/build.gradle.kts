@@ -83,13 +83,20 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "SudokuNova"
-            packageVersion = "0.2.0"
+            packageVersion = "0.2.1"
             // jpackage rejects macOS package versions starting with zero.
             // This is only native macOS metadata, not the public app version.
             macOS {
-                packageVersion = "1.2.0"
+                packageVersion = "1.2.1"
             }
-            description = "SudokuNova cross-platform Sudoku application"
+            windows {
+                // Keep this ID constant for all future Windows MSI releases.
+                upgradeUuid = "7E35B8B7-C375-5C8F-A3D0-94529BEBF96F"
+                menuGroup = "SudokuNova"
+                dirChooser = true
+                perUserInstall = true
+            }
+            description = "SudokuNova offline-first Sudoku — https://sanskarin.github.io"
             vendor = "Sanskar"
         }
     }
