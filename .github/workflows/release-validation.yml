@@ -7,12 +7,12 @@ on:
         description: Expected Android versionCode for the selected ref
         required: true
         type: string
-        default: '2014'
+        default: '2015'
       expected_version_name:
         description: Expected Android versionName for the selected ref
         required: true
         type: string
-        default: '2.0.14'
+        default: '2.0.15'
       upload_signed_artifacts:
         description: Upload signed APK/AAB in addition to verification evidence
         required: true
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout selected release ref
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Java 17
         uses: actions/setup-java@v5

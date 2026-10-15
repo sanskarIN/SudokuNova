@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.sanskar.sudokunova.engine.Difficulty
 import com.sanskar.sudokunova.engine.GeneratedPuzzle
 import com.sanskar.sudokunova.engine.HintEngine
+import com.sanskar.sudokunova.engine.PuzzleExchangeService
 import com.sanskar.sudokunova.engine.SudokuBoard
 import com.sanskar.sudokunova.engine.SudokuGenerator
 
@@ -17,6 +18,7 @@ private data class GameSnapshot(
 class SharedGameState(
     private val generator: SudokuGenerator = SudokuGenerator(),
     private val hintEngine: HintEngine = HintEngine(),
+    private val puzzleExchangeService: PuzzleExchangeService = PuzzleExchangeService(),
 ) {
     private var difficultyState by mutableStateOf(Difficulty.MEDIUM)
 
@@ -42,6 +44,12 @@ class SharedGameState(
         private set
 
     private var history: List<GameSnapshot> = emptyList()
+
+    var sourceCode by mutableStateOf<String?>(null)
+        private set
+
+    val isImported: Boolean
+        get() = sourceCode != null
 
     val isComplete: Boolean
         get() = board == generated.solution
@@ -83,9 +91,43 @@ class SharedGameState(
         selectedIndex = null
         notes = emptyMap()
         notesMode = false
+        sourceCode = null
         history = emptyList()
         status = SharedGameStatus.NewPuzzle(value)
     }
+
+    /**
+     * Imports a puzzle only after [PuzzleExchangeService] has verified that the
+     * SNP1 payload decodes and has exactly one solution. The canonical code is
+     * retained so active-session restore can reconstruct the same puzzle rather
+     * than generating a replacement from a seed.
+     */
+    fun importPuzzleCode(raw: String): Boolean {
+        val imported = puzzleExchangeService.importCode(raw.trim()) ?: run {
+            status = SharedGameStatus.InvalidPuzzleCode
+            return false
+        }
+        val canonicalCode = puzzleExchangeService.exportCode(imported.puzzle, imported.difficulty)
+        difficultyState = imported.difficulty
+        generated = GeneratedPuzzle(
+            puzzle = imported.puzzle,
+            solution = imported.solution,
+            difficulty = imported.difficulty,
+            assessment = imported.assessment,
+            seed = 0L,
+        )
+        board = imported.puzzle
+        selectedIndex = null
+        notes = emptyMap()
+        notesMode = false
+        sourceCode = canonicalCode
+        history = emptyList()
+        status = SharedGameStatus.ImportedPuzzle(imported.difficulty)
+        return true
+    }
+
+    fun puzzleCode(): String =
+        puzzleExchangeService.exportCode(generated.puzzle, difficulty)
 
     fun snapshot(): SharedGameSnapshot = SharedGameSnapshot(
         difficulty = difficulty,
@@ -94,14 +136,31 @@ class SharedGameState(
         notes = notes.mapValues { (_, values) -> values.toSet() },
         selectedIndex = selectedIndex,
         notesMode = notesMode,
+        sourceCode = sourceCode,
     )
 
     fun restore(snapshot: SharedGameSnapshot): Boolean {
         val restored = runCatching {
-            val regenerated = generate(snapshot.difficulty, snapshot.seed)
+            val imported = snapshot.sourceCode?.let { puzzleExchangeService.importCode(it) }
+            if (snapshot.sourceCode != null) {
+                requireNotNull(imported) { "Stored source puzzle code is invalid." }
+                require(imported.difficulty == snapshot.difficulty) {
+                    "Stored source puzzle difficulty does not match the snapshot."
+                }
+            }
+            val regenerated = imported?.let {
+                GeneratedPuzzle(
+                    puzzle = it.puzzle,
+                    solution = it.solution,
+                    difficulty = it.difficulty,
+                    assessment = it.assessment,
+                    seed = 0L,
+                )
+            } ?: generate(snapshot.difficulty, snapshot.seed)
+            val startingBoard = regenerated.puzzle
             val restoredBoard = SudokuBoard.parse(snapshot.board)
-            requireMatchesStartingClues(regenerated.puzzle, restoredBoard)
-            requireValidNotes(regenerated.puzzle, restoredBoard, snapshot.notes)
+            requireMatchesStartingClues(startingBoard, restoredBoard)
+            requireValidNotes(startingBoard, restoredBoard, snapshot.notes)
             require(snapshot.selectedIndex == null || snapshot.selectedIndex in 0 until SudokuBoard.CELL_COUNT) {
                 "Selected cell index is outside the Sudoku board."
             }
@@ -109,6 +168,7 @@ class SharedGameState(
                 generated = regenerated,
                 board = restoredBoard,
                 notes = snapshot.notes.mapValues { (_, values) -> values.toSet() },
+                sourceCode = snapshot.sourceCode,
             )
         }.getOrNull() ?: return false
 
@@ -118,6 +178,7 @@ class SharedGameState(
         notes = restored.notes
         selectedIndex = snapshot.selectedIndex
         notesMode = snapshot.notesMode
+        sourceCode = restored.sourceCode
         history = emptyList()
         status = selectedIndex?.let(::statusForSelection) ?: SharedGameStatus.SelectCell
         return true
@@ -264,6 +325,7 @@ class SharedGameState(
         val generated: GeneratedPuzzle,
         val board: SudokuBoard,
         val notes: Map<Int, Set<Int>>,
+        val sourceCode: String?,
     )
 
     private companion object {
