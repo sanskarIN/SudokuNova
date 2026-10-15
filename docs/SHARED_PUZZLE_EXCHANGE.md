@@ -32,17 +32,30 @@ The imported source code is validated again during restore. A snapshot that chan
 
 `SNG1` remains readable for backward compatibility. Generated sessions continue to encode as SNG1 so older stored data is not rewritten unnecessarily.
 
-## Shared UI
+## Platform Exchange Boundary
 
-The common Compose UI exposes:
+The common `PuzzleExchangePlatform` interface keeps clipboard, sharing, and text-file operations out of common Compose code. Platform adapters are responsible only for transport; `SharedGameState.importPuzzleCode()` remains the validation authority.
 
-- an SNP1 input field;
-- an explicit Import action;
-- selectable current-puzzle code output;
-- localized English/Hindi labels and feedback;
-- non-mutating failure behavior for invalid imports.
+The current adapters provide:
 
-Text selection is intentionally platform-neutral. Clipboard, share-sheet, and file-picker adapters are a follow-up boundary and should be implemented behind platform interfaces rather than adding Android-only APIs to common code.
+- Android: clipboard, native share sheet, and Storage Access Framework import/export requests;
+- Desktop/JVM: system clipboard and native file dialogs;
+- Web/Wasm: a bounded host seam; browser Promise/event APIs are deliberately not reported as synchronous success until the common contract supports asynchronous operations;
+- Apple hosts: native clipboard support for synchronous copy/paste, with share/document controllers remaining host-owned because UIKit presents them asynchronously.
+
+Adapters enforce bounded payloads before transport. File operations are also bounded on the read/write path; a platform must not turn arbitrary external text into a playable puzzle without passing the shared SNP1 validator.
+
+## Shared UI Wiring
+
+`SudokuNovaSharedApp()` accepts an optional `PuzzleExchangePlatform`. When supplied, the common `PuzzleExchangePanel` renders the reusable Copy, Paste, Share, Import file, and Export file controls through `PuzzleExchangeCoordinator`.
+
+Android `CrossPlatformActivity`, Desktop `Main.kt`, and the iOS `MainViewController()` now supply their platform adapters. The Web/Wasm entry point also supplies its bounded browser seam. Existing callers that do not supply a platform retain the code-only exchange UI, so the common API remains backward compatible.
+
+## Asynchronous Host Contract
+
+The additive `PuzzleExchangeAsyncPlatform` contract now provides callback-based operations for platform APIs that complete asynchronously. Its `safe*` helpers apply the same code/file bounds at the common boundary and validate completed text again before forwarding it to the caller.
+
+Web/Wasm and Apple document/share operations must use this asynchronous boundary rather than pretending a Promise/event-based operation completed synchronously. The existing `PuzzleExchangePlatform` remains available for genuinely synchronous transports, preserving compatibility while the asynchronous implementations are introduced incrementally.
 
 ## Testing Expectations
 
@@ -55,5 +68,10 @@ Changes to this contract should retain coverage for:
 - malformed/oversized payload rejection;
 - fixed-clue and note integrity during restore;
 - invalid import fail-closed behavior;
+- platform payload bounds before adapter invocation;
+- asynchronous completion payload bounds;
 - English/Hindi translation parity;
-- Android, Desktop, Web/Wasm, and Apple compilation paths where the shared UI is used.
+- Android, Desktop, Web/Wasm, and Apple compilation paths where the shared UI is used;
+- Android shared-host document lifecycle wiring;
+- iOS native clipboard behavior;
+- Web/Wasm asynchronous exchange transport before enabling browser success reporting.

@@ -4,6 +4,7 @@ data class ImportedPuzzle(
     val puzzle: SudokuBoard,
     val solution: SudokuBoard,
     val difficulty: Difficulty,
+    val assessment: DifficultyAssessment,
 )
 
 class PuzzleExchangeService(
@@ -17,11 +18,13 @@ class PuzzleExchangeService(
         val analysis = solver.analyze(decoded.puzzle, solutionLimit = 2)
         if (!analysis.hasUniqueSolution) return null
         val solution = analysis.solution ?: return null
+        val assessment = DifficultyRater.assess(decoded.puzzle, analysis.metrics)
 
         return ImportedPuzzle(
             puzzle = decoded.puzzle,
             solution = solution,
             difficulty = decoded.difficulty,
+            assessment = assessment,
         )
     }
 }
