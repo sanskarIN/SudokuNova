@@ -192,8 +192,27 @@ jobs:
         if: matrix.artifact == 'windows'
         shell: pwsh
         run: |
-          $version = (Select-String -Path app/build.gradle.kts -Pattern 'versionName\\s*=\\s*"([^"]+)"').Matches.Groups[1].Value
-          ./scripts/verify_windows_msi.ps1 -Path "release-assets/SudokuNova-v$version-windows.msi" -ExpectedVersion $version
+          $msi = @(Get-ChildItem -Path release-assets -Filter "SudokuNova-v*-windows.msi")
+          if ($msi.Count -ne 1) { throw "Expected one Windows MSI, found $($msi.Count)" }
+          $match = [regex]::Match($msi[0].Name, '^SudokuNova-v(\\d+\\.\\d+\\.\\d+)-windows\\.msi
+      - name: Upload validated installer candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-${{ matrix.artifact }}-installer-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload desktop application image
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-${{ matrix.artifact }}
+          path: sharedUI/build/compose/binaries/main/app/**
+          if-no-files-found: error
+          retention-days: 14
+)
+          if (-not $match.Success) { throw "Unexpected Windows MSI filename: $($msi[0].Name)" }
+          $version = $match.Groups[1].Value
+          ./scripts/verify_windows_msi.ps1 -Path $msi[0].FullName -ExpectedVersion $version
       - name: Upload validated installer candidate
         uses: actions/upload-artifact@v7
         with:
