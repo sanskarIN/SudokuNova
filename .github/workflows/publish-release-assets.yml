@@ -128,13 +128,15 @@ jobs:
           test -n "$apkanalyzer"
           export PATH="$(dirname "$apksigner"):$(dirname "$apkanalyzer"):$PATH"
 
+          expected_code="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_code)')"
+          expected_name="${RELEASE_TAG#v}"
           python scripts/verify_release_outputs.py \
             --apk app/build/outputs/apk/release/app-release.apk \
             --aab app/build/outputs/bundle/release/app-release.aab \
             --mapping app/build/outputs/mapping/release/mapping.txt \
             --metadata app/build/outputs/apk/release/output-metadata.json \
-            --expected-version-code 2020 \
-            --expected-version-name 0.2.0 \
+            --expected-version-code "$expected_code" \
+            --expected-version-name "$expected_name" \
             --expected-application-id in.sanskar.sudokunova \
             --require-apk-manifest \
             --expected-min-sdk 26 \
