@@ -84,6 +84,11 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "SudokuNova"
             packageVersion = "0.2.0"
+            // jpackage on macOS rejects major version zero. Public release is v0.2.0;
+            // this is only the native macOS package metadata version.
+            macOS {
+                packageVersion = "1.2.0"
+            }
             description = "SudokuNova cross-platform Sudoku application"
             vendor = "Sanskar"
         }
