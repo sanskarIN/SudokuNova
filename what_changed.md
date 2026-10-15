@@ -5,7 +5,7 @@
 Branch: `release/v0.2.0-automated-assets` from `main`.
 
 - Confirmed last public release is `v0.1.1` with no binary attachments, while source metadata previously reported `2.0.14`.
-- Prepared public v0.2.0 marketing version with monotonic Android numeric code `2020`. Existing 2.0.15 source preparation will need rebase/version-code reconciliation before subsequent publication.
+- Prepared public v0.2.0 marketing version with monotonic Android numeric code `2020`. The merged 2.0.15 source features remain incorporated while public release identity advances the Android versionCode to 2020.
 - Added testable staged platform asset packager and checksum verifier in `scripts/release_artifacts.py`, plus Python regression tests.
 - Added release-published GitHub Actions workflow which runs guards and source tests, builds platform-native installers, stages optional verified Android production outputs, and attaches an all-or-nothing cross-platform asset bundle with hashes after publication.
 - Added `docs/V0_2_0_RELEASE.md`, changelog and README release identity details.
@@ -13,6 +13,7 @@ Branch: `release/v0.2.0-automated-assets` from `main`.
 **Validation status:** source-only changes, pending exact-head CI and runtime/platform QA. No GitHub Release, tag, installer build, signed artifact or successful platform verification is claimed by these commits. The release workflow must exist on the default branch before the v0.2.0 GitHub Release is published.
 
 ---
+
 
 ## Current Development State — SudokuNova 2.0.14 Preparation — 2026-08-25
 

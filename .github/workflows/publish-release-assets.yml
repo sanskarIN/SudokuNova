@@ -36,13 +36,13 @@ jobs:
     timeout-minutes: 50
     steps:
       - name: Checkout immutable release tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
 
       - name: Install JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -77,12 +77,12 @@ jobs:
       SUDOKUNOVA_AAB_CERT_SHA256: ${{ secrets.SUDOKUNOVA_AAB_CERT_SHA256 }}
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -184,12 +184,12 @@ jobs:
     timeout-minutes: 65
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -214,12 +214,12 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -244,12 +244,12 @@ jobs:
     timeout-minutes: 50
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false
       - name: Install JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -277,7 +277,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'push' && github.sha || env.RELEASE_TAG }}
           persist-credentials: false

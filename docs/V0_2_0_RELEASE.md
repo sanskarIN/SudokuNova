@@ -11,11 +11,10 @@
 - Desktop `packageVersion`: `0.2.0`
 - Android minimum API: 26
 
-The repository formerly carried internal `2.0.14` source metadata even though
+The repository previously carried internal `2.0.15` source metadata even though
 the most recent publicly published tag was `v0.1.1`. This release reconciles
 the **public display version** without lowering the Android upgrade code.
-Future Android releases must use `versionCode > 2020`, including any
-concurrently prepared `2.0.x` source branches. Resolve version conflicts before merging.
+Future Android releases must use `versionCode > 2020`. The merged 2.0.15 source features are retained in this public v0.2.0 release. Resolve version conflicts before merging.
 
 ## What happens when a GitHub Release is published?
 
@@ -39,8 +38,7 @@ the hosted build, tests, and verification succeed. On failure, no claim of
 successful publication should be made. See **Actions** for the failure and logs.
 
 **Important:** GitHub release events require this workflow file to be merged
-into the repository default branch before the Release is published. Create
-the tag only after merging and verifying the exact release commit.
+into the repository default branch before the Release is published. After successful platform builds, the first merge to `main` automatically creates the release as a draft, attaches verified binaries and SHA-256 checksums, and then publishes it. Do not create a competing manual tag while the workflow is running.
 
 ## Expected GitHub Release downloads
 
@@ -69,7 +67,7 @@ trusted independent signing record, not the output being verified. A partial
 configuration fails closed; an absent configuration produces only the clearly
 labelled debug APK. Secrets and keystores are never release assets.
 
-The Desktop installers do not gain platform code signatures automatically.
+macOS native `jpackage` rejects a major version of zero. Its internal installer version is `1.2.0` while the public release remains `v0.2.0`. The Desktop installers do not gain platform code signatures automatically.
 A signed, notarized macOS app, a reputation-signed Windows MSI and a
 user-installable iOS IPA require additional platform-specific credentials,
 policies, testing and (for iOS) an Xcode host build target.

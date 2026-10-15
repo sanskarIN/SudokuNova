@@ -2,7 +2,7 @@
 
 All notable SudokuNova changes are documented here. The project follows Semantic Versioning where practical and separates **source/repository milestones** from **actual public release evidence**.
 
-## [Unreleased] — Public v0.2.0 Candidate
+## Public v0.2.0 Release Packaging
 
 ### Added
 
@@ -20,9 +20,9 @@ All notable SudokuNova changes are documented here. The project follows Semantic
 
 ### Release evidence
 
-- No final signed or installable artifacts are claimed until the GitHub-hosted platform matrix finishes and a maintainer checks installability. Public release v0.2.0 is **not yet published** by this change.
+- No final signed or installable artifacts are claimed until the GitHub-hosted platform matrix finishes and a maintainer checks installability. Publication and executable attachments require the successful GitHub release workflow.
 
-## [Development history] — 2.0.14 Preparation
+## [Development History] — 2.0.14 Preparation
 
 SudokuNova 2.0.14 is being prepared on PR #44 from the exact-head verified and merged 2.0.13 `main` checkpoint. Source metadata is now `versionCode 2014` / `versionName 2.0.14`, but public release, signing, device QA, store approval, tagging, and distribution are not inferred from source changes.
 

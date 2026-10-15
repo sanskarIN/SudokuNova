@@ -22,9 +22,11 @@ fun main() = application {
         }
         val state = rememberPersistedSharedGameState(gameStore)
         val settingsState = rememberPersistedSharedSettingsState(settingsStore)
+        val exchangePlatform = remember { DesktopPuzzleExchangePlatform() }
         SudokuNovaSharedApp(
             state = state,
             settingsState = settingsState,
+            exchangePlatform = exchangePlatform,
         )
     }
 }

@@ -23,10 +23,10 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -63,7 +63,7 @@ jobs:
           python -m unittest scripts.tests.test_verify_release_contract
           python -m unittest scripts.tests.test_verify_translations
 
-      - name: Verify cross-platform release asset packaging guard
+      - name: Verify cross-platform release packaging guard
         run: python -m unittest scripts.tests.test_release_artifacts
 
       - name: Verify partial release signing fails closed
