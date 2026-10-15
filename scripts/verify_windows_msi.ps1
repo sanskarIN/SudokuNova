@@ -30,9 +30,9 @@ function Read-MsiProperty([string]$name) {
     }
 }
 
-$product = Read-MsiProperty "ProductName"
-$version = Read-MsiProperty "ProductVersion"
-$upgrade = Read-MsiProperty "UpgradeCode"
+$product = (Read-MsiProperty "ProductName").Trim()
+$version = (Read-MsiProperty "ProductVersion").Trim()
+$upgrade = (Read-MsiProperty "UpgradeCode").Trim()
 if ($product -ne $ExpectedProductName) {
     throw "Unexpected MSI ProductName '$product' (expected '$ExpectedProductName')"
 }
