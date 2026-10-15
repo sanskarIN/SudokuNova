@@ -13,25 +13,25 @@ SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Ko
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84.svg)](https://developer.android.com/)
 
-## Public Release — v0.2.0
+## Public Release — v0.2.1
 
-SudokuNova v0.2.0 follows the last published public v0.1.1 version. It includes the validated puzzle-exchange and imported-session restore work from the 2.0.15 source-development line, as well as automatic release-asset builds.
+SudokuNova v0.2.1 improves Windows desktop usability and native installer behavior while retaining the offline-first Sudoku engine and shared cross-platform gameplay.
 
 ```text
 applicationId          = in.sanskar.sudokunova
-versionCode            = 2020
-versionName            = 0.2.0
-Desktop packageVersion = 0.2.0
-macOS native package   = 1.2.0
+versionCode            = 2021
+versionName            = 0.2.1
+Desktop packageVersion = 0.2.1
+macOS native package   = 1.2.1
 minSdk                 = 26
 targetSdk              = 37
 compileSdk             = 37
 JDK/JVM                = 17
 ```
 
-The native Windows MSI, macOS DMG, Linux DEB, Web ZIP, Android APK and iOS simulator framework are generated and attached by GitHub Actions **only after the automated packaging checks succeed**. The iOS framework is not an installable IPA, the default Android DEBUG APK is testing-only, and desktop installers do not automatically gain code signatures or notarization.
+**What's new for Windows:** a native Game/Help menu with Ctrl+N, Ctrl+Z, Ctrl+M and Ctrl+H shortcuts; an improved default window size; direct access to the developer website, <https://sanskarin.github.io>; and an MSI installer with a Start-menu group, per-user installation, install-location chooser and stable upgrade identifier. Windows CI now validates the MSI's embedded identity and upgrade metadata.
 
-The macOS internal package version is 1.2.0 because Apple's jpackage rejects versions starting with zero; the public release is still v0.2.0. Review the [v0.2.0 Release Guide](docs/V0_2_0_RELEASE.md), [Shared Puzzle Exchange](docs/SHARED_PUZZLE_EXCHANGE.md) and [What Changed](what_changed.md). Before relying on release downloads, verify the published GitHub Release and the attached SHA-256 manifest.
+The v0.2.1 automated release pipeline retains Windows MSI, macOS DMG, Linux DEB, Web ZIP, Android debug-test APK and iOS simulator framework builds. It publishes downloads and SHA-256 checksums only after required builds succeed. The iOS framework is not an installable IPA, the Android DEBUG APK is not a production-signed application, and Windows/macOS installers are not automatically code-signed or notarized. Review the [v0.2.1 Release Guide](docs/V0_2_1_RELEASE.md), [Shared Puzzle Exchange](docs/SHARED_PUZZLE_EXCHANGE.md) and [What Changed](what_changed.md).
 
 ## Platform Architecture
 
@@ -154,7 +154,7 @@ cd SudokuNova
 ./gradlew :app:assembleDebug --stacktrace
 ```
 
-### Android v0.2.0 release verification outputs
+### Android v0.2.1 release verification outputs
 
 ```bash
 ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace

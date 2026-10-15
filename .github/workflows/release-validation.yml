@@ -7,12 +7,12 @@ on:
         description: Expected Android versionCode for the selected ref
         required: true
         type: string
-        default: '2020'
+        default: '2021'
       expected_version_name:
         description: Expected Android versionName for the selected ref
         required: true
         type: string
-        default: '0.2.0'
+        default: '0.2.1'
       upload_signed_artifacts:
         description: Upload signed APK/AAB in addition to verification evidence
         required: true

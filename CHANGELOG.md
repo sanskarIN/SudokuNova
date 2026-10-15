@@ -2,6 +2,25 @@
 
 All notable SudokuNova changes are documented here. The project follows Semantic Versioning where practical and separates **source/repository milestones** from **actual public release evidence**.
 
+## v0.2.1 — Windows Desktop Improvements
+
+### Added
+- Native Game and Help menus with Windows keyboard accelerators for new puzzle, undo, notes and hint.
+- Developer website at https://sanskarin.github.io in desktop Help and Android About.
+- Larger initial desktop window size with existing responsive layout preserved.
+- Windows installer upgrade UUID, Start-menu grouping, per-user install and directory chooser.
+- Windows MSI embedded ProductName/ProductVersion/UpgradeCode verification in CI and release builds.
+- Desktop website allowlist regression tests and Android English/Hindi website labels.
+- [v0.2.1 release notes](docs/V0_2_1_RELEASE.md) documenting upgrade and signing limitations.
+
+### Fixed
+- Ctrl/Meta/Alt-modified key presses no longer get mistaken for Sudoku grid shortcuts.
+- Release identity advances to versionCode 2021 / versionName 0.2.1 with macOS package metadata 1.2.1.
+
+### Release boundary
+- Windows MSI upgrade continuity with v0.2.0 is not guaranteed because the upgrade UUID was not explicitly fixed in v0.2.0.
+- Automated release jobs and real-device installation must be verified before declaring the release shipped.
+
 ## Public v0.2.0 Release Packaging
 
 ### Added

@@ -188,6 +188,16 @@ jobs:
           set -euo pipefail
           version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
           python -m scripts.release_artifacts stage --kind "${{ matrix.artifact }}" --tag "v$version"
+      - name: Verify Windows MSI identity and upgrade metadata
+        if: matrix.artifact == 'windows'
+        shell: pwsh
+        run: |
+          $msi = @(Get-ChildItem -Path release-assets -Filter "SudokuNova-v*-windows.msi")
+          if ($msi.Count -ne 1) { throw "Expected exactly one Windows MSI" }
+          $name = $msi[0].BaseName
+          $version = $name.Replace("SudokuNova-v", "").Replace("-windows", "")
+          if ($version.Split(".").Count -ne 3) { throw "Invalid staged MSI version" }
+          ./scripts/verify_windows_msi.ps1 -Path $msi[0].FullName -ExpectedVersion $version
       - name: Upload validated installer candidate
         uses: actions/upload-artifact@v7
         with:

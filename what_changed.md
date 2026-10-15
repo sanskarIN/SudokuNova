@@ -1,5 +1,21 @@
 # What Changed
 
+## 2026-10-15 — v0.2.1 Windows/Desktop Improvement Line
+
+Branch: `release/v0.2.1-windows-desktop`
+
+- Windows desktop native Game/Help menus and keyboard commands with improved initial sizing.
+- https://sanskarin.github.io added to the desktop Help menu and Android About screen.
+- Installer configuration now specifies a per-user MSI, Start-menu grouping, directory chooser and stable upgrade identifier.
+- CI and release pipeline now verify Windows MSI identity/upgrade metadata and build against 0.2.1 / versionCode 2021.
+- Grid shortcuts no longer consume modified desktop key combinations; desktop website allowlist has tests.
+- Documentation in `docs/V0_2_1_RELEASE.md` specifies the v0.2.0-to-v0.2.1 upgrade compatibility boundary.
+
+**Evidence boundary:** Source changes and test configuration do not establish a public release. Review exact-head GitHub Actions, installer artifact integrity and runtime installability before claiming release success.
+
+---
+
+
 ## 2026-10-15 — v0.2.0 Public Release Packaging Candidate
 
 Branch: `release/v0.2.0-automated-assets` from `main`.

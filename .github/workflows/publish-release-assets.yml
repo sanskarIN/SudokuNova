@@ -3,7 +3,7 @@ name: Publish Cross-Platform Release Assets
 # Publishing a GitHub Release starts builds; installers appear only after the
 # platform matrix succeeds and the publisher verifies every required output.
 on:
-  # The first merge to main bootstraps v0.2.0 without manual GitHub UI actions.
+  # The first merge to main bootstraps v0.2.1 without manual GitHub UI actions.
   # Creating a release with GITHUB_TOKEN does not retrigger release workflows,
   # so this push-triggered workflow also builds and uploads the same assets.
   push:
@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || 'v0.2.0' }}
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || 'v0.2.1' }}
 
 jobs:
   preflight:
@@ -199,6 +199,12 @@ jobs:
         run: ./gradlew :sharedUI:${{ matrix.task }} --stacktrace
       - name: Stage installer and verify package header
         run: python -m scripts.release_artifacts stage --kind ${{ matrix.platform }} --tag "${{ env.RELEASE_TAG }}"
+      - name: Verify Windows MSI identity and upgrade metadata
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $version = $env:RELEASE_TAG.Substring(1)
+          ./scripts/verify_windows_msi.ps1 -Path "release-assets/SudokuNova-$env:RELEASE_TAG-windows.msi" -ExpectedVersion $version
       - name: Upload installer to publisher
         uses: actions/upload-artifact@v7
         with:
@@ -309,9 +315,17 @@ jobs:
               exit 1
             fi
             cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
-          # SudokuNova v0.2.0
+          # SudokuNova v0.2.1
 
-          A cross-platform release candidate of SudokuNova's offline-first Sudoku game.
+          Windows-focused maintenance update for SudokuNova, the offline-first Sudoku game.
+
+          ### Windows improvements
+          - Native Game and Help menus with Ctrl+N (new puzzle), Ctrl+Z (undo),
+            Ctrl+M (notes), and Ctrl+H (hint).
+          - Improved default desktop window size and menu accessibility.
+          - Windows MSI Start-menu grouping, per-user install, install-directory chooser,
+            stable upgrade identifier and verified MSI metadata.
+          - Developer website: https://sanskarin.github.io
 
           ### Included downloads
           - Windows MSI, macOS DMG, Linux DEB desktop installers.
@@ -324,11 +338,11 @@ jobs:
           ### Platform notices
           macOS and Windows packages are not automatically notarized/code-signed;
           OS security prompts may apply. Installer availability does not imply
-          real-device qualification. The macOS package metadata uses 1.2.0
+          real-device qualification. The macOS package metadata uses 1.2.1
           because Apple's jpackage refuses 0.x package metadata, while the
-          public application release is v0.2.0.
+          public application release is v0.2.1.
 
-          See docs/V0_2_0_RELEASE.md for current distribution limitations and
+          See docs/V0_2_1_RELEASE.md for current distribution limitations and
           release verification details.
           NOTES
             gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft \

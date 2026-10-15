@@ -43,6 +43,9 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.contentDescription
@@ -373,6 +376,8 @@ private fun SudokuGrid(state: SharedGameState) {
 
 private fun handleGridKeyEvent(event: KeyEvent, state: SharedGameState): Boolean {
     if (event.type != KeyEventType.KeyDown) return false
+    // Reserve modified combinations for native desktop menus and text input.
+    if (event.isCtrlPressed || event.isMetaPressed || event.isAltPressed) return false
 
     return when (event.key) {
         Key.DirectionUp -> {
