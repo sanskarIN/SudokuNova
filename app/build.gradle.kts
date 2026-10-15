@@ -32,8 +32,8 @@ android {
         applicationId = "in.sanskar.sudokunova"
         minSdk = 26
         targetSdk = 37
-        versionCode = 2020
-        versionName = "0.2.0"
+        versionCode = 2021
+        versionName = "0.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
