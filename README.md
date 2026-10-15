@@ -13,36 +13,25 @@ SudokuNova is an open-source, offline-first Sudoku project built with Kotlin, Ko
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84.svg)](https://developer.android.com/)
 
-## Current Development Status
+## Public Release — v0.2.0
 
-The repository is preparing **SudokuNova 2.0.15** on draft PR #45 from the merged 2.0.14 settings/keyboard parity line.
-
-Current source contract:
+SudokuNova v0.2.0 follows the last published public v0.1.1 version. It includes the validated puzzle-exchange and imported-session restore work from the 2.0.15 source-development line, as well as automatic release-asset builds.
 
 ```text
 applicationId          = in.sanskar.sudokunova
-versionCode            = 2015
-versionName            = 2.0.15
-Desktop packageVersion = 2.0.15
+versionCode            = 2020
+versionName            = 0.2.0
+Desktop packageVersion = 0.2.0
+macOS native package   = 1.2.0
 minSdk                 = 26
 targetSdk              = 37
 compileSdk             = 37
 JDK/JVM                = 17
 ```
 
-### 2.0.15 focus
+The native Windows MSI, macOS DMG, Linux DEB, Web ZIP, Android APK and iOS simulator framework are generated and attached by GitHub Actions **only after the automated packaging checks succeed**. The iOS framework is not an installable IPA, the default Android DEBUG APK is testing-only, and desktop installers do not automatically gain code signatures or notarization.
 
-- validated `SNP1` puzzle import/export in the shared engine/UI;
-- imported puzzle provenance retained in `SharedGameState`;
-- backward-compatible `SNG1` active-game snapshots;
-- new `SNG2` snapshots for imported-session restoration;
-- shared English/Hindi puzzle-exchange UI;
-- fail-closed import/restore validation and regression coverage;
-- release-contract, CI, and documentation alignment for version 2.0.15.
-
-**2.0.15 is not claimed as publicly released merely because source metadata, build paths, or CI exist.** Production signing, representative real-device QA, accessibility/performance evidence, platform signing/notarization, store validation, final SHIP/tagging, and publication require separate real evidence.
-
-See [2.0.15 Release Line](docs/V2_0_15_RELEASE.md), [Shared Puzzle Exchange](docs/SHARED_PUZZLE_EXCHANGE.md), [Cross-Platform Development](docs/CROSS_PLATFORM.md), and [What Changed](what_changed.md).
+The macOS internal package version is 1.2.0 because Apple's jpackage rejects versions starting with zero; the public release is still v0.2.0. Review the [v0.2.0 Release Guide](docs/V0_2_0_RELEASE.md), [Shared Puzzle Exchange](docs/SHARED_PUZZLE_EXCHANGE.md) and [What Changed](what_changed.md). Before relying on release downloads, verify the published GitHub Release and the attached SHA-256 manifest.
 
 ## Platform Architecture
 
@@ -165,7 +154,7 @@ cd SudokuNova
 ./gradlew :app:assembleDebug --stacktrace
 ```
 
-### Android 2.0.15 release verification outputs
+### Android v0.2.0 release verification outputs
 
 ```bash
 ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace

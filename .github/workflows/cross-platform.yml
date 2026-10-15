@@ -13,6 +13,9 @@ on:
       - '*.gradle.kts'
       - '.github/workflows/cross-platform.yml'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/publish-release-assets.yml'
+      - 'scripts/release_artifacts.py'
+      - 'scripts/tests/test_release_artifacts.py'
   pull_request:
     branches:
       - main
@@ -81,6 +84,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Build production WebAssembly distribution
         run: ./gradlew :sharedUI:wasmJsBrowserDistribution --stacktrace
+      - name: Verify browser release ZIP against source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
+          python -m scripts.release_artifacts stage --kind web --tag "v$version"
+      - name: Upload validated browser release candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-web-release-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload web distribution
         uses: actions/upload-artifact@v7
         with:
@@ -105,6 +121,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Link iOS Simulator framework
         run: ./gradlew :sharedUI:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+      - name: Verify iOS simulator framework ZIP against source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
+          python -m scripts.release_artifacts stage --kind ios-simulator --tag "v$version"
+      - name: Upload validated iOS simulator framework candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-ios-release-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload iOS framework
         uses: actions/upload-artifact@v7
         with:
@@ -121,12 +150,15 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact: linux
+            package_task: packageDeb
           - os: windows-latest
             artifact: windows
+            package_task: packageMsi
           - os: macos-latest
             artifact: macos
+            package_task: packageDmg
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 35
+    timeout-minutes: 55
     steps:
       - name: Checkout sources
         uses: actions/checkout@v7
@@ -139,6 +171,30 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Build desktop application image
         run: ./gradlew :sharedUI:createDistributable --stacktrace
+      - name: Print jpackage diagnostic logs on failure
+        if: failure()
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for file in sharedUI/build/compose/logs/*/*-err.txt sharedUI/build/compose/logs/*/*-out.txt; do
+            echo "======= $file ======="
+            cat "$file"
+          done
+      - name: Build platform-native release installer
+        run: ./gradlew :sharedUI:${{ matrix.package_task }} --stacktrace
+      - name: Verify installer package for current source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
+          python -m scripts.release_artifacts stage --kind "${{ matrix.artifact }}" --tag "v$version"
+      - name: Upload validated installer candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-${{ matrix.artifact }}-installer-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload desktop application image
         uses: actions/upload-artifact@v7
         with:

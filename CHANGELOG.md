@@ -2,7 +2,27 @@
 
 All notable SudokuNova changes are documented here. The project follows Semantic Versioning where practical and separates **source/repository milestones** from **actual public release evidence**.
 
-## [Unreleased] — 2.0.14 Preparation
+## Public v0.2.0 Release Packaging
+
+### Added
+
+- GitHub Release `published` automation for native Windows MSI, macOS DMG, Linux DEB and portable Web/Wasm ZIP builds.
+- Clearly identified Android **debug testing** APK and iOS **simulator framework** build artifacts; neither is misrepresented as a production signed APK or installable IPA.
+- Optional Android production signed APK/AAB, subject to complete trusted signing configuration, certificate identity verification and fail-closed partial configuration checks.
+- Stable tag/source identity gate, exact asset-set and package-header validation, archive integrity checks, SHA-256 release manifest, and regression tests.
+- Maintainer publication, QA and retry documentation in `docs/V0_2_0_RELEASE.md`.
+
+### Changed
+
+- Android `versionName` and desktop package version synchronized to `0.2.0`.
+- Android numeric `versionCode` advanced to `2020`, not reduced, to preserve the Android upgrade order.
+- CI and protected workflow release identity checks aligned with the new public candidate.
+
+### Release evidence
+
+- No final signed or installable artifacts are claimed until the GitHub-hosted platform matrix finishes and a maintainer checks installability. Publication and executable attachments require the successful GitHub release workflow.
+
+## [Development History] — 2.0.14 Preparation
 
 SudokuNova 2.0.14 is being prepared on PR #44 from the exact-head verified and merged 2.0.13 `main` checkpoint. Source metadata is now `versionCode 2014` / `versionName 2.0.14`, but public release, signing, device QA, store approval, tagging, and distribution are not inferred from source changes.
 

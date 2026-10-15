@@ -79,7 +79,7 @@ The portable code lives primarily in `sudoku-engine/`, `sharedUI/`, and `iosApp/
 10. [`../SECURITY.md`](../SECURITY.md)
 11. [Testing](TESTING.md)
 
-### I am preparing 2.0.15 or a later release
+### I am preparing v0.2.0 or a later release
 
 Read in this order:
 
@@ -312,6 +312,11 @@ Historical canonical v1 stable-release notes source.
 Historical v1.0 RC handoff, candidate metadata, artifact/signing pipeline, automated gates, and manual evidence boundaries.
 
 ## Current Release and Planning
+
+### [v0.2.0 Cross-Platform Release Packaging](V0_2_0_RELEASE.md)
+Current public release packaging workflow, native installers, signing limitations, SHA-256 checksums and GitHub publication process.
+
+
 
 ### [2.0.15 Release Line](V2_0_15_RELEASE.md)
 Current source/version/release authority for `versionCode 2015` / `versionName 2.0.15`, shared puzzle exchange, imported-session provenance, and its evidence boundary.

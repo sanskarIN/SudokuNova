@@ -20,7 +20,7 @@ TARGET_SDK_RE = re.compile(r"^\s*targetSdk\s*=\s*(\d+)\s*$", re.MULTILINE)
 VERSION_CODE_RE = re.compile(r'^\s*versionCode\s*=\s*(\d+)\s*$', re.MULTILINE)
 VERSION_NAME_RE = re.compile(r'^\s*versionName\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
 DESKTOP_PACKAGE_VERSION_RE = re.compile(
-    r'^\s*packageVersion\s*=\s*"([^"]+)"\s*$',
+    r'^([ \t]*)packageVersion[ \t]*=[ \t]*"([^"]+)"[ \t]*$',
     re.MULTILINE,
 )
 RELEASE_SAFE_VERSION_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._+-]*$")
@@ -77,10 +77,22 @@ def parse_gradle_release_contract(text: str) -> ReleaseContract:
 
 
 def parse_desktop_package_version(text: str) -> str:
-    return _validate_release_version(
-        _single_match(DESKTOP_PACKAGE_VERSION_RE, text, "Desktop packageVersion"),
-        "Desktop packageVersion",
-    )
+    # Compose Desktop supports per-OS packageVersion overrides. The least-indented
+    # declaration is the shared public package version; the nested macOS-only
+    # value may differ because Apple jpackage refuses 0.x package metadata.
+    declarations = [
+        (len(indent.expandtabs(4)), value)
+        for indent, value in DESKTOP_PACKAGE_VERSION_RE.findall(text)
+    ]
+    if not declarations:
+        raise ValueError("Expected exactly one Desktop packageVersion, found 0")
+    min_indent = min(indent for indent, _value in declarations)
+    shared = [value for indent, value in declarations if indent == min_indent]
+    if len(shared) != 1:
+        raise ValueError(
+            f"Expected exactly one Desktop packageVersion, found {len(shared)}"
+        )
+    return _validate_release_version(shared[0], "Desktop packageVersion")
 
 
 def parse_ci_expected_contract(text: str) -> ReleaseContract:

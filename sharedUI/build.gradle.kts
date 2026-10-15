@@ -83,7 +83,12 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "SudokuNova"
-            packageVersion = "2.0.15"
+            packageVersion = "0.2.0"
+            // jpackage rejects macOS package versions starting with zero.
+            // This is only native macOS metadata, not the public app version.
+            macOS {
+                packageVersion = "1.2.0"
+            }
             description = "SudokuNova cross-platform Sudoku application"
             vendor = "Sanskar"
         }
