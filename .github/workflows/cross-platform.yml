@@ -121,12 +121,15 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact: linux
+            package_task: packageDeb
           - os: windows-latest
             artifact: windows
+            package_task: packageMsi
           - os: macos-latest
             artifact: macos
+            package_task: packageDmg
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 35
+    timeout-minutes: 55
     steps:
       - name: Checkout sources
         uses: actions/checkout@v6
@@ -139,6 +142,21 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Build desktop application image
         run: ./gradlew :sharedUI:createDistributable --stacktrace
+      - name: Build platform-native release installer
+        run: ./gradlew :sharedUI:${{ matrix.package_task }} --stacktrace
+      - name: Verify installer package for current source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'from pathlib import Path; from scripts.verify_release_contract import parse_gradle_release_contract; print(parse_gradle_release_contract(Path("app/build.gradle.kts").read_text(encoding="utf-8")).version_name)')"
+          python -m scripts.release_artifacts stage --kind "${{ matrix.artifact }}" --tag "v$version"
+      - name: Upload validated installer candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: sudokunova-${{ matrix.artifact }}-installer-candidate
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload desktop application image
         uses: actions/upload-artifact@v7
         with:
