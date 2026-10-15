@@ -21,12 +21,12 @@ function Read-MsiProperty([string]$name) {
     $query = 'SELECT `Value` FROM `Property` WHERE `Property`=''{0}''' -f $name
     $view = $database.OpenView($query)
     try {
-        $view.Execute()
+        [void]$view.Execute()
         $record = $view.Fetch()
         if ($null -eq $record) { throw "Missing MSI property: $name" }
         return [string]$record.StringData(1)
     } finally {
-        $view.Close()
+        [void]$view.Close()
     }
 }
 
