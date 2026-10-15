@@ -193,8 +193,11 @@ jobs:
         shell: pwsh
         run: |
           $msi = @(Get-ChildItem -Path release-assets -Filter "SudokuNova-v*-windows.msi")
-          if ($msi.Count -ne 1) { throw "Expected one Windows MSI, found $($msi.Count)" }
-          $match = [regex]::Match($msi[0].Name, '^SudokuNova-v(\\d+\\.\\d+\\.\\d+)-windows\\.msi
+          if ($msi.Count -ne 1) { throw "Expected exactly one Windows MSI" }
+          $name = $msi[0].BaseName
+          $version = $name.Replace("SudokuNova-v", "").Replace("-windows", "")
+          if ($version.Split(".").Count -ne 3) { throw "Invalid staged MSI version" }
+          ./scripts/verify_windows_msi.ps1 -Path $msi[0].FullName -ExpectedVersion $version
       - name: Upload validated installer candidate
         uses: actions/upload-artifact@v7
         with:
